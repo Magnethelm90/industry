@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Industry Action</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
+<style>
+  :root{--bg:#0d1424;--card:#16203a;--acc:#ffb703;--ok:#3ddc84;--bad:#ff4d4d;--txt:#e8eaed;--mut:#8b93a1;--blue:#3b82f6}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%;margin:0;background:var(--bg);color:var(--txt);font-family:system-ui,sans-serif;overflow:hidden}
+  #top{position:fixed;top:0;left:0;right:0;height:48px;z-index:1000;background:#0d1424ee;display:flex;align-items:center;justify-content:space-between;padding:0 12px;font-size:14px}
+  #top b{color:var(--acc)}
+  #xpbar{position:absolute;left:0;bottom:0;height:3px;background:var(--ok);width:0}
+  #map{position:fixed;top:48px;bottom:56px;left:0;right:0;background:#1b2338}
+  #cross{position:fixed;top:calc(48px + (100vh - 104px)/2);left:50%;width:30px;height:30px;margin:-15px 0 0 -15px;z-index:500;pointer-events:none;border:2px solid #fff;border-radius:50%;box-shadow:0 0 6px #000}
+  #cross::after{content:"";position:absolute;left:50%;top:50%;width:6px;height:6px;margin:-3px;background:#fff;border-radius:50%}
+  #tools{position:fixed;left:8px;right:8px;bottom:64px;z-index:1000;display:flex;flex-direction:column;gap:6px}
+  .chips{display:flex;gap:6px;overflow-x:auto}
+  .chip{flex:0 0 auto;background:var(--card);border:1px solid #2a3a63;color:var(--txt);border-radius:16px;padding:6px 10px;font-size:13px}
+  .chip.on{background:var(--blue);border-color:var(--blue)}
+  .btns{display:flex;gap:6px}
+  .btn{flex:1;border:0;border-radius:10px;padding:12px 8px;font-weight:700;background:var(--ok);color:#102;font-size:14px}
+  .btn.alt{background:var(--acc)}.btn.red{background:var(--bad);color:#fff}.btn:disabled{background:#333;color:#777}
+  #info{background:#0d1424dd;border-radius:8px;padding:6px 10px;font-size:13px}
+  #nav{position:fixed;bottom:0;left:0;right:0;height:56px;z-index:1000;display:flex;background:#0d1424}
+  #nav button{flex:1;background:none;border:0;color:var(--mut);font-size:12px}
+  #nav button.on{color:var(--acc)}
+  .panel{position:fixed;top:48px;bottom:56px;left:0;right:0;z-index:900;background:var(--bg);overflow-y:auto;padding:10px 12px;display:none}
+  .row{background:var(--card);border-radius:10px;padding:10px;margin:8px 0;display:flex;align-items:center;gap:8px;font-size:14px}
+  .row .info{flex:1}.row small{display:block;color:var(--mut)}
+  .row button{border:0;border-radius:8px;padding:8px 10px;font-weight:700;background:var(--ok);color:#102}
+  .row button.s{background:var(--blue);color:#fff}
+  .up{color:var(--ok)}.dn{color:var(--bad)}
+  .mk{font-size:26px;text-align:center;filter:drop-shadow(0 0 3px #000)}
+  .mk.broken{animation:pulse .5s infinite alternate}
+  @keyframes pulse{to{transform:scale(1.5);filter:drop-shadow(0 0 8px red)}}
+  .crate{font-size:30px;animation:bounce .6s infinite alternate;cursor:pointer}
+  @keyframes bounce{to{transform:translateY(-8px)}}
+  #toast{position:fixed;top:56px;left:50%;transform:translateX(-50%);z-index:2000;background:#000c;border:1px solid var(--acc);border-radius:10px;padding:8px 14px;font-size:13px;display:none;max-width:90%;text-align:center}
+</style>
+</head>
+<body>
+<div id="top"><span>💰 <b id="money">0</b></span><span>Lv <b id="lvl">1</b></span><span>⚡ <b id="pow">0</b>/s</span><i id="xpbar"></i></div>
+<div id="map"></div><div id="cross"></div>
+<div id="toast"></div>
+<div id="tools">
+  <div class="chips" id="chips"></div>
+  <div id="info"></div>
+  <div class="btns"><button class="btn" id="bMine">⛏️ Mine bauen</button><button class="btn alt" id="bFac">🏭 Fabrik bauen</button><button class="btn" id="bGps" style="flex:0 0 52px;background:var(--blue);color:#fff">📍</button></div>
+</div>
+<div class="panel" id="pMarket"></div>
+<div class="panel" id="pOps"></div>
+<div id="nav"><button class="on" data-t="map">🗺️<br>Karte</button><button data-t="pMarket">📈<br>Markt</button><button data-t="pOps">🏗️<br>Betrieb</button></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+<script>
+const RES={
+  lehm:{n:'Lehm',i:'🧱',base:1.2,seed:11},
+  stein:{n:'Stein',i:'🪨',base:3,seed:23},
+  eisen:{n:'Eisen',i:'🔩',base:5,seed:37},
+  kohle:{n:'Kohle',i:'⚫',base:4,seed:51}
+};
+const PROD={
+  ziegel:{n:'Ziegel',i:'🧱',base:6,in:{lehm:2},t:4},
+  stahl:{n:'Stahl',i:'🏗️',base:20,in:{eisen:2,kohle:1},t:5},
+  maschine:{n:'Maschine',i:'⚙️',base:90,in:{stahl:3,ziegel:2},t:8}
+};
+const GOODS=Object.assign({},RES,PROD);
+const CAP=500,WEAR=100/300; // Mine hält 5 Min bis zum Ausfall
+const SAVE='industry-action-v1';
+const $=id=>document.getElementById(id);
+const fmt=n=>n>=1e9?(n/1e9).toFixed(2)+'B':n>=1e6?(n/1e6).toFixed(2)+'M':n>=1e4?(n/1e3).toFixed(1)+'k':(Math.round(n*10)/10).toString();
+
+/* ---------- Zustand ---------- */
+let S={money:500,xp:0,stock:{},mines:[],facs:[],nid:1,last:Date.now()};
+try{const l=JSON.parse(localStorage.getItem(SAVE));if(l&&l.mines)S=Object.assign(S,l)}catch(e){}
+Object.keys(GOODS).forEach(g=>{if(S.stock[g]==null)S.stock[g]=0});
+const mood={},sat={};Object.keys(GOODS).forEach(g=>{mood[g]=1;sat[g]=0});
+const lvl=()=>1+Math.floor(Math.sqrt(S.xp/50));
+const price=g=>GOODS[g].base*mood[g]/(1+sat[g]/150);
+
+/* ---------- Ressourcen-Rauschen (deterministisch pro Koordinate) ---------- */
+function h(x,y,s){let n=Math.sin(x*127.1+y*311.7+s*74.7)*43758.5453;return n-Math.floor(n)}
+function vn(x,y,s){const xi=Math.floor(x),yi=Math.floor(y),xf=x-xi,yf=y-yi;
+  const u=xf*xf*(3-2*xf),v=yf*yf*(3-2*yf);
+  const a=h(xi,yi,s),b=h(xi+1,yi,s),c=h(xi,yi+1,s),d=h(xi+1,yi+1,s);
+  return a+(b-a)*u+(c-a)*v+(a-b-c+d)*u*v}
+function quality(res,lat,lng){
+  const s=RES[res].seed,v=0.6*vn(lat/0.012,lng/0.012,s)+0.3*vn(lat/0.004,lng/0.004,s+1)+0.1*vn(lat/0.0013,lng/0.0013,s+2);
+  return Math.max(0,Math.min(1,(v-0.25)/0.5));
+}
+function heat(q){ // 0 = transparent, 1 = magenta wie im Original-Look
+  if(q<0.08)return null;
+  const stops=[[255,235,59],[255,152,0],[233,30,99],[156,39,176]];
+  const p=q*(stops.length-1),i=Math.min(stops.length-2,Math.floor(p)),f=p-i;
+  const c=stops[i].map((v,k)=>Math.round(v+(stops[i+1][k]-v)*f));
+  return 'rgba('+c.join(',')+',0.6)';
+}
+
+/* ---------- Karte ---------- */
+let sel='eisen',map=L.map('map',{zoomControl:false,attributionControl:true}).setView([52.52,13.405],15);
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(map);
+const HeatLayer=L.GridLayer.extend({createTile(c){
+  const t=document.createElement('canvas'),sz=this.getTileSize();t.width=sz.x;t.height=sz.y;
+  const g=t.getContext('2d'),step=16;
+  for(let x=0;x<sz.x;x+=step)for(let y=0;y<sz.y;y+=step){
+    const ll=map.unproject(L.point(c.x*sz.x+x+step/2,c.y*sz.y+y+step/2),c.z);
+    const col=heat(quality(sel,ll.lat,ll.lng));if(col){g.fillStyle=col;g.fillRect(x,y,step,step)}}
+  return t}});
+let heatLayer=new HeatLayer({opacity:.8}).addTo(map);
+function redrawHeat(){map.removeLayer(heatLayer);heatLayer=new HeatLayer({opacity:.8}).addTo(map)}
+
+const chips=$('chips');
+Object.keys(RES).forEach(r=>{const b=document.createElement('button');b.className='chip'+(r===sel?' on':'');b.textContent=RES[r].i+' '+RES[r].n;
+  b.onclick=()=>{sel=r;[...chips.children].forEach(c=>c.classList.remove('on'));b.classList.add('on');redrawHeat();updInfo()};chips.appendChild(b)});
+
+const mineCost=()=>Math.ceil(100*Math.pow(1.25,S.mines.length));
+const facCost=()=>Math.ceil(400*Math.pow(1.3,S.facs.length));
+function updInfo(){
+  const c=map.getCenter(),q=quality(sel,c.lat,c.lng);
+  $('info').innerHTML=RES[sel].i+' '+RES[sel].n+' hier: Qualität <b>'+Math.round(q*100)+'%</b> · Mine '+fmt(mineCost())+' · Fabrik '+fmt(facCost());
+  $('bMine').disabled=S.money<mineCost()||q<0.08;$('bFac').disabled=S.money<facCost();
+}
+map.on('move',updInfo);
+
+$('bGps').onclick=()=>{
+  if(!navigator.geolocation){toast('Kein GPS verfügbar');return}
+  navigator.geolocation.getCurrentPosition(p=>map.setView([p.coords.latitude,p.coords.longitude],16),()=>toast('Standort verweigert – verschiebe die Karte'),{timeout:8000});
+};
+navigator.geolocation&&navigator.geolocation.getCurrentPosition(p=>map.setView([p.coords.latitude,p.coords.longitude],16),()=>{},{timeout:6000});
+
+/* ---------- Gebäude & Marker ---------- */
+const markers={};
+function mkMarker(o,icon,kind){
+  const m=L.marker([o.lat,o.lng],{icon:L.divIcon({className:'',html:'<div class="mk">'+icon+'</div>',iconSize:[30,30],iconAnchor:[15,15]})}).addTo(map);
+  m.bindPopup(()=>popup(o,kind));markers[kind+o.id]=m;
+}
+function popup(o,kind){
+  const d=document.createElement('div');
+  if(kind==='m'){
+    d.innerHTML='<b>'+RES[o.res].i+' '+RES[o.res].n+'-Mine Lv'+o.lvl+'</b><br>Qualität '+Math.round(o.q*100)+'% · '+fmt(mineRate(o))+'/s<br>Zustand '+Math.round(o.hp)+'%<br>';
+    const r=btn('🔧 Reparieren '+repCost(o),()=>repair(o));d.appendChild(r);
+    const u=btn('⬆️ Ausbauen '+fmt(upCost(o)),()=>{if(S.money>=upCost(o)){S.money-=upCost(o);o.lvl++;map.closePopup()}});d.appendChild(u);
+  }else{
+    d.innerHTML='<b>🏭 Fabrik Lv'+o.lvl+'</b><br>Produziert: '+PROD[o.recipe].n+'<br>';
+    const sel2=document.createElement('select');Object.keys(PROD).forEach(p=>{const op=document.createElement('option');op.value=p;op.textContent=PROD[p].i+' '+PROD[p].n;if(p===o.recipe)op.selected=true;sel2.appendChild(op)});
+    sel2.onchange=()=>{o.recipe=sel2.value;o.prog=0};d.appendChild(sel2);d.appendChild(document.createElement('br'));
+    d.appendChild(btn('⬆️ Ausbauen '+fmt(upCost(o)),()=>{if(S.money>=upCost(o)){S.money-=upCost(o);o.lvl++;map.closePopup()}}));
+  }
+  return d;
+}
+function btn(t,f){const b=document.createElement('button');b.textContent=t;b.style.cssText='margin:4px 4px 0 0;padding:6px 8px';b.onclick=f;return b}
+const mineRate=o=>0.8*o.q*(1+0.5*(o.lvl-1));
+const upCost=o=>Math.ceil(150*Math.pow(1.6,o.lvl));
+const repCost=o=>Math.ceil(10+upCost(o)*0.1);
+function repair(o){const c=repCost(o);if(S.money<c){toast('Zu wenig Geld');return}S.money-=c;o.hp=100;S.xp+=2;map.closePopup()}
+
+$('bMine').onclick=()=>{
+  const c=map.getCenter(),q=quality(sel,c.lat,c.lng),cost=mineCost();
+  if(S.money<cost||q<0.08)return;S.money-=cost;
+  const o={id:S.nid++,res:sel,lat:c.lat,lng:c.lng,q,lvl:1,hp:100};S.mines.push(o);mkMarker(o,RES[sel].i,'m');S.xp+=5;updInfo();
+};
+$('bFac').onclick=()=>{
+  const c=map.getCenter(),cost=facCost();if(S.money<cost)return;S.money-=cost;
+  const o={id:S.nid++,lat:c.lat,lng:c.lng,recipe:'ziegel',lvl:1,prog:0};S.facs.push(o);mkMarker(o,'🏭','f');S.xp+=8;updInfo();
+};
+S.mines.forEach(o=>mkMarker(o,RES[o.res].i,'m'));S.facs.forEach(o=>mkMarker(o,'🏭','f'));
+
+/* ---------- Offline-Fortschritt ---------- */
+(function(){
+  const dt=Math.min((Date.now()-S.last)/1000,8*3600);if(dt<30)return;let gain=0;
+  S.mines.forEach(o=>{const t=Math.min(dt,o.hp/WEAR);const a=mineRate(o)*t;S.stock[o.res]=Math.min(CAP,S.stock[o.res]+a);gain+=a;o.hp=Math.max(0,o.hp-WEAR*dt)});
+  if(gain>0)setTimeout(()=>toast('Willkommen zurück! Minen förderten '+fmt(gain)+' Einheiten.'),500);
+})();
+
+/* ---------- Action: Events ---------- */
+let toastT;function toast(t){const e=$('toast');e.textContent=t;e.style.display='block';clearTimeout(toastT);toastT=setTimeout(()=>e.style.display='none',3500)}
+let nextCrate=Date.now()+10000,nextMarket=Date.now()+25000,crates=[];
+function spawnCrate(){
+  const b=map.getBounds(),lat=b.getSouth()+(b.getNorth()-b.getSouth())*(0.15+Math.random()*0.7),lng=b.getWest()+(b.getEast()-b.getWest())*(0.1+Math.random()*0.8);
+  const m=L.marker([lat,lng],{icon:L.divIcon({className:'',html:'<div class="crate">📦</div>',iconSize:[34,34],iconAnchor:[17,17]})}).addTo(map);
+  const end=Date.now()+15000;
+  m.on('click',()=>{
+    const keys=Object.keys(RES),k=keys[Math.floor(Math.random()*keys.length)],n=20+Math.floor(Math.random()*40)+lvl()*3;
+    if(Math.random()<0.3){const v=Math.ceil(50+lvl()*40);S.money+=v;toast('📦 +'+v+' Credits!')}
+    else{S.stock[k]=Math.min(CAP,S.stock[k]+n);toast('📦 +'+n+' '+RES[k].n)}
+    S.xp+=3;map.removeLayer(m);crates=crates.filter(c=>c.m!==m);
+  });
+  crates.push({m,end});
+}
+function marketEvent(){
+  const k=Object.keys(GOODS)[Math.floor(Math.random()*Object.keys(GOODS).length)],up=Math.random()<0.6;
+  mood[k]=up?2.2:0.45;setTimeout(()=>{mood[k]=1},40000);
+  toast(up?'📈 Nachfrage-Boom: '+GOODS[k].n+' 40s lang teuer! Jetzt verkaufen!':'📉 Preissturz bei '+GOODS[k].n+' – lieber einlagern!');
+}
+
+/* ---------- Spielschleife ---------- */
+let last=performance.now(),saveT=0,uiT=0,facTick=0;
+function loop(t){
+  const dt=Math.min(1,(t-last)/1000);last=t;const now=Date.now();
+  let pw=0;
+  S.mines.forEach(o=>{
+    if(o.hp>0){const a=mineRate(o)*dt;S.stock[o.res]=Math.min(CAP,S.stock[o.res]+a);pw+=mineRate(o);o.hp=Math.max(0,o.hp-WEAR*dt);
+      if(o.hp===0)toast('💥 '+RES[o.res].n+'-Mine ausgefallen! Tippe sie zum Reparieren.')}
+    const el=markers['m'+o.id]&&markers['m'+o.id].getElement();if(el)el.firstChild.classList.toggle('broken',o.hp<=0);
+  });
+  S.facs.forEach(o=>{
+    const p=PROD[o.recipe];let ok=true;
+    for(const k in p.in)if(S.stock[k]<p.in[k])ok=false;
+    if(ok&&S.stock[o.recipe]<CAP){o.prog+=dt*(1+0.4*(o.lvl-1));
+      if(o.prog>=p.t){o.prog=0;for(const k in p.in)S.stock[k]-=p.in[k];S.stock[o.recipe]++}}
+  });
+  Object.keys(GOODS).forEach(g=>{sat[g]*=Math.exp(-dt/90);mood[g]+=(1-mood[g])*dt*0.002+(Math.random()-0.5)*dt*0.01;if(mood[g]<0.3)mood[g]=0.3});
+  crates=crates.filter(c=>{if(now>c.end){map.removeLayer(c.m);return false}return true});
+  if(now>nextCrate){nextCrate=now+18000+Math.random()*20000;if(crates.length<3)spawnCrate()}
+  if(now>nextMarket){nextMarket=now+45000+Math.random()*45000;marketEvent()}
+  S.xp+=0; $('pow').textContent=fmt(pw);
+  if((uiT+=dt)>0.5){uiT=0;ui()}
+  if((saveT+=dt)>5){saveT=0;save()}
+  requestAnimationFrame(loop);
+}
+function save(){S.last=Date.now();try{localStorage.setItem(SAVE,JSON.stringify(S))}catch(e){}}
+addEventListener('beforeunload',save);
+
+/* ---------- Panels ---------- */
+function ui(){
+  $('money').textContent=fmt(S.money);$('lvl').textContent=lvl();
+  const l=lvl(),a=50*(l-1)*(l-1),b=50*l*l;$('xpbar').style.width=((S.xp-a)/(b-a)*100)+'%';
+  updInfo();
+  if($('pMarket').style.display==='block')renderMarket();
+  if($('pOps').style.display==='block')renderOps();
+}
+function renderMarket(){
+  const p=$('pMarket');p.innerHTML='<h3>Markt</h3><small style="color:var(--mut)">Preise sinken, wenn du viel verkaufst, und erholen sich langsam.</small>';
+  Object.keys(GOODS).forEach(g=>{
+    const pr=price(g),d=pr/GOODS[g].base,r=document.createElement('div');r.className='row';
+    r.innerHTML='<span style="font-size:24px">'+GOODS[g].i+'</span><div class="info">'+GOODS[g].n+' · '+fmt(S.stock[g])+'/'+CAP+'<small>'+pr.toFixed(2)+' / Stk <span class="'+(d>=1?'up':'dn')+'">'+(d>=1?'▲':'▼')+Math.round(Math.abs(d-1)*100)+'%</span></small></div>';
+    const b1=btn('10',()=>sell(g,10)),b2=btn('Alles',()=>sell(g,1e9));b1.style.margin=b2.style.margin='0';b1.className=b2.className='s';
+    r.appendChild(b1);r.appendChild(b2);p.appendChild(r);
+  });
+}
+function sell(g,n){
+  n=Math.min(n,Math.floor(S.stock[g]));if(n<=0)return;
+  let tot=0;for(let i=0;i<n;i++){tot+=price(g);sat[g]+=1}
+  S.stock[g]-=n;S.money+=tot;S.xp+=Math.ceil(tot/10);toast('+'+fmt(tot)+' Credits');renderMarket();
+}
+function renderOps(){
+  const p=$('pOps');p.innerHTML='<h3>Betrieb</h3>';
+  const bro=S.mines.filter(o=>o.hp<=0),tot=bro.reduce((a,o)=>a+repCost(o),0);
+  const ra=document.createElement('div');ra.className='row';ra.innerHTML='<div class="info">Defekte Minen: <b>'+bro.length+'</b></div>';
+  const rb=btn('Alle reparieren '+fmt(tot),()=>{if(S.money>=tot&&bro.length){S.money-=tot;bro.forEach(o=>o.hp=100)}});rb.style.margin=0;ra.appendChild(rb);p.appendChild(ra);
+  S.mines.forEach(o=>{const r=document.createElement('div');r.className='row';
+    r.innerHTML='<span style="font-size:24px">'+RES[o.res].i+'</span><div class="info">'+RES[o.res].n+'-Mine Lv'+o.lvl+'<small>Q '+Math.round(o.q*100)+'% · '+fmt(mineRate(o))+'/s · Zustand '+Math.round(o.hp)+'%</small></div>';
+    const c=btn('Hin',()=>{document.querySelector('#nav [data-t=map]').click();map.setView([o.lat,o.lng],17)});c.style.margin=0;r.appendChild(c);p.appendChild(r)});
+  S.facs.forEach(o=>{const r=document.createElement('div');r.className='row';
+    r.innerHTML='<span style="font-size:24px">🏭</span><div class="info">Fabrik Lv'+o.lvl+' → '+PROD[o.recipe].n+'<small>Braucht '+Object.keys(PROD[o.recipe].in).map(k=>PROD[o.recipe].in[k]+'× '+GOODS[k].n).join(', ')+'</small></div>';
+    const c=btn('Hin',()=>{document.querySelector('#nav [data-t=map]').click();map.setView([o.lat,o.lng],17)});c.style.margin=0;r.appendChild(c);p.appendChild(r)});
+  if(!S.mines.length&&!S.facs.length)p.innerHTML+='<p style="color:var(--mut)">Noch nichts gebaut. Wähle auf der Karte einen Rohstoff und baue eine Mine auf einem Hotspot (magenta = beste Qualität).</p>';
+}
+document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('#nav button').forEach(x=>x.classList.toggle('on',x===b));
+  ['pMarket','pOps'].forEach(id=>$(id).style.display=b.dataset.t===id?'block':'none');
+  const m=b.dataset.t==='map';$('tools').style.display=m?'flex':'none';$('cross').style.display=m?'block':'none';ui();
+});
+requestAnimationFrame(loop);
+toast('Wähle einen Rohstoff, suche einen Hotspot und baue deine erste Mine!');
+</script>
+</body>
+</html>
