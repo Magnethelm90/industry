@@ -4,267 +4,344 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>Industry Action</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
 <style>
-  :root{--bg:#0d1424;--card:#16203a;--acc:#ffb703;--ok:#3ddc84;--bad:#ff4d4d;--txt:#e8eaed;--mut:#8b93a1;--blue:#3b82f6}
-  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-  html,body{height:100%;margin:0;background:var(--bg);color:var(--txt);font-family:system-ui,sans-serif;overflow:hidden}
-  #top{position:fixed;top:0;left:0;right:0;height:48px;z-index:1000;background:#0d1424ee;display:flex;align-items:center;justify-content:space-between;padding:0 12px;font-size:14px}
+  :root{--bg:#0d1424;--card:#16203a;--card2:#1d2a4d;--acc:#ffb703;--ok:#3ddc84;--bad:#ff4d4d;--txt:#e8eaed;--mut:#8b93a1;--blue:#3b82f6}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+  html,body{height:100%;margin:0;background:var(--bg);color:var(--txt);font-family:system-ui,sans-serif}
+  body{display:flex;flex-direction:column;max-width:560px;margin:0 auto}
+  header{flex:0 0 auto;position:relative}
+  #hero{display:block;width:100%;height:70px}
+  #top{display:flex;justify-content:space-between;padding:6px 14px;font-size:15px;background:#0d1424}
   #top b{color:var(--acc)}
-  #xpbar{position:absolute;left:0;bottom:0;height:3px;background:var(--ok);width:0}
-  #map{position:fixed;top:48px;bottom:56px;left:0;right:0;background:#1b2338}
-  #cross{position:fixed;top:calc(48px + (100vh - 104px)/2);left:50%;width:30px;height:30px;margin:-15px 0 0 -15px;z-index:500;pointer-events:none;border:2px solid #fff;border-radius:50%;box-shadow:0 0 6px #000}
-  #cross::after{content:"";position:absolute;left:50%;top:50%;width:6px;height:6px;margin:-3px;background:#fff;border-radius:50%}
-  #tools{position:fixed;left:8px;right:8px;bottom:64px;z-index:1000;display:flex;flex-direction:column;gap:6px}
-  .chips{display:flex;gap:6px;overflow-x:auto}
-  .chip{flex:0 0 auto;background:var(--card);border:1px solid #2a3a63;color:var(--txt);border-radius:16px;padding:6px 10px;font-size:13px}
-  .chip.on{background:var(--blue);border-color:var(--blue)}
-  .btns{display:flex;gap:6px}
-  .btn{flex:1;border:0;border-radius:10px;padding:12px 8px;font-weight:700;background:var(--ok);color:#102;font-size:14px}
-  .btn.alt{background:var(--acc)}.btn.red{background:var(--bad);color:#fff}.btn:disabled{background:#333;color:#777}
-  #info{background:#0d1424dd;border-radius:8px;padding:6px 10px;font-size:13px}
-  #nav{position:fixed;bottom:0;left:0;right:0;height:56px;z-index:1000;display:flex;background:#0d1424}
-  #nav button{flex:1;background:none;border:0;color:var(--mut);font-size:12px}
-  #nav button.on{color:var(--acc)}
-  .panel{position:fixed;top:48px;bottom:56px;left:0;right:0;z-index:900;background:var(--bg);overflow-y:auto;padding:10px 12px;display:none}
-  .row{background:var(--card);border-radius:10px;padding:10px;margin:8px 0;display:flex;align-items:center;gap:8px;font-size:14px}
-  .row .info{flex:1}.row small{display:block;color:var(--mut)}
-  .row button{border:0;border-radius:8px;padding:8px 10px;font-weight:700;background:var(--ok);color:#102}
-  .row button.s{background:var(--blue);color:#fff}
+  #xp{height:3px;background:var(--ok);width:0}
+  main{flex:1;overflow-y:auto;padding:10px 14px}
+  nav{flex:0 0 58px;display:flex;background:#0a101e;border-top:1px solid #22304f}
+  nav button{flex:1;background:none;border:0;color:var(--mut);font-size:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+  nav button.on{color:var(--acc)}
+  .screen{display:none}.screen.on{display:block}
+  h3{margin:6px 0}
+  .card{background:var(--card);border-radius:12px;padding:10px;margin:8px 0;display:flex;align-items:center;gap:10px}
+  .card .i{flex:1;font-size:14px}.card small{display:block;color:var(--mut);margin-top:2px}
+  .art{width:54px;height:54px;border-radius:10px;background:var(--card2);display:flex;align-items:center;justify-content:center;flex:0 0 54px}
+  .btn{border:0;border-radius:10px;padding:10px 14px;font-weight:700;background:var(--ok);color:#102;font-size:14px}
+  .btn.b{background:var(--blue);color:#fff}.btn.a{background:var(--acc)}.btn.r{background:var(--bad);color:#fff}
+  .btn:disabled{background:#333;color:#777}
+  .btn.big{width:100%;padding:18px;font-size:20px}
+  .bar{position:relative;height:28px;background:#0b1226;border-radius:14px;overflow:hidden;margin:10px 0}
+  .bar .fill{position:absolute;left:0;top:0;bottom:0;background:var(--ok)}
+  .zone{position:absolute;top:0;bottom:0;background:#3ddc8466;border-left:2px solid var(--ok);border-right:2px solid var(--ok)}
+  .mark{position:absolute;top:-2px;bottom:-2px;width:6px;margin-left:-3px;background:#fff;border-radius:3px}
+  .stock{height:8px;background:#0b1226;border-radius:4px;overflow:hidden;margin-top:4px}.stock i{display:block;height:100%;background:var(--blue)}
   .up{color:var(--ok)}.dn{color:var(--bad)}
-  .mk{font-size:26px;text-align:center;filter:drop-shadow(0 0 3px #000)}
-  .mk.broken{animation:pulse .5s infinite alternate}
-  @keyframes pulse{to{transform:scale(1.5);filter:drop-shadow(0 0 8px red)}}
-  .crate{font-size:30px;animation:bounce .6s infinite alternate;cursor:pointer}
-  @keyframes bounce{to{transform:translateY(-8px)}}
-  #toast{position:fixed;top:56px;left:50%;transform:translateX(-50%);z-index:2000;background:#000c;border:1px solid var(--acc);border-radius:10px;padding:8px 14px;font-size:13px;display:none;max-width:90%;text-align:center}
+  #ov{position:fixed;inset:0;background:#000b;z-index:50;display:none;align-items:center;justify-content:center;padding:14px}
+  #ovbox{background:var(--card);border-radius:16px;padding:14px;width:100%;max-width:420px;max-height:96vh;overflow-y:auto}
+  #ovbox h3{margin:0 0 4px}
+  .msg{min-height:22px;text-align:center;font-weight:700;margin:6px 0}
+  .pads{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
+  .pad{height:90px;border:0;border-radius:14px;opacity:.45}
+  .pad.lit{opacity:1;box-shadow:0 0 20px #fff}
+  .step{display:flex;align-items:center;gap:6px}
+  .step button{width:34px;height:34px;border:0;border-radius:8px;background:var(--blue);color:#fff;font-size:18px}
+  #toast{position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:100;background:#000d;border:1px solid var(--acc);border-radius:10px;padding:8px 14px;font-size:13px;display:none;max-width:90%;text-align:center}
+  canvas{display:block;width:100%;max-width:320px;margin:0 auto;border-radius:10px;background:#222;touch-action:none}
+  .smoke{animation:sm 3s infinite linear}@keyframes sm{from{transform:translateY(0);opacity:.7}to{transform:translateY(-22px);opacity:0}}
 </style>
 </head>
 <body>
-<div id="top"><span>💰 <b id="money">0</b></span><span>Lv <b id="lvl">1</b></span><span>⚡ <b id="pow">0</b>/s</span><i id="xpbar"></i></div>
-<div id="map"></div><div id="cross"></div>
+<header>
+  <svg id="hero" viewBox="0 0 560 70" preserveAspectRatio="xMidYMax slice">
+    <defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1b2b55"/><stop offset="1" stop-color="#e9803a"/></linearGradient></defs>
+    <rect width="560" height="70" fill="url(#sky)"/>
+    <g fill="#0d1424"><rect x="30" y="30" width="90" height="40"/><rect x="48" y="12" width="12" height="20"/><rect x="82" y="18" width="12" height="14"/>
+      <rect x="150" y="38" width="70" height="32"/><rect x="250" y="26" width="110" height="44"/><rect x="270" y="8" width="14" height="20"/><rect x="320" y="14" width="14" height="14"/>
+      <rect x="390" y="36" width="60" height="34"/><rect x="470" y="22" width="80" height="48"/><rect x="490" y="6" width="12" height="18"/></g>
+    <g fill="#fff"><circle class="smoke" cx="54" cy="10" r="6"/><circle class="smoke" cx="277" cy="6" r="7" style="animation-delay:1s"/><circle class="smoke" cx="496" cy="4" r="6" style="animation-delay:2s"/></g>
+  </svg>
+  <div id="top"><span>💰 <b id="money">0</b></span><span>Lv <b id="lvl">1</b></span><span>🚚 <b id="capi">0</b></span></div>
+  <div id="xp"></div>
+</header>
+<main>
+  <section class="screen on" id="s-work"></section>
+  <section class="screen" id="s-store"></section>
+  <section class="screen" id="s-ship"></section>
+  <section class="screen" id="s-market"></section>
+  <section class="screen" id="s-upg"></section>
+</main>
+<nav id="nav">
+  <button class="on" data-s="work">🛠️<span>Werkstatt</span></button>
+  <button data-s="store">📦<span>Lager</span></button>
+  <button data-s="ship">🚚<span>Transport</span></button>
+  <button data-s="market">📈<span>Markt</span></button>
+  <button data-s="upg">⬆️<span>Upgrades</span></button>
+</nav>
+<div id="ov"><div id="ovbox"></div></div>
 <div id="toast"></div>
-<div id="tools">
-  <div class="chips" id="chips"></div>
-  <div id="info"></div>
-  <div class="btns"><button class="btn" id="bMine">⛏️ Mine bauen</button><button class="btn alt" id="bFac">🏭 Fabrik bauen</button><button class="btn" id="bGps" style="flex:0 0 52px;background:var(--blue);color:#fff">📍</button></div>
-</div>
-<div class="panel" id="pMarket"></div>
-<div class="panel" id="pOps"></div>
-<div id="nav"><button class="on" data-t="map">🗺️<br>Karte</button><button data-t="pMarket">📈<br>Markt</button><button data-t="pOps">🏗️<br>Betrieb</button></div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
 <script>
-const RES={
-  lehm:{n:'Lehm',i:'🧱',base:1.2,seed:11},
-  stein:{n:'Stein',i:'🪨',base:3,seed:23},
-  eisen:{n:'Eisen',i:'🔩',base:5,seed:37},
-  kohle:{n:'Kohle',i:'⚫',base:4,seed:51}
+/* ===== Daten ===== */
+const ICON={
+ erz:'<polygon points="6,40 14,16 34,10 54,22 58,44 36,56" fill="#7a6f66"/><circle cx="26" cy="28" r="4" fill="#e08a3c"/><circle cx="42" cy="36" r="5" fill="#e08a3c"/><circle cx="30" cy="44" r="3" fill="#d9a066"/>',
+ kohle:'<polygon points="8,42 16,16 36,8 56,20 58,44 34,58" fill="#2b2b33"/><polygon points="16,16 36,8 38,24 22,30" fill="#4f4f60"/>',
+ lehm:'<path d="M6 48Q4 24 28 18Q52 12 58 40Q60 54 32 56Q10 58 6 48Z" fill="#a0653a"/><path d="M18 34Q30 26 44 34" stroke="#c98a5a" stroke-width="3" fill="none"/>',
+ ziegel:'<rect x="6" y="18" width="52" height="30" rx="3" fill="#b5442e"/><path d="M6 33H58M24 18V33M42 33V48" stroke="#e9c9b8" stroke-width="2"/>',
+ stahl:'<polygon points="8,44 18,22 50,22 58,44" fill="#aab4c0"/><polygon points="8,44 58,44 54,52 12,52" fill="#6b7685"/><path d="M22 28H46" stroke="#fff" stroke-width="3" opacity=".6"/>',
+ maschine:'<circle cx="32" cy="32" r="18" fill="none" stroke="#f2b134" stroke-width="10" stroke-dasharray="7 5.6"/><circle cx="32" cy="32" r="16" fill="#f2b134"/><circle cx="32" cy="32" r="7" fill="#16203a"/>',
+ truck:'<rect x="4" y="22" width="34" height="22" rx="2" fill="#6b7685"/><path d="M38 28h12l8 8v8H38z" fill="#d9534f"/><circle cx="16" cy="46" r="6" fill="#111"/><circle cx="48" cy="46" r="6" fill="#111"/>',
+ hafen:'<path d="M6 40h52l-8 14H14z" fill="#3b82f6"/><rect x="22" y="26" width="10" height="14" fill="#d9534f"/><rect x="34" y="30" width="10" height="10" fill="#f2b134"/><path d="M50 10v30" stroke="#aab4c0" stroke-width="3"/>',
+ stadt:'<rect x="8" y="26" width="16" height="30" fill="#6b7685"/><rect x="28" y="14" width="18" height="42" fill="#8b93a1"/><rect x="48" y="30" width="10" height="26" fill="#6b7685"/><g fill="#ffd966"><rect x="12" y="32" width="4" height="4"/><rect x="33" y="20" width="4" height="4"/><rect x="38" y="30" width="4" height="4"/></g>'
 };
-const PROD={
-  ziegel:{n:'Ziegel',i:'🧱',base:6,in:{lehm:2},t:4},
-  stahl:{n:'Stahl',i:'🏗️',base:20,in:{eisen:2,kohle:1},t:5},
-  maschine:{n:'Maschine',i:'⚙️',base:90,in:{stahl:3,ziegel:2},t:8}
+const ic=(k,s=40)=>`<svg width="${s}" height="${s}" viewBox="0 0 64 64">${ICON[k]}</svg>`;
+const G={
+ erz:{n:'Eisenerz',base:3},kohle:{n:'Kohle',base:3},lehm:{n:'Lehm',base:2},
+ ziegel:{n:'Ziegel',base:8},stahl:{n:'Stahl',base:20},maschine:{n:'Maschine',base:100}
 };
-const GOODS=Object.assign({},RES,PROD);
-const CAP=500,WEAR=100/300; // Mine hält 5 Min bis zum Ausfall
-const SAVE='industry-action-v1';
+const GK=Object.keys(G);
+const ST=[
+ {id:'erz',n:'Eisenerz abbauen',game:'timing',in:{},out:'erz',max:8,mult:'pick',tip:'Triff die grüne Zone!'},
+ {id:'kohle',n:'Kohle abbauen',game:'timing',in:{},out:'kohle',max:8,mult:'pick',tip:'Triff die grüne Zone!'},
+ {id:'lehm',n:'Lehm graben',game:'timing',in:{},out:'lehm',max:8,mult:'pick',tip:'Triff die grüne Zone!'},
+ {id:'ziegel',n:'Ziegelpresse',game:'mash',in:{lehm:4},out:'ziegel',max:3,mult:'bench',tip:'Tippe so schnell du kannst!'},
+ {id:'stahl',n:'Schmelzofen',game:'heat',in:{erz:4,kohle:2},out:'stahl',max:3,mult:'bench',tip:'Halte die Hitze im grünen Bereich!'},
+ {id:'maschine',n:'Montage',game:'simon',in:{stahl:3,ziegel:2},out:'maschine',max:2,mult:'bench',tip:'Merke dir die Reihenfolge!'}
+];
+const ROUTES=[
+ {id:'stadt',n:'Stadtmarkt',icon:'stadt',T:20,speed:170,mult:1.0,desc:'Kurz & sicher'},
+ {id:'hafen',n:'Hafenmarkt',icon:'hafen',T:35,speed:230,mult:1.6,desc:'Weit & schnell – +60% Preis'}
+];
+const UP=[
+ {id:'pick',n:'Spitzhacke',d:'+30% Ertrag beim Abbauen',base:60,i:'erz'},
+ {id:'bench',n:'Werkbank',d:'+30% Ertrag bei Presse, Ofen, Montage',base:120,i:'maschine'},
+ {id:'truck',n:'LKW-Ladefläche',d:'+10 Plätze pro Fahrt',base:80,i:'truck'},
+ {id:'store',n:'Lagerhalle',d:'+100 Lagerplatz pro Ware',base:50,i:'ziegel'},
+ {id:'worker',n:'Arbeiter',d:'Fördern Rohstoffe automatisch (+0.08/s je Stufe)',base:200,i:'kohle'}
+];
+const SAVE='industry-action-v2';
 const $=id=>document.getElementById(id);
-const fmt=n=>n>=1e9?(n/1e9).toFixed(2)+'B':n>=1e6?(n/1e6).toFixed(2)+'M':n>=1e4?(n/1e3).toFixed(1)+'k':(Math.round(n*10)/10).toString();
+const fmt=n=>n>=1e6?(n/1e6).toFixed(2)+'M':n>=1e4?(n/1e3).toFixed(1)+'k':(Math.round(n*10)/10).toString();
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 
-/* ---------- Zustand ---------- */
-let S={money:500,xp:0,stock:{},mines:[],facs:[],nid:1,last:Date.now()};
-try{const l=JSON.parse(localStorage.getItem(SAVE));if(l&&l.mines)S=Object.assign(S,l)}catch(e){}
-Object.keys(GOODS).forEach(g=>{if(S.stock[g]==null)S.stock[g]=0});
-const mood={},sat={};Object.keys(GOODS).forEach(g=>{mood[g]=1;sat[g]=0});
-const lvl=()=>1+Math.floor(Math.sqrt(S.xp/50));
-const price=g=>GOODS[g].base*mood[g]/(1+sat[g]/150);
+let S={money:30,xp:0,stock:{},up:{},last:Date.now(),hist:{}};
+try{const l=JSON.parse(localStorage.getItem(SAVE));if(l&&l.stock)S=Object.assign(S,l)}catch(e){}
+GK.forEach(g=>{if(S.stock[g]==null)S.stock[g]=0;if(!S.hist[g])S.hist[g]=[]});
+UP.forEach(u=>{if(S.up[u.id]==null)S.up[u.id]=0});
+const mood={},sat={};GK.forEach(g=>{mood[g]=1;sat[g]=0});
+const lvl=()=>1+Math.floor(Math.sqrt(S.xp/40));
+const cap=()=>100+100*S.up.store;
+const truckCap=()=>20+10*S.up.truck;
+const mult=k=>1+0.3*S.up[k];
+const upCost=u=>Math.ceil(u.base*Math.pow(1.8,S.up[u.id]));
+const price=g=>Math.max(0.2,G[g].base*mood[g]/(1+sat[g]/60));
+let toastT;function toast(t){const e=$('toast');e.textContent=t;e.style.display='block';clearTimeout(toastT);toastT=setTimeout(()=>e.style.display='none',3200)}
 
-/* ---------- Ressourcen-Rauschen (deterministisch pro Koordinate) ---------- */
-function h(x,y,s){let n=Math.sin(x*127.1+y*311.7+s*74.7)*43758.5453;return n-Math.floor(n)}
-function vn(x,y,s){const xi=Math.floor(x),yi=Math.floor(y),xf=x-xi,yf=y-yi;
-  const u=xf*xf*(3-2*xf),v=yf*yf*(3-2*yf);
-  const a=h(xi,yi,s),b=h(xi+1,yi,s),c=h(xi,yi+1,s),d=h(xi+1,yi+1,s);
-  return a+(b-a)*u+(c-a)*v+(a-b-c+d)*u*v}
-function quality(res,lat,lng){
-  const s=RES[res].seed,v=0.6*vn(lat/0.012,lng/0.012,s)+0.3*vn(lat/0.004,lng/0.004,s+1)+0.1*vn(lat/0.0013,lng/0.0013,s+2);
-  return Math.max(0,Math.min(1,(v-0.25)/0.5));
-}
-function heat(q){ // 0 = transparent, 1 = magenta wie im Original-Look
-  if(q<0.08)return null;
-  const stops=[[255,235,59],[255,152,0],[233,30,99],[156,39,176]];
-  const p=q*(stops.length-1),i=Math.min(stops.length-2,Math.floor(p)),f=p-i;
-  const c=stops[i].map((v,k)=>Math.round(v+(stops[i+1][k]-v)*f));
-  return 'rgba('+c.join(',')+',0.6)';
-}
+/* offline: Arbeiter */
+(function(){const dt=Math.min((Date.now()-S.last)/1000,8*3600);if(dt<30||!S.up.worker)return;
+  ['erz','kohle','lehm'].forEach(g=>S.stock[g]=Math.min(cap(),S.stock[g]+0.08*S.up.worker*dt));
+  setTimeout(()=>toast('Deine Arbeiter haben in deiner Abwesenheit Rohstoffe gefördert.'),400)})();
 
-/* ---------- Karte ---------- */
-let sel='eisen',map=L.map('map',{zoomControl:false,attributionControl:true}).setView([52.52,13.405],15);
-L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(map);
-const HeatLayer=L.GridLayer.extend({createTile(c){
-  const t=document.createElement('canvas'),sz=this.getTileSize();t.width=sz.x;t.height=sz.y;
-  const g=t.getContext('2d'),step=16;
-  for(let x=0;x<sz.x;x+=step)for(let y=0;y<sz.y;y+=step){
-    const ll=map.unproject(L.point(c.x*sz.x+x+step/2,c.y*sz.y+y+step/2),c.z);
-    const col=heat(quality(sel,ll.lat,ll.lng));if(col){g.fillStyle=col;g.fillRect(x,y,step,step)}}
-  return t}});
-let heatLayer=new HeatLayer({opacity:.8}).addTo(map);
-function redrawHeat(){map.removeLayer(heatLayer);heatLayer=new HeatLayer({opacity:.8}).addTo(map)}
+/* ===== Overlay ===== */
+let OV=null;
+function openOv(html){if(OV){OV.alive=false;OV.abort&&OV.abort()}OV={alive:true,abort:null};$('ovbox').innerHTML=html;$('ov').style.display='flex';return OV}
+function closeOv(){if(OV){OV.alive=false;OV.abort&&OV.abort();OV=null}$('ov').style.display='none';$('ovbox').innerHTML=''}
+const xbtn=()=>`<button class="btn r" id="ovx" style="float:right;padding:4px 10px">✕</button>`;
+function bindX(){const x=$('ovx');if(x)x.onclick=closeOv}
 
-const chips=$('chips');
-Object.keys(RES).forEach(r=>{const b=document.createElement('button');b.className='chip'+(r===sel?' on':'');b.textContent=RES[r].i+' '+RES[r].n;
-  b.onclick=()=>{sel=r;[...chips.children].forEach(c=>c.classList.remove('on'));b.classList.add('on');redrawHeat();updInfo()};chips.appendChild(b)});
+/* ===== Minispiele (liefern Score 0..1, null = abgebrochen) ===== */
+function gTiming(rounds=6){return new Promise(res=>{
+  const ov=openOv(xbtn()+'<h3>⛏️ Abbau</h3><div class="msg" id="m">Triff die grüne Zone!</div><div class="bar" id="b"><div class="zone" id="z"></div><div class="mark" id="k"></div></div><button class="btn big" id="hit">SCHLAG!</button>');
+  bindX();ov.abort=()=>res(null);
+  let pos=0,dir=1,speed=0.9,zone=0.2,zc=0.5,round=0,pts=0,last=performance.now();
+  const newZone=()=>{zc=0.2+Math.random()*0.6;$('z').style.left=((zc-zone/2)*100)+'%';$('z').style.width=(zone*100)+'%'};newZone();
+  function tick(t){if(!ov.alive)return;const dt=(t-last)/1000;last=t;pos+=dir*speed*dt;if(pos>1){pos=1;dir=-1}if(pos<0){pos=0;dir=1}$('k').style.left=(pos*100)+'%';requestAnimationFrame(tick)}
+  requestAnimationFrame(tick);
+  $('hit').onpointerdown=async()=>{
+    if(!ov.alive||$('hit').disabled)return;const d=Math.abs(pos-zc);let p=0,t='Daneben!';
+    if(d<=zone*0.25){p=1;t='PERFEKT! 🔥'}else if(d<=zone/2){p=0.6;t='Gut!'}
+    pts+=p;$('m').textContent=t;round++;speed+=0.15;
+    if(round>=rounds){$('hit').disabled=true;await sleep(600);if(ov.alive)res(pts/rounds);return}
+    newZone()};
+})}
+function gMash(){return new Promise(res=>{
+  const ov=openOv(xbtn()+'<h3>🧱 Presse</h3><div class="msg" id="m">Tippe zum Start – 6 Sekunden!</div><div class="bar"><div class="fill" id="f" style="width:0"></div></div><button class="btn big a" id="t" style="height:140px;font-size:28px">PRESSEN!</button>');
+  bindX();ov.abort=()=>res(null);
+  let taps=0,started=false;const target=36;
+  $('t').onpointerdown=async()=>{
+    if(!ov.alive)return;taps++;$('f').style.width=Math.min(100,taps/target*100)+'%';
+    if(!started){started=true;let left=6;const iv=setInterval(()=>{left--;if(!ov.alive){clearInterval(iv);return}$('m').textContent='Noch '+left+'s – '+taps+' Schläge';if(left<=0){clearInterval(iv);$('t').disabled=true;setTimeout(()=>ov.alive&&res(Math.min(1,taps/target)),400)}},1000);$('m').textContent='Noch 6s'}};
+})}
+function gHeat(){return new Promise(res=>{
+  const ov=openOv(xbtn()+'<h3>🔥 Schmelzofen</h3><div class="msg" id="m">Halte den Knopf gedrückt, um zu heizen. Bleib im grünen Bereich!</div><div class="bar" style="height:36px"><div class="zone" style="left:45%;width:25%"></div><div class="mark" id="k"></div></div><button class="btn big r" id="h" style="height:120px">🔥 HEIZEN (halten)</button>');
+  bindX();ov.abort=()=>res(null);
+  let temp=25,hold=false,inZ=0,tt=0,last=performance.now();const D=12;
+  const on=e=>{hold=true;e.preventDefault()},off=()=>hold=false;
+  $('h').onpointerdown=on;$('h').onpointerup=off;$('h').onpointerleave=off;$('h').onpointercancel=off;
+  function tick(t){if(!ov.alive)return;const dt=Math.min(0.05,(t-last)/1000);last=t;
+    temp+=(hold?34:-20)*dt+(Math.random()-0.5)*14*dt;temp=Math.max(0,Math.min(100,temp));
+    tt+=dt;if(temp>=45&&temp<=70)inZ+=dt;
+    $('k').style.left=temp+'%';$('m').textContent=temp>70?'Zu heiß! 🥵':temp<45?'Zu kalt! 🥶':'Perfekt! 👍';
+    if(tt>=D){res(inZ/D);return}requestAnimationFrame(tick)}
+  requestAnimationFrame(tick);
+})}
+function gSimon(){return new Promise(res=>{
+  const col=['#e53935','#43a047','#1e88e5','#fdd835'];
+  const ov=openOv(xbtn()+'<h3>⚙️ Montage</h3><div class="msg" id="m">Merke dir die Reihenfolge …</div><div class="pads">'+col.map((c,i)=>`<button class="pad" data-i="${i}" style="background:${c}"></button>`).join('')+'</div>');
+  bindX();ov.abort=()=>res(null);
+  const pads=[...document.querySelectorAll('.pad')];
+  const flash=async i=>{pads[i].classList.add('lit');await sleep(350);pads[i].classList.remove('lit');await sleep(150)};
+  let seq=[],done=0,listen=null;
+  pads.forEach((p,i)=>p.onpointerdown=()=>{if(listen){p.classList.add('lit');setTimeout(()=>p.classList.remove('lit'),150);listen(i)}});
+  (async()=>{
+    const ROUNDS=5;
+    for(let r=0;r<ROUNDS;r++){
+      seq.push(Math.floor(Math.random()*4));$('m').textContent='Schau genau …';await sleep(500);
+      for(const i of seq){if(!ov.alive)return;await flash(i)}
+      if(!ov.alive)return;$('m').textContent='Du bist dran!';
+      const ok=await new Promise(r2=>{let k=0;listen=i=>{if(i!==seq[k]){listen=null;r2(false)}else if(++k>=seq.length){listen=null;r2(true)}}});
+      if(!ov.alive)return;
+      if(!ok){$('m').textContent='Falsch! ❌';await sleep(800);break}
+      done++;$('m').textContent='Richtig! ✅';await sleep(500);
+    }
+    if(ov.alive)res(done/ROUNDS);
+  })();
+})}
+const GAMES={timing:gTiming,mash:gMash,heat:gHeat,simon:gSimon};
 
-const mineCost=()=>Math.ceil(100*Math.pow(1.25,S.mines.length));
-const facCost=()=>Math.ceil(400*Math.pow(1.3,S.facs.length));
-function updInfo(){
-  const c=map.getCenter(),q=quality(sel,c.lat,c.lng);
-  $('info').innerHTML=RES[sel].i+' '+RES[sel].n+' hier: Qualität <b>'+Math.round(q*100)+'%</b> · Mine '+fmt(mineCost())+' · Fabrik '+fmt(facCost());
-  $('bMine').disabled=S.money<mineCost()||q<0.08;$('bFac').disabled=S.money<facCost();
-}
-map.on('move',updInfo);
-
-$('bGps').onclick=()=>{
-  if(!navigator.geolocation){toast('Kein GPS verfügbar');return}
-  navigator.geolocation.getCurrentPosition(p=>map.setView([p.coords.latitude,p.coords.longitude],16),()=>toast('Standort verweigert – verschiebe die Karte'),{timeout:8000});
-};
-navigator.geolocation&&navigator.geolocation.getCurrentPosition(p=>map.setView([p.coords.latitude,p.coords.longitude],16),()=>{},{timeout:6000});
-
-/* ---------- Gebäude & Marker ---------- */
-const markers={};
-function mkMarker(o,icon,kind){
-  const m=L.marker([o.lat,o.lng],{icon:L.divIcon({className:'',html:'<div class="mk">'+icon+'</div>',iconSize:[30,30],iconAnchor:[15,15]})}).addTo(map);
-  m.bindPopup(()=>popup(o,kind));markers[kind+o.id]=m;
-}
-function popup(o,kind){
-  const d=document.createElement('div');
-  if(kind==='m'){
-    d.innerHTML='<b>'+RES[o.res].i+' '+RES[o.res].n+'-Mine Lv'+o.lvl+'</b><br>Qualität '+Math.round(o.q*100)+'% · '+fmt(mineRate(o))+'/s<br>Zustand '+Math.round(o.hp)+'%<br>';
-    const r=btn('🔧 Reparieren '+repCost(o),()=>repair(o));d.appendChild(r);
-    const u=btn('⬆️ Ausbauen '+fmt(upCost(o)),()=>{if(S.money>=upCost(o)){S.money-=upCost(o);o.lvl++;map.closePopup()}});d.appendChild(u);
-  }else{
-    d.innerHTML='<b>🏭 Fabrik Lv'+o.lvl+'</b><br>Produziert: '+PROD[o.recipe].n+'<br>';
-    const sel2=document.createElement('select');Object.keys(PROD).forEach(p=>{const op=document.createElement('option');op.value=p;op.textContent=PROD[p].i+' '+PROD[p].n;if(p===o.recipe)op.selected=true;sel2.appendChild(op)});
-    sel2.onchange=()=>{o.recipe=sel2.value;o.prog=0};d.appendChild(sel2);d.appendChild(document.createElement('br'));
-    d.appendChild(btn('⬆️ Ausbauen '+fmt(upCost(o)),()=>{if(S.money>=upCost(o)){S.money-=upCost(o);o.lvl++;map.closePopup()}}));
-  }
-  return d;
-}
-function btn(t,f){const b=document.createElement('button');b.textContent=t;b.style.cssText='margin:4px 4px 0 0;padding:6px 8px';b.onclick=f;return b}
-const mineRate=o=>0.8*o.q*(1+0.5*(o.lvl-1));
-const upCost=o=>Math.ceil(150*Math.pow(1.6,o.lvl));
-const repCost=o=>Math.ceil(10+upCost(o)*0.1);
-function repair(o){const c=repCost(o);if(S.money<c){toast('Zu wenig Geld');return}S.money-=c;o.hp=100;S.xp+=2;map.closePopup()}
-
-$('bMine').onclick=()=>{
-  const c=map.getCenter(),q=quality(sel,c.lat,c.lng),cost=mineCost();
-  if(S.money<cost||q<0.08)return;S.money-=cost;
-  const o={id:S.nid++,res:sel,lat:c.lat,lng:c.lng,q,lvl:1,hp:100};S.mines.push(o);mkMarker(o,RES[sel].i,'m');S.xp+=5;updInfo();
-};
-$('bFac').onclick=()=>{
-  const c=map.getCenter(),cost=facCost();if(S.money<cost)return;S.money-=cost;
-  const o={id:S.nid++,lat:c.lat,lng:c.lng,recipe:'ziegel',lvl:1,prog:0};S.facs.push(o);mkMarker(o,'🏭','f');S.xp+=8;updInfo();
-};
-S.mines.forEach(o=>mkMarker(o,RES[o.res].i,'m'));S.facs.forEach(o=>mkMarker(o,'🏭','f'));
-
-/* ---------- Offline-Fortschritt ---------- */
-(function(){
-  const dt=Math.min((Date.now()-S.last)/1000,8*3600);if(dt<30)return;let gain=0;
-  S.mines.forEach(o=>{const t=Math.min(dt,o.hp/WEAR);const a=mineRate(o)*t;S.stock[o.res]=Math.min(CAP,S.stock[o.res]+a);gain+=a;o.hp=Math.max(0,o.hp-WEAR*dt)});
-  if(gain>0)setTimeout(()=>toast('Willkommen zurück! Minen förderten '+fmt(gain)+' Einheiten.'),500);
-})();
-
-/* ---------- Action: Events ---------- */
-let toastT;function toast(t){const e=$('toast');e.textContent=t;e.style.display='block';clearTimeout(toastT);toastT=setTimeout(()=>e.style.display='none',3500)}
-let nextCrate=Date.now()+10000,nextMarket=Date.now()+25000,crates=[];
-function spawnCrate(){
-  const b=map.getBounds(),lat=b.getSouth()+(b.getNorth()-b.getSouth())*(0.15+Math.random()*0.7),lng=b.getWest()+(b.getEast()-b.getWest())*(0.1+Math.random()*0.8);
-  const m=L.marker([lat,lng],{icon:L.divIcon({className:'',html:'<div class="crate">📦</div>',iconSize:[34,34],iconAnchor:[17,17]})}).addTo(map);
-  const end=Date.now()+15000;
-  m.on('click',()=>{
-    const keys=Object.keys(RES),k=keys[Math.floor(Math.random()*keys.length)],n=20+Math.floor(Math.random()*40)+lvl()*3;
-    if(Math.random()<0.3){const v=Math.ceil(50+lvl()*40);S.money+=v;toast('📦 +'+v+' Credits!')}
-    else{S.stock[k]=Math.min(CAP,S.stock[k]+n);toast('📦 +'+n+' '+RES[k].n)}
-    S.xp+=3;map.removeLayer(m);crates=crates.filter(c=>c.m!==m);
-  });
-  crates.push({m,end});
-}
-function marketEvent(){
-  const k=Object.keys(GOODS)[Math.floor(Math.random()*Object.keys(GOODS).length)],up=Math.random()<0.6;
-  mood[k]=up?2.2:0.45;setTimeout(()=>{mood[k]=1},40000);
-  toast(up?'📈 Nachfrage-Boom: '+GOODS[k].n+' 40s lang teuer! Jetzt verkaufen!':'📉 Preissturz bei '+GOODS[k].n+' – lieber einlagern!');
+/* ===== Station starten ===== */
+async function runStation(s){
+  for(const k in s.in)if(S.stock[k]<s.in[k]){toast('Es fehlt: '+(s.in[k]-Math.floor(S.stock[k]))+'× '+G[k].n);return}
+  if(S.stock[s.out]>=cap()){toast('Lager für '+G[s.out].n+' ist voll – bring Ware zum Markt!');return}
+  const score=await GAMES[s.game]();
+  if(score==null)return;
+  closeOv();
+  for(const k in s.in)S.stock[k]-=s.in[k];
+  let out=Math.round(score*s.max*mult(s.mult));
+  if(score>=0.3&&out<1)out=1;
+  out=Math.min(out,Math.floor(cap()-S.stock[s.out]));
+  S.stock[s.out]+=out;S.xp+=out*(G[s.out].base>10?4:1)+1;
+  toast(out>0?`+${out}× ${G[s.out].n} (Score ${Math.round(score*100)}%)`:'Fehlschlag – Material verloren 😬');
+  render();
 }
 
-/* ---------- Spielschleife ---------- */
-let last=performance.now(),saveT=0,uiT=0,facTick=0;
-function loop(t){
-  const dt=Math.min(1,(t-last)/1000);last=t;const now=Date.now();
-  let pw=0;
-  S.mines.forEach(o=>{
-    if(o.hp>0){const a=mineRate(o)*dt;S.stock[o.res]=Math.min(CAP,S.stock[o.res]+a);pw+=mineRate(o);o.hp=Math.max(0,o.hp-WEAR*dt);
-      if(o.hp===0)toast('💥 '+RES[o.res].n+'-Mine ausgefallen! Tippe sie zum Reparieren.')}
-    const el=markers['m'+o.id]&&markers['m'+o.id].getElement();if(el)el.firstChild.classList.toggle('broken',o.hp<=0);
-  });
-  S.facs.forEach(o=>{
-    const p=PROD[o.recipe];let ok=true;
-    for(const k in p.in)if(S.stock[k]<p.in[k])ok=false;
-    if(ok&&S.stock[o.recipe]<CAP){o.prog+=dt*(1+0.4*(o.lvl-1));
-      if(o.prog>=p.t){o.prog=0;for(const k in p.in)S.stock[k]-=p.in[k];S.stock[o.recipe]++}}
-  });
-  Object.keys(GOODS).forEach(g=>{sat[g]*=Math.exp(-dt/90);mood[g]+=(1-mood[g])*dt*0.002+(Math.random()-0.5)*dt*0.01;if(mood[g]<0.3)mood[g]=0.3});
-  crates=crates.filter(c=>{if(now>c.end){map.removeLayer(c.m);return false}return true});
-  if(now>nextCrate){nextCrate=now+18000+Math.random()*20000;if(crates.length<3)spawnCrate()}
-  if(now>nextMarket){nextMarket=now+45000+Math.random()*45000;marketEvent()}
-  S.xp+=0; $('pow').textContent=fmt(pw);
-  if((uiT+=dt)>0.5){uiT=0;ui()}
-  if((saveT+=dt)>5){saveT=0;save()}
-  requestAnimationFrame(loop);
+/* ===== Transport (Fahrspiel) ===== */
+let cargo={};
+function drive(route,load){return new Promise(res=>{
+  const ov=openOv('<h3>🚚 Fahrt nach '+route.n+'</h3><div class="msg" id="m">Weiche Hindernissen aus, sammle Münzen!</div><canvas id="cv" width="320" height="440"></canvas><div class="bar"><div class="fill" id="pf" style="width:0;background:var(--acc)"></div></div><div style="display:flex;gap:10px"><button class="btn b big" id="L" style="padding:14px">◀</button><button class="btn b big" id="R" style="padding:14px">▶</button></div>');
+  const cv=$('cv'),c=cv.getContext('2d'),LX=[80,160,240],TY=360;
+  let lane=1,x=160,integ=100,t=0,coins=0,obs=[],spawn=0.6,off=0,inv=0,last=performance.now();
+  const mv=d=>lane=Math.max(0,Math.min(2,lane+d));
+  $('L').onpointerdown=()=>mv(-1);$('R').onpointerdown=()=>mv(1);
+  cv.onpointerdown=e=>{const r=cv.getBoundingClientRect();mv(e.clientX-r.left<r.width/2?-1:1)};
+  const key=e=>{if(!OV||!OV.alive)return removeEventListener('keydown',key);if(e.key==='ArrowLeft')mv(-1);if(e.key==='ArrowRight')mv(1)};
+  addEventListener('keydown',key);
+  const speed=()=>route.speed+t*3;
+  function shape(o){
+    if(o.k==='coin'){c.fillStyle='#ffd23f';c.beginPath();c.arc(o.x,o.y,10,0,7);c.fill();c.fillStyle='#b88a00';c.fillRect(o.x-2,o.y-6,4,12);return}
+    if(o.k==='rock'){c.fillStyle='#8b8f98';c.beginPath();c.moveTo(o.x-22,o.y+14);c.lineTo(o.x-14,o.y-14);c.lineTo(o.x+8,o.y-18);c.lineTo(o.x+24,o.y+4);c.lineTo(o.x+14,o.y+16);c.fill();return}
+    if(o.k==='cone'){c.fillStyle='#ff7a1a';c.beginPath();c.moveTo(o.x,o.y-20);c.lineTo(o.x+14,o.y+16);c.lineTo(o.x-14,o.y+16);c.fill();c.fillStyle='#fff';c.fillRect(o.x-8,o.y,16,5);return}
+    c.fillStyle='#fff';c.fillRect(o.x-30,o.y-8,60,16);c.fillStyle='#d32f2f';for(let i=0;i<4;i++)c.fillRect(o.x-30+i*15+4,o.y-8,7,16)}
+  function truck(){
+    if(inv>0&&Math.floor(inv*10)%2)return;
+    c.fillStyle='#111';c.fillRect(x-22,TY-30,6,18);c.fillRect(x+16,TY-30,6,18);c.fillRect(x-22,TY+12,6,18);c.fillRect(x+16,TY+12,6,18);
+    c.fillStyle='#6b7685';c.fillRect(x-18,TY-6,36,44);c.fillStyle='#d9534f';c.fillRect(x-17,TY-42,34,34);c.fillStyle='#bfe3ff';c.fillRect(x-12,TY-38,24,12)}
+  function frame(now){
+    if(!ov.alive){removeEventListener('keydown',key);return}
+    const dt=Math.min(0.05,(now-last)/1000);last=now;t+=dt;inv=Math.max(0,inv-dt);
+    x+=(LX[lane]-x)*Math.min(1,dt*14);off=(off+speed()*dt)%40;
+    spawn-=dt;if(spawn<=0){spawn=Math.max(0.28,(0.85-t*0.012)*(170/speed()+0.4));
+      const l=Math.floor(Math.random()*3),r=Math.random(),k=r<0.25?'coin':r<0.55?'rock':r<0.85?'cone':'barrier';obs.push({k,x:LX[l],y:-30})}
+    obs.forEach(o=>o.y+=speed()*dt);
+    obs=obs.filter(o=>{
+      if(o.y>TY-44&&o.y<TY+36&&Math.abs(o.x-x)<(o.k==='barrier'?38:30)){
+        if(o.k==='coin'){coins++;return false}
+        if(inv<=0){integ-=20;inv=1;$('m').textContent='💥 Treffer! Zustand '+Math.max(0,integ)+'%'}return o.k==='coin'?false:true}
+      return o.y<480});
+    c.fillStyle='#2f6b2f';c.fillRect(0,0,320,440);c.fillStyle='#3a3d45';c.fillRect(30,0,260,440);
+    c.fillStyle='#fff';for(let l=1;l<3;l++)for(let y=-40;y<440;y+=40)c.fillRect(l*80+40-2,y+off,4,22);
+    obs.forEach(shape);truck();
+    $('pf').style.width=Math.min(100,t/route.T*100)+'%';
+    if(t>=route.T||integ<=0){ov.alive&&setTimeout(()=>{closeOv();res({integ:Math.max(0,integ),coins})},300);ov.alive=false;removeEventListener('keydown',key);return}
+    requestAnimationFrame(frame)}
+  requestAnimationFrame(frame);
+})}
+async function startDrive(route){
+  const total=Object.values(cargo).reduce((a,b)=>a+b,0);if(!total){toast('Lade zuerst Ware auf!');return}
+  const load={...cargo};cargo={};GK.forEach(g=>{if(load[g])S.stock[g]-=load[g]});
+  const r=await drive(route,load);
+  let val=0;for(const g in load){for(let i=0;i<load[g];i++){val+=price(g);sat[g]+=1}}
+  val*=route.mult;const pay=Math.floor(val*r.integ/100)+r.coins*5;
+  S.money+=pay;S.xp+=Math.ceil(pay/8);
+  openOv(`<h3>${r.integ>0?'✅ Angekommen!':'💥 Wrack!'}</h3><p>Zustand der Ladung: <b>${r.integ}%</b><br>Warenwert: ${fmt(val)}<br>Münzen: ${r.coins} × 5<br><b style="color:var(--acc);font-size:22px">+${fmt(pay)} Credits</b></p><button class="btn big" id="ok">Weiter</button>`);
+  $('ok').onclick=()=>{closeOv();render()};
 }
-function save(){S.last=Date.now();try{localStorage.setItem(SAVE,JSON.stringify(S))}catch(e){}}
-addEventListener('beforeunload',save);
 
-/* ---------- Panels ---------- */
-function ui(){
-  $('money').textContent=fmt(S.money);$('lvl').textContent=lvl();
-  const l=lvl(),a=50*(l-1)*(l-1),b=50*l*l;$('xpbar').style.width=((S.xp-a)/(b-a)*100)+'%';
-  updInfo();
-  if($('pMarket').style.display==='block')renderMarket();
-  if($('pOps').style.display==='block')renderOps();
+/* ===== Screens ===== */
+function renderWork(){
+  const el=$('s-work');el.innerHTML='<h3>Werkstatt</h3><small style="color:var(--mut)">Stelle Waren in Minispielen selbst her.</small>';
+  ST.forEach(s=>{
+    const need=Object.keys(s.in).map(k=>`<span class="${S.stock[k]>=s.in[k]?'up':'dn'}">${s.in[k]}× ${G[k].n} (${Math.floor(S.stock[k])})</span>`).join(', ');
+    const d=document.createElement('div');d.className='card';
+    d.innerHTML=`<div class="art">${ic(s.out,40)}</div><div class="i"><b>${s.n}</b><small>${s.tip}</small><small>${need?'Braucht: '+need:'Kostenlos'} → bis ${Math.max(1,Math.round(s.max*mult(s.mult)))}× ${G[s.out].n}</small></div><button class="btn">Spielen</button>`;
+    d.querySelector('button').onclick=()=>runStation(s);el.appendChild(d)});
 }
+function renderStore(){
+  const el=$('s-store');el.innerHTML='<h3>Lager</h3>';
+  GK.forEach(g=>{const d=document.createElement('div');d.className='card';
+    d.innerHTML=`<div class="art">${ic(g,40)}</div><div class="i"><b>${G[g].n}</b> ${Math.floor(S.stock[g])} / ${cap()}<div class="stock"><i style="width:${S.stock[g]/cap()*100}%"></i></div></div>`;el.appendChild(d)});
+}
+function renderShip(){
+  const el=$('s-ship');const used=Object.values(cargo).reduce((a,b)=>a+b,0);
+  el.innerHTML=`<h3>Transport</h3><div class="card"><div class="i">Ladefläche: <b>${used} / ${truckCap()}</b><small>Je mehr Schaden unterwegs, desto weniger Geld.</small></div></div>`;
+  GK.forEach(g=>{const have=Math.floor(S.stock[g]),c=cargo[g]||0;
+    const d=document.createElement('div');d.className='card';
+    d.innerHTML=`<div class="art">${ic(g,36)}</div><div class="i"><b>${G[g].n}</b><small>Lager ${have} · ~${price(g).toFixed(1)}/Stk</small></div><div class="step"><button data-d="-1">−</button><b style="min-width:26px;text-align:center">${c}</b><button data-d="1">+</button><button data-d="max" style="width:46px;font-size:12px">Max</button></div>`;
+    d.querySelectorAll('button').forEach(b=>b.onclick=()=>{
+      const free=truckCap()-Object.values(cargo).reduce((a,x)=>a+x,0);
+      let n=b.dataset.d==='max'?Math.min(free,have-c):parseInt(b.dataset.d);
+      n=Math.max(-c,Math.min(n,free,have-c));cargo[g]=c+n;renderShip()});
+    el.appendChild(d)});
+  ROUTES.forEach(r=>{const d=document.createElement('div');d.className='card';
+    d.innerHTML=`<div class="art">${ic(r.icon,44)}</div><div class="i"><b>${r.n}</b><small>${r.desc} · ${r.T}s</small></div><button class="btn a" ${used?'':'disabled'}>Fahren</button>`;
+    d.querySelector('button').onclick=()=>startDrive(r);el.appendChild(d)});
+}
+function spark(g){const h=S.hist[g];if(h.length<2)return '';const mn=Math.min(...h),mx=Math.max(...h),r=mx-mn||1;
+  const pts=h.map((v,i)=>(i/(h.length-1)*80).toFixed(1)+','+(22-(v-mn)/r*20).toFixed(1)).join(' ');
+  return `<svg width="80" height="24"><polyline points="${pts}" fill="none" stroke="#3b82f6" stroke-width="2"/></svg>`}
 function renderMarket(){
-  const p=$('pMarket');p.innerHTML='<h3>Markt</h3><small style="color:var(--mut)">Preise sinken, wenn du viel verkaufst, und erholen sich langsam.</small>';
-  Object.keys(GOODS).forEach(g=>{
-    const pr=price(g),d=pr/GOODS[g].base,r=document.createElement('div');r.className='row';
-    r.innerHTML='<span style="font-size:24px">'+GOODS[g].i+'</span><div class="info">'+GOODS[g].n+' · '+fmt(S.stock[g])+'/'+CAP+'<small>'+pr.toFixed(2)+' / Stk <span class="'+(d>=1?'up':'dn')+'">'+(d>=1?'▲':'▼')+Math.round(Math.abs(d-1)*100)+'%</span></small></div>';
-    const b1=btn('10',()=>sell(g,10)),b2=btn('Alles',()=>sell(g,1e9));b1.style.margin=b2.style.margin='0';b1.className=b2.className='s';
-    r.appendChild(b1);r.appendChild(b2);p.appendChild(r);
-  });
+  const el=$('s-market');el.innerHTML='<h3>Markt</h3><small style="color:var(--mut)">Preise schwanken. Viel verkaufen drückt den Preis. Hafen zahlt +60%.</small>';
+  GK.forEach(g=>{const p=price(g),d=p/G[g].base,c=document.createElement('div');c.className='card';
+    c.innerHTML=`<div class="art">${ic(g,36)}</div><div class="i"><b>${G[g].n}</b><small>${p.toFixed(2)} / Stk <span class="${d>=1?'up':'dn'}">${d>=1?'▲':'▼'}${Math.round(Math.abs(d-1)*100)}%</span></small></div>${spark(g)}`;el.appendChild(c)});
 }
-function sell(g,n){
-  n=Math.min(n,Math.floor(S.stock[g]));if(n<=0)return;
-  let tot=0;for(let i=0;i<n;i++){tot+=price(g);sat[g]+=1}
-  S.stock[g]-=n;S.money+=tot;S.xp+=Math.ceil(tot/10);toast('+'+fmt(tot)+' Credits');renderMarket();
+function renderUpg(){
+  const el=$('s-upg');el.innerHTML='<h3>Upgrades</h3>';
+  UP.forEach(u=>{const d=document.createElement('div'),cost=upCost(u);d.className='card';
+    d.innerHTML=`<div class="art">${ic(u.i,36)}</div><div class="i"><b>${u.n}</b> Stufe ${S.up[u.id]}<small>${u.d}</small></div><button class="btn" ${S.money<cost?'disabled':''}>${fmt(cost)}</button>`;
+    d.querySelector('button').onclick=()=>{if(S.money>=cost){S.money-=cost;S.up[u.id]++;S.xp+=5;render()}};el.appendChild(d)});
 }
-function renderOps(){
-  const p=$('pOps');p.innerHTML='<h3>Betrieb</h3>';
-  const bro=S.mines.filter(o=>o.hp<=0),tot=bro.reduce((a,o)=>a+repCost(o),0);
-  const ra=document.createElement('div');ra.className='row';ra.innerHTML='<div class="info">Defekte Minen: <b>'+bro.length+'</b></div>';
-  const rb=btn('Alle reparieren '+fmt(tot),()=>{if(S.money>=tot&&bro.length){S.money-=tot;bro.forEach(o=>o.hp=100)}});rb.style.margin=0;ra.appendChild(rb);p.appendChild(ra);
-  S.mines.forEach(o=>{const r=document.createElement('div');r.className='row';
-    r.innerHTML='<span style="font-size:24px">'+RES[o.res].i+'</span><div class="info">'+RES[o.res].n+'-Mine Lv'+o.lvl+'<small>Q '+Math.round(o.q*100)+'% · '+fmt(mineRate(o))+'/s · Zustand '+Math.round(o.hp)+'%</small></div>';
-    const c=btn('Hin',()=>{document.querySelector('#nav [data-t=map]').click();map.setView([o.lat,o.lng],17)});c.style.margin=0;r.appendChild(c);p.appendChild(r)});
-  S.facs.forEach(o=>{const r=document.createElement('div');r.className='row';
-    r.innerHTML='<span style="font-size:24px">🏭</span><div class="info">Fabrik Lv'+o.lvl+' → '+PROD[o.recipe].n+'<small>Braucht '+Object.keys(PROD[o.recipe].in).map(k=>PROD[o.recipe].in[k]+'× '+GOODS[k].n).join(', ')+'</small></div>';
-    const c=btn('Hin',()=>{document.querySelector('#nav [data-t=map]').click();map.setView([o.lat,o.lng],17)});c.style.margin=0;r.appendChild(c);p.appendChild(r)});
-  if(!S.mines.length&&!S.facs.length)p.innerHTML+='<p style="color:var(--mut)">Noch nichts gebaut. Wähle auf der Karte einen Rohstoff und baue eine Mine auf einem Hotspot (magenta = beste Qualität).</p>';
+let cur='work';
+function render(){
+  $('money').textContent=fmt(S.money);$('lvl').textContent=lvl();$('capi').textContent=truckCap();
+  const l=lvl(),a=40*(l-1)*(l-1),b=40*l*l;$('xp').style.width=((S.xp-a)/(b-a)*100)+'%';
+  if(OV)return; // während Overlay keine Neuaufbauten
+  ({work:renderWork,store:renderStore,ship:renderShip,market:renderMarket,upg:renderUpg})[cur]();
 }
 document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{
-  document.querySelectorAll('#nav button').forEach(x=>x.classList.toggle('on',x===b));
-  ['pMarket','pOps'].forEach(id=>$(id).style.display=b.dataset.t===id?'block':'none');
-  const m=b.dataset.t==='map';$('tools').style.display=m?'flex':'none';$('cross').style.display=m?'block':'none';ui();
-});
-requestAnimationFrame(loop);
-toast('Wähle einen Rohstoff, suche einen Hotspot und baue deine erste Mine!');
+  cur=b.dataset.s;document.querySelectorAll('#nav button').forEach(x=>x.classList.toggle('on',x===b));
+  document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id==='s-'+cur));render()});
+
+/* ===== Hintergrund-Schleife: Arbeiter, Markt, Events ===== */
+let nextEv=Date.now()+40000,histT=0;
+setInterval(()=>{
+  const dt=1;
+  if(S.up.worker)['erz','kohle','lehm'].forEach(g=>S.stock[g]=Math.min(cap(),S.stock[g]+0.08*S.up.worker*dt));
+  GK.forEach(g=>{sat[g]*=Math.exp(-dt/45);mood[g]+=(1-mood[g])*0.01+(Math.random()-0.5)*0.03;mood[g]=Math.max(0.35,mood[g])});
+  if((histT+=dt)>=4){histT=0;GK.forEach(g=>{S.hist[g].push(price(g));if(S.hist[g].length>30)S.hist[g].shift()})}
+  if(Date.now()>nextEv){nextEv=Date.now()+50000+Math.random()*50000;
+    const g=GK[Math.floor(Math.random()*GK.length)],up=Math.random()<0.6;mood[g]=up?2.2:0.45;setTimeout(()=>mood[g]=1,35000);
+    toast(up?`📈 Boom! ${G[g].n} ist 35s lang sehr gefragt – schnell liefern!`:`📉 Preissturz bei ${G[g].n} – lieber lagern!`)}
+  if(!OV&&cur!=='ship'&&cur!=='work')render();else if(!OV){$('money').textContent=fmt(S.money)}
+  if(Date.now()%5==0||true){S.last=Date.now();try{localStorage.setItem(SAVE,JSON.stringify(S))}catch(e){}}
+},1000);
+render();
+toast('Starte in der Werkstatt: baue Eisenerz ab!');
 </script>
 </body>
 </html>
