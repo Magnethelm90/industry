@@ -56,6 +56,17 @@
   .holes{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:8px 0 14px}
   .hole{aspect-ratio:1;max-width:100%;border:0;padding:0;border-radius:50%;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 58%,#03050b 0 46%,#2a3150 47% 62%,#171d36 63%);box-shadow:inset 0 6px 14px #000c,0 2px 0 #ffffff10}
   .rise{display:flex;animation:rise .18s ease-out}@keyframes rise{from{transform:translateY(18px) scale(.4);opacity:0}}
+  .wall{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;padding:6px;margin:8px 0 12px;border-radius:16px;background:#0b0f1d;box-shadow:inset 0 4px 14px #000a}
+  .wall.slide{animation:slide .35s ease-out}@keyframes slide{from{transform:translateX(40px);opacity:0}}
+  .tile{position:relative;aspect-ratio:1;max-width:100%;border:0;padding:0;border-radius:8px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:linear-gradient(145deg,#5b6274,#2f3544);box-shadow:inset 0 2px 0 #ffffff22,inset 0 -3px 0 #0005}
+  .tile:nth-child(3n){background:linear-gradient(160deg,#636a7d,#343a4a)}.tile:nth-child(5n){background:linear-gradient(130deg,#4f5567,#2b303e)}
+  .tile.v{background:radial-gradient(circle at 50% 45%,color-mix(in srgb,var(--c) 30%,#3a4152),#2b303e 80%);box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--c) 45%,transparent),inset 0 -3px 0 #0005}
+  .tile.rich{background:radial-gradient(circle at 50% 45%,color-mix(in srgb,var(--c) 45%,#3a4152),#2b303e 80%);box-shadow:inset 0 0 14px var(--c),inset 0 2px 0 #ffffff22;animation:glow 1.2s infinite alternate}@keyframes glow{to{box-shadow:inset 0 0 22px var(--c),inset 0 2px 0 #ffffff22}}
+  .tile svg{pointer-events:none;filter:drop-shadow(0 2px 3px #000a)}
+  .tile.done{background:#070a14 !important;box-shadow:inset 0 3px 8px #000;animation:none}
+  .tile[data-c="1"]::after,.tile[data-c="2"]::after{content:"";position:absolute;inset:0;pointer-events:none;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M21 1l-4 11 6 6-6 8 3 13M17 12l-10 3M23 18l11-4' stroke='%23000' stroke-width='2.2' fill='none' opacity='.75'/%3E%3C/svg%3E") center/100% no-repeat}
+  .tile[data-c="2"]::after{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M21 1l-4 11 6 6-6 8 3 13M17 12l-10 3M23 18l11-4M2 28l9-3 6 4M30 30l8 6M28 4l-3 8' stroke='%23000' stroke-width='2.4' fill='none' opacity='.85'/%3E%3C/svg%3E")}
+  .tile.wob{animation:wob .15s}@keyframes wob{50%{transform:scale(.88)}}
   .board{position:relative;aspect-ratio:1;max-width:100%;border-radius:20px;margin:8px 0 12px;border:1px solid var(--line);background:repeating-linear-gradient(45deg,#1a2140 0 12px,#1d2548 12px 24px);box-shadow:inset 0 4px 16px #0008}
   .bolt{position:absolute;transform:translate(-50%,-50%);width:46px;height:46px;padding:0;border:0;border-radius:50%;font-weight:900;font-size:17px;color:#1a2140;background:radial-gradient(circle at 35% 30%,#fff,#b6c2d6 45%,#5b6680);box-shadow:0 4px 10px #000a,inset 0 -3px 0 #0003;transition:transform .2s}
   .bolt.ok{color:#fff;background:radial-gradient(circle at 35% 30%,#d1fae5,#34d399 50%,#047857);transform:translate(-50%,-50%) rotate(90deg) scale(.9)}
@@ -188,9 +199,9 @@ const G={
 };
 const GK=Object.keys(G);
 const ST=[
- {id:'erz',n:'Eisenerz abbauen',games:['whack','timing'],in:{},out:'erz',max:8,mult:'pick'},
- {id:'kohle',n:'Kohle abbauen',games:['timingMove','whack'],in:{},out:'kohle',max:8,mult:'pick'},
- {id:'lehm',n:'Lehm graben',games:['catch','timing'],in:{},out:'lehm',max:8,mult:'pick'},
+ {id:'erz',n:'Eisenerz abbauen',games:['wall','whack','catch','timing'],in:{},out:'erz',max:8,mult:'pick'},
+ {id:'kohle',n:'Kohle abbauen',games:['wall','whack','timingMove','catch'],in:{},out:'kohle',max:8,mult:'pick'},
+ {id:'lehm',n:'Lehm graben',games:['catch','wall','timing','whack'],in:{},out:'lehm',max:8,mult:'pick'},
  {id:'ziegel',n:'Ziegelei',games:['stack','mash'],in:{lehm:4},out:'ziegel',max:3,mult:'bench'},
  {id:'stahl',n:'Schmelzofen',games:['heat','heatMove'],in:{erz:4,kohle:2},out:'stahl',max:3,mult:'bench'},
  {id:'maschine',n:'Montage',games:['simon','bolts'],in:{stahl:3,ziegel:2},out:'maschine',max:2,mult:'bench'}
@@ -429,6 +440,41 @@ function gWhack(s){return new Promise(res=>{
     $('m').textContent=hits+' Treffer'+(bombs?' · '+bombs+'× 💥':'');
     requestAnimationFrame(loop)})();
 })}
+function gWall(s){return new Promise(res=>{
+  const D=16,COLS=6,ROWS=6,TARGET=16;
+  const ov=openOv(xbtn()+`<h3>Flöz · ${G[s.out].n}</h3><div class="sub">Klopf ${G[s.out].n} aus der Wand. Adern brauchen 2 Schläge, glühende Adern 3 (geben dreifach). Taubes Gestein kostet Zeit.</div><div class="msg" id="m">0 / ${TARGET}</div><div class="wall" id="wl"></div><div class="timer"><i id="tm" style="width:100%"></i></div>`);
+  bindX();ov.abort=()=>res(null);
+  let got=0,penalty=0,walls=0,ended=false;const t0=performance.now();
+  const wob=b=>{b.classList.remove('wob');void b.offsetWidth;b.classList.add('wob')};
+  function build(){
+    const wl=$('wl');wl.innerHTML='';
+    for(let i=0;i<COLS*ROWS;i++){
+      const r=Math.random(),k=r<.26?'v':r<.33?'rich':'rock';
+      const b=document.createElement('button');b.className='tile '+k;b.dataset.k=k;b.dataset.hp=k==='v'?2:k==='rich'?3:0;b.dataset.c=0;
+      b.style.setProperty('--c',G[s.out].c);if(k!=='rock')b.innerHTML=ic(s.out,k==='rich'?34:26);
+      b.onpointerdown=()=>hit(b);wl.appendChild(b)}
+    wl.classList.remove('slide');void wl.offsetWidth;wl.classList.add('slide');
+  }
+  function hit(b){
+    if(ended||!ov.alive)return;const k=b.dataset.k;if(k==='done')return;
+    const [x,y]=center(b);wob(b);
+    if(k==='rock'){penalty+=0.6;SFX.miss();vib(30);burst(x,y,'#6b7280',4);return}
+    const hp=+b.dataset.hp-1;b.dataset.hp=hp;
+    if(hp>0){b.dataset.c=+b.dataset.c+1;SFX.tick();vib(8);burst(x,y,'#9aa0ad',5);return}
+    const gain=k==='rich'?3:1;got+=gain;b.dataset.k='done';b.dataset.c=0;b.className='tile done';b.innerHTML='';
+    if(gain>1){SFX.perfect();vib(25)}else{SFX.good();vib(12)}
+    burst(x,y,G[s.out].c,gain>1?16:9);pop($('m'),got+' / '+TARGET+(gain>1?'  +3!':''));
+    if(![...document.querySelectorAll('.tile')].some(t=>t.dataset.k==='v'||t.dataset.k==='rich')){
+      walls++;if(walls<=2){penalty-=2;fx('Neue Wand! +2s','#22d3ee')}else fx('Neue Wand!','#22d3ee');
+      setTimeout(()=>ov.alive&&!ended&&build(),200)}
+  }
+  build();
+  (function loop(){
+    if(!ov.alive||ended)return;const el=(performance.now()-t0)/1000+penalty;
+    $('tm').style.width=Math.max(0,Math.min(100,100-el/D*100))+'%';
+    if(el>=D){ended=true;pop($('m'),got>=TARGET?'Volle Lore! 🔥':got+' / '+TARGET);setTimeout(()=>ov.alive&&res(Math.min(1,got/TARGET)),700);return}
+    requestAnimationFrame(loop)})();
+})}
 function canvasFor(W,H){const cv=$('cv'),DPR=Math.min(2,window.devicePixelRatio||1);cv.width=W*DPR;cv.height=H*DPR;const c=cv.getContext('2d');c.scale(DPR,DPR);return [cv,c]}
 function gCatch(s){return new Promise(res=>{
   const D=18,W=320,H=400,col=G[s.out].c;
@@ -548,10 +594,10 @@ function gBolts(s,title){return new Promise(res=>{
 const GAMES={
   timing:s=>gTiming(6,'Abbau · '+G[s.out].n),
   timingMove:s=>gTiming(6,'Abbau · '+G[s.out].n,'Die grüne Zone wandert! Stoppe den Marker darin.',true),
-  whack:gWhack,catch:gCatch,stack:gStack,mash:gMash,
+  whack:gWhack,wall:gWall,catch:gCatch,stack:gStack,mash:gMash,
   heat:()=>gHeat(false),heatMove:()=>gHeat(true),simon:gSimon,bolts:s=>gBolts(s)
 };
-const GNAME={timing:'Timing',timingMove:'Wandernde Zone',whack:'Erzader',catch:'Auffangen',stack:'Stapeln',mash:'Presse',heat:'Hitze halten',heatMove:'Wandernde Hitze',simon:'Gedächtnis',bolts:'Schrauben'};
+const GNAME={wall:'Flöz',timing:'Timing',timingMove:'Wandernde Zone',whack:'Erzader',catch:'Auffangen',stack:'Stapeln',mash:'Presse',heat:'Hitze halten',heatMove:'Wandernde Hitze',simon:'Gedächtnis',bolts:'Schrauben'};
 
 /* ===== Station starten ===== */
 async function runStation(s,srcEl){
@@ -680,7 +726,7 @@ function renderWork(){
     const need=Object.keys(s.in).map(k=>`<span class="${S.stock[k]>=s.in[k]?'up':'dn'}">${s.in[k]}× ${G[k].n} (${Math.floor(S.stock[k])})</span>`).join(' · ');
     const can=Object.keys(s.in).every(k=>S.stock[k]>=s.in[k]);
     const d=document.createElement('div');d.className='card';d.style.setProperty('--c',G[s.out].c);
-    d.innerHTML=`<div class="art">${ic(s.out,42)}</div><div class="i">${s.n}<small>🎲 ${s.games.map(g=>GNAME[g]).join(' oder ')}</small><small>${need?'Braucht '+need:'Kostenlos'} → bis ${Math.max(1,Math.round(s.max*mult(s.mult)))}× ${G[s.out].n}</small></div><button class="btn ${can?'':'ghost'}">Spielen</button>`;
+    d.innerHTML=`<div class="art">${ic(s.out,42)}</div><div class="i">${s.n}<small>🎲 ${s.games.map(g=>GNAME[g]).join(' · ')}</small><small>${need?'Braucht '+need:'Kostenlos'} → bis ${Math.max(1,Math.round(s.max*mult(s.mult)))}× ${G[s.out].n}</small></div><button class="btn ${can?'':'ghost'}">Spielen</button>`;
     d.querySelector('button').onclick=()=>runStation(s);el.appendChild(d)});
 }
 function renderStore(){
