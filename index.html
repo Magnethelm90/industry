@@ -100,6 +100,12 @@
   @keyframes bob{50%{transform:translateY(5px)}}.bob.dip{animation:dip .18s ease-in-out infinite alternate}@keyframes dip{to{transform:translateY(18px)}}.bob.gone{display:none}
   .fishic{position:absolute;bottom:18px;left:15%;transition:left .1s}
   .tens{height:30px;margin:4px 0 8px;background:linear-gradient(90deg,#38bdf8,#34d399 40%,#fbbf24 75%,#ef4444)}
+  .flight{position:relative;height:6px;margin:12px 0 4px;border-radius:3px;background:rgba(255,255,255,.1)}
+  .flight i{display:block;height:100%;border-radius:3px;background:var(--g1)}
+  .flight span{position:absolute;top:-11px;margin-left:-10px;font-size:18px;transition:left 1s linear}
+  #ovbox.alarm{animation:alarm .6s infinite alternate}@keyframes alarm{from{box-shadow:0 0 0 2px #ef4444,0 0 40px rgba(239,68,68,.6)}to{box-shadow:0 0 0 2px #3b82f6,0 0 40px rgba(59,130,246,.6)}}
+  .raidc{width:100%;text-align:left;color:var(--ink);font:inherit}.raidc b{color:var(--ok);font-size:13px}
+  #s-under{--glass:rgba(251,113,133,.05)}
   .wall.gas{box-shadow:inset 0 0 40px rgba(132,204,22,.8);background:#1a2e05}
   nav button.dot::after{content:"";position:absolute;top:5px;right:calc(50% - 17px);width:9px;height:9px;border-radius:50%;background:var(--bad);box-shadow:0 0 8px var(--bad);animation:pg2 1s infinite alternate}
   @keyframes pg2{to{transform:scale(1.3)}}
@@ -310,6 +316,7 @@
   <symbol id="i-schnaps" viewBox="0 0 64 64"><ellipse cx="32" cy="59" rx="18" ry="3" fill="#0006"/><path d="M26 6h12v8c10 4 14 12 14 22v18a4 4 0 0 1-4 4H16a4 4 0 0 1-4-4V36c0-10 4-18 14-22z" fill="#a3e635" opacity=".75"/><path d="M18 30h28v16H18z" fill="#f5f5f4"/><text x="32" y="42" font-size="11" font-weight="900" fill="#b91c1c" text-anchor="middle" font-family="system-ui,sans-serif">XXX</text><rect x="26" y="2" width="12" height="6" rx="2" fill="#78350f"/></symbol>
   <symbol id="i-replika" viewBox="0 0 64 64"><rect x="24" y="2" width="16" height="60" rx="5" fill="#78350f"/><circle cx="32" cy="32" r="18" fill="url(#gGold)"/><circle cx="32" cy="32" r="13" fill="#f8fafc"/><path d="M32 22v10l7 4" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/><text x="32" y="46" font-size="5" fill="#64748b" text-anchor="middle" font-family="system-ui">ROLAX</text></symbol>
   <symbol id="i-raubkopie" viewBox="0 0 64 64"><ellipse cx="32" cy="58" rx="22" ry="3" fill="#0006"/><circle cx="32" cy="32" r="24" fill="url(#gSteel)"/><circle cx="32" cy="32" r="24" fill="url(#gScr)" opacity=".35"/><circle cx="32" cy="32" r="6" fill="#0b0f1d"/><path d="M14 20l8 6M44 14l-4 8" stroke="#fff" stroke-width="2" opacity=".7"/><path d="M8 40l48-12" stroke="#ef4444" stroke-width="4"/></symbol>
+  <symbol id="i-plane" viewBox="0 0 64 64"><ellipse cx="32" cy="58" rx="22" ry="3" fill="#0006"/><path d="M30 6c2-4 6-4 6 0v16l20 12v6l-20-6v12l6 5v4l-9-3-9 3v-4l6-5V34L10 40v-6l20-12z" fill="url(#gSteel)"/><path d="M33 6v40" stroke="#fff" stroke-width="1.5" opacity=".5"/><circle cx="33" cy="12" r="2" fill="#38bdf8"/></symbol>
   <symbol id="i-tnt" viewBox="0 0 64 64"><ellipse cx="32" cy="58" rx="22" ry="4" fill="#0006"/><rect x="11" y="24" width="13" height="32" rx="5" fill="url(#gRed)"/><rect x="25.5" y="21" width="13" height="35" rx="5" fill="url(#gRed)"/><rect x="40" y="24" width="13" height="32" rx="5" fill="url(#gRed)"/><rect x="9" y="36" width="46" height="7" rx="2" fill="#1a2140"/><path d="M32 21c0-8 5-11 10-14" stroke="#cbd5e1" stroke-width="2.5" fill="none"/><circle cx="43" cy="7" r="4.5" fill="#fbbf24"/><circle cx="43" cy="7" r="2" fill="#fff"/></symbol>
   <symbol id="i-coin" viewBox="0 0 64 64"><circle cx="32" cy="32" r="24" fill="url(#gGold)"/><circle cx="32" cy="32" r="17" fill="none" stroke="#b45309" stroke-width="3" opacity=".55"/><path d="M26 22h12M26 42h12M32 20v24" stroke="#b45309" stroke-width="3.5" stroke-linecap="round" opacity=".7"/></symbol>
   <symbol id="i-lvl" viewBox="0 0 64 64"><path d="M32 6l7 16 17 2-13 12 4 17-15-9-15 9 4-17L8 24l17-2z" fill="url(#gGold)"/></symbol>
@@ -335,6 +342,8 @@
   <section class="screen" id="s-orders"></section>
   <section class="screen" id="s-ship"></section>
   <section class="screen" id="s-market"></section>
+  <section class="screen" id="s-export"></section>
+  <section class="screen" id="s-under"></section>
 </main>
 
 <nav id="nav">
@@ -342,6 +351,7 @@
   <button data-s="farm"><svg viewBox="0 0 24 24"><path d="M12 21v-9M12 12c0-4 3-7 7-7 0 4-3 7-7 7zM12 15c0-3-2.5-5.5-6-5.5 0 3 2.5 5.5 6 5.5zM5 21h14"/></svg>Farm</button>
   <button data-s="bld"><svg viewBox="0 0 24 24"><path d="M3 21h18M5 21V9l5-3v15M10 21V12l5-3v12M15 21V4h4v17"/></svg>Betriebe</button>
   <button data-s="trade"><svg viewBox="0 0 24 24"><path d="M3 9l2-5h14l2 5M3 9h18v2a3 3 0 0 1-6 0 3 3 0 0 1-6 0 3 3 0 0 1-6 0zM5 13v8h14v-8M10 21v-5h4v5"/></svg>Handel</button>
+  <button data-s="under"><svg viewBox="0 0 24 24"><path d="M3 10c3-3 15-3 18 0l-1 4c-2 3-5 3-6 1l-2-2-2 2c-1 2-4 2-6-1z"/><circle cx="8" cy="11.5" r="1.2"/><circle cx="16" cy="11.5" r="1.2"/></svg>Untergrund</button>
 </nav>
 <div id="ov"><div id="ovbox"></div></div>
 <div id="toast"></div>
@@ -418,6 +428,10 @@ const ST=[
  {id:'weberei',n:'Weberei',grp:'food',games:['simon','mash'],in:{baumwolle:3},out:'stoff',max:2,mult:'bench',lv:3},
  {id:'schneiderei',n:'Schneiderei',grp:'food',games:['wires','simon'],in:{stoff:2,draht:1},out:'kleidung',max:1,mult:'bench',lv:4}
 ];
+ST.push(
+ {id:'brennerei',n:'Schwarzbrennerei',grp:'ill',games:['mix','pipes'],in:{weizen:4},out:'schnaps',max:3,mult:'bench',lv:3,heat:5},
+ {id:'faelscher',n:'Fälscherwerkstatt',grp:'ill',games:['solder','wires'],in:{stahl:1,display:1,kunststoff:1},out:'replika',max:2,mult:'bench',lv:4,heat:7},
+ {id:'kopierer',n:'Raubkopierer',grp:'ill',games:['wires','sort'],in:{platine:1,kunststoff:2},out:'raubkopie',max:3,mult:'bench',lv:4,heat:6});
 REC.forEach(r=>ST.push({id:'r_'+r.out,n:G[r.out].n+' bauen',games:r.games,in:Object.fromEntries(r.in.map(k=>[k,2])),out:r.out,max:3,mult:'bench',lv:G[r.out].lv,secret:true}));
 const ROUTES=[
  {id:'stadt',n:'Stadtmarkt',icon:'stadt',T:20,speed:170,mult:1.0,desc:'Kurze, sichere Strecke',c:'#22d3ee'},
@@ -459,7 +473,9 @@ const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 
 let S={money:30,xp:0,stock:{},up:{},last:Date.now(),hist:{},mute:false,b:{},
   rep:10,offers:[],orders:[],rec:{},shop:{lvl:1,slots:[],sold:0,earned:0,walked:0},rivals:null,oid:1,nextOffer:0,
-  combo:0,farm:{plots:[0,1,2,3].map(()=>({c:null,p:0,w:0,pest:0,half:0,ready:0})),nextPest:0},cellar:{n:2,items:[]}};
+  combo:0,farm:{plots:[0,1,2,3].map(()=>({c:null,p:0,w:0,pest:0,half:0,ready:0})),nextPest:0},cellar:{n:2,items:[]},
+  exp:{built:0,lvl:1,ships:[],demand:{},demandAt:0},
+  ug:{heat:0,stash:{},slvl:1,gang:0,nextGang:0,nextAttack:0,nextRaid:0,fences:null,fenceAt:0,active:0}};
 try{const l=JSON.parse(localStorage.getItem(SAVE));if(l&&l.stock)S=Object.assign(S,l)}catch(e){}
 GK.forEach(g=>{if(S.stock[g]==null)S.stock[g]=0;if(!S.hist[g])S.hist[g]=[]});
 UP.forEach(u=>{if(S.up[u.id]==null)S.up[u.id]=0});
@@ -784,15 +800,186 @@ function renderFarm(){
   const [put,more]=ce.querySelectorAll('button');put.onclick=cellarPut;more.onclick=()=>{if(S.money<cc||S.cellar.n>=6)return;S.money-=cc;S.cellar.n++;SFX.buy();render()};
   el.appendChild(ce);
 }
+/* ===== Export: Flughafen & Hafen ===== */
+const COUNTRIES=[{id:'no',n:'Norwegen',f:'🇳🇴',d:.5},{id:'ae',n:'Dubai',f:'🇦🇪',d:.8},{id:'us',n:'USA',f:'🇺🇸',d:1},{id:'br',n:'Brasilien',f:'🇧🇷',d:1.15},{id:'jp',n:'Japan',f:'🇯🇵',d:1.4}];
+const MODES={plane:{n:'Flugzeug',e:'✈️',t:180,fee:.08,cap:l=>15+10*(l-1),risk:.1,slow:1.4,ev:'Unwetter – Flug verspätet'},
+             ship:{n:'Containerschiff',e:'🚢',t:600,fee:.02,cap:l=>80+20*(l-1),risk:.2,slow:1.6,ev:'Sturm auf See – Schiff verspätet'}};
+const AIRPORT_COST=5000,airUpCost=()=>Math.ceil(3000*Math.pow(1.8,S.exp.lvl-1)),maxShips=()=>1+S.exp.lvl;
+function genDemand(){
+  const pool=GKU();COUNTRIES.forEach(c=>{const gs=[...pool].sort(()=>Math.random()-.5).slice(0,3);S.exp.demand[c.id]=gs.map(g=>({g,m:+(1.6+Math.random()*1.2).toFixed(1)}))});
+  S.exp.demandAt=Date.now()+15*60000;
+}
+const expMult=(cid,g)=>{const d=(S.exp.demand[cid]||[]).find(x=>x.g===g);return d?d.m:1.1};
+function tickExport(){
+  if(!S.exp.built)return;const now=Date.now();
+  if(now>S.exp.demandAt)genDemand();
+  S.exp.ships=S.exp.ships.filter(sh=>{
+    const c=COUNTRIES.find(x=>x.id===sh.c),m=MODES[sh.mode];
+    if(sh.delayed&&!sh.told&&now>sh.start+(sh.end-sh.start)/2){sh.told=1;toast(m.e+' '+m.ev+' ('+c.n+')');SFX.err()}
+    if(now<sh.end)return true;
+    S.money+=sh.value;S.xp+=Math.ceil(sh.value/10);SFX.win();toast(m.e+' Lieferung in '+c.f+' '+c.n+' angekommen: +'+fmt(sh.value)+' Cr');return false});
+}
+function exportLoad(cid){
+  const c=COUNTRIES.find(x=>x.id===cid);let mode='plane';const load={};
+  const draw=()=>{
+    const m=MODES[mode],cap=m.cap(S.exp.lvl),used=Object.values(load).reduce((a,b)=>a+b,0);
+    let val=0;for(const g in load)val+=load[g]*G[g].base*expMult(cid,g);val=Math.round(val*(1-m.fee));
+    const goods=GKU().filter(g=>S.stock[g]>=1||load[g]).sort((a,b)=>expMult(cid,b)-expMult(cid,a));
+    openOv(xbtn()+`<h3>${c.f} Lieferung nach ${c.n}</h3><div class="sub">Gefragte Waren bringen ein Vielfaches. Flugzeug ist schnell, das Schiff fasst mehr und kostet weniger Gebühr.</div>
+      <div class="seg">${Object.keys(MODES).map(k=>`<button data-m="${k}" class="${k===mode?'on':''}">${MODES[k].e} ${MODES[k].n}</button>`).join('')}</div>
+      <div class="card" style="--c:#22d3ee"><div class="i">Ladung <span class="chip num">${used} / ${cap}</span><small>Dauer ${fmtT(m.t*c.d*1000)} · Gebühr ${m.fee*100} % · ${Math.round(m.risk*100)} % Verspätungsrisiko</small></div><b class="num" style="color:var(--gold);font-size:18px">${fmt(val)} Cr</b></div>
+      ${goods.length?'':'<p class="sub">Dein Lager ist leer.</p>'}
+      ${goods.map(g=>{const mm=expMult(cid,g);return `<div class="card" style="--c:${G[g].c}"><div class="art" style="width:44px;height:44px;flex-basis:44px">${ic(g,32)}</div><div class="i">${G[g].n} ${mm>1.1?'<span class="chip up">×'+mm+'</span>':''}<small>Lager ${Math.floor(S.stock[g])} · ${(G[g].base*mm).toFixed(0)} Cr/Stk</small></div><div class="step"><button data-g="${g}" data-d="-1">−</button><b class="num">${load[g]||0}</b><button data-g="${g}" data-d="1">+</button><button data-g="${g}" data-d="max" style="width:46px;font-size:11px">MAX</button></div></div>`}).join('')}
+      <button class="btn big b" id="send" ${used&&S.exp.ships.length<maxShips()?'':'disabled'}>${S.exp.ships.length>=maxShips()?'Alle Slots unterwegs':m.e+' Abschicken'}</button>`);
+    bindX();
+    document.querySelectorAll('#ovbox [data-m]').forEach(b=>b.onclick=()=>{mode=b.dataset.m;const cp=MODES[mode].cap(S.exp.lvl);let u=0;for(const g in load){load[g]=Math.min(load[g],Math.max(0,cp-u));u+=load[g]}SFX.tick();draw()});
+    document.querySelectorAll('#ovbox [data-g]').forEach(b=>b.onclick=()=>{const g=b.dataset.g,cur0=load[g]||0,free=cap-used,have=Math.floor(S.stock[g]);
+      let n=b.dataset.d==='max'?Math.min(free,have-cur0):+b.dataset.d;n=Math.max(-cur0,Math.min(n,free,have-cur0));if(!n)return;load[g]=cur0+n;SFX.tick();draw()});
+    $('send').onclick=()=>{
+      if(!used||S.exp.ships.length>=maxShips())return;
+      for(const g in load)S.stock[g]-=load[g];
+      const delayed=Math.random()<m.risk,t=m.t*c.d*1000*(delayed?m.slow:1),now=Date.now();
+      S.exp.ships.push({id:S.oid++,c:cid,mode,load:{...load},value:val,start:now,end:now+t,delayed,told:0});
+      SFX.buy();vib([20,30,40]);toast(m.e+' Unterwegs nach '+c.n+' – Ankunft in '+fmtT(t));closeOv()};
+  };
+  draw();
+}
+function renderExport(){
+  const el=$('s-export'),now=Date.now();
+  el.innerHTML='<h2>Export</h2><p class="sub">Verkaufe ins Ausland: Jedes Land sucht andere Waren und zahlt dafür ein Vielfaches. Lieferungen sind unterwegs, auch wenn die App zu ist.</p>';
+  if(!S.exp.built){
+    const lk=lvl()<4,d=document.createElement('div');d.className='card';d.style.setProperty('--c','#22d3ee');
+    d.innerHTML=`<div class="art">${ic('plane',44)}</div><div class="i">Flughafen & Containerhafen<small>${lk?'🔒 ab Level 4':'Öffnet den Weltmarkt: 5 Länder mit wechselnder Nachfrage.'}</small></div><button class="btn a" ${lk||S.money<AIRPORT_COST?'disabled':''}>Bauen<br>${fmt(AIRPORT_COST)}</button>`;
+    d.querySelector('button').onclick=e=>{if(lk||S.money<AIRPORT_COST)return;S.money-=AIRPORT_COST;S.exp.built=1;genDemand();SFX.win();burst(e.clientX,e.clientY,'#22d3ee',24);fx('Flughafen eröffnet!','#22d3ee');render()};
+    el.appendChild(d);return}
+  const up=airUpCost(),mx=S.exp.lvl>=5,h=document.createElement('div');h.className='card';h.style.setProperty('--c','#22d3ee');
+  h.innerHTML=`<div class="art">${ic('plane',44)}</div><div class="i">Flughafen Stufe ${S.exp.lvl}<small>✈️ ${MODES.plane.cap(S.exp.lvl)} · 🚢 ${MODES.ship.cap(S.exp.lvl)} Plätze · ${S.exp.ships.length} / ${maxShips()} unterwegs</small></div><button class="btn a" ${mx||S.money<up?'disabled':''}>${mx?'MAX':'⬆ '+fmt(up)}</button>`;
+  h.querySelector('button').onclick=e=>{if(mx||S.money<up)return;S.money-=up;S.exp.lvl++;SFX.buy();burst(e.clientX,e.clientY,'#22d3ee',16);render()};
+  el.appendChild(h);
+  if(S.exp.ships.length){addSec(el,'Unterwegs');
+    S.exp.ships.forEach(sh=>{const c=COUNTRIES.find(x=>x.id===sh.c),m=MODES[sh.mode],f=Math.min(1,(now-sh.start)/(sh.end-sh.start)),d=document.createElement('div');d.className='card';d.style.setProperty('--c','#7c5cff');
+      d.innerHTML=`<div class="i">${m.e} ${c.f} ${c.n}${sh.delayed&&sh.told?' <span class="chip dn">verspätet</span>':''}<div class="flight"><i style="width:${f*100}%"></i><span style="left:${f*100}%">${m.e}</span></div><small>${Object.keys(sh.load).map(g=>sh.load[g]+'× '+G[g].n).join(', ')} · Ankunft in ${fmtT(sh.end-now)}</small></div><b class="num" style="color:var(--gold)">${fmt(sh.value)}</b>`;
+      el.appendChild(d)})}
+  addSec(el,'Länder · neue Nachfrage in '+fmtT(S.exp.demandAt-now));
+  COUNTRIES.forEach(c=>{const d=document.createElement('div');d.className='card';d.style.setProperty('--c','#fbbf24');
+    d.innerHTML=`<div class="art"><span style="font-size:32px">${c.f}</span></div><div class="i">${c.n}<small>✈️ ${fmtT(MODES.plane.t*c.d*1000)} · 🚢 ${fmtT(MODES.ship.t*c.d*1000)}</small><div class="ois">${(S.exp.demand[c.id]||[]).map(x=>`<span class="oi">${ic(x.g,22)}${G[x.g].n} <b class="up">×${x.m}</b></span>`).join('')}</div></div><button class="btn b">Beliefern</button>`;
+    d.querySelector('button').onclick=()=>exportLoad(c.id);el.appendChild(d)});
+}
+
+/* ===== Untergrund: Schmuggel, Polizei, Gang ===== */
+const FENCES=['Der Pole','Lady Viper','Onkel Sam','Kralle','Doc Schwarz','Mamba','Fuchs'];
+const illGoods=()=>GK.filter(g=>G[g].illegal);
+const illLager=()=>illGoods().filter(g=>S.stock[g]>=1);
+const stashUsed=()=>Object.values(S.ug.stash).reduce((a,b)=>a+b,0);
+const stashCap=()=>20*S.ug.slvl,stashCost=()=>Math.ceil(600*Math.pow(2,S.ug.slvl-1));
+const heatTier=()=>S.ug.heat>=75?'Fahndung':S.ug.heat>=50?'Im Visier':S.ug.heat>=25?'Beobachtet':'Unauffällig';
+const bribeCost=()=>Math.ceil(100+S.ug.heat*20);
+function hideG(g,n){const k=Math.min(n,Math.floor(S.stock[g]),stashCap()-stashUsed());if(k<=0)return 0;S.stock[g]-=k;S.ug.stash[g]=(S.ug.stash[g]||0)+k;return k}
+function unhideG(g,n){const k=Math.min(n,S.ug.stash[g]||0,Math.floor(cap()-S.stock[g]));if(k<=0)return 0;S.ug.stash[g]-=k;S.stock[g]+=k;return k}
+function genFences(){
+  const pool=illGoods().filter(g=>(G[g].lv||1)<=lvl());if(!pool.length)return;
+  S.ug.fences=[0,1,2].map(()=>({n:pick(FENCES),g:pick(pool),m:+(1.2+Math.random()*1.1).toFixed(2),risk:1+Math.floor(Math.random()*3)}));
+  S.ug.fenceAt=Date.now()+10*60000;
+}
+function fenceSell(f,e){
+  const have=Math.floor(S.stock[f.g])+(S.ug.stash[f.g]||0);if(!have){SFX.err();toast('Du hast keine '+G[f.g].n);return}
+  const n=Math.min(have,10);let k=0;
+  while(k<n&&S.stock[f.g]>=1){S.stock[f.g]--;k++}
+  while(k<n&&(S.ug.stash[f.g]||0)>0){S.ug.stash[f.g]--;k++}
+  const pay=Math.round(k*G[f.g].base*f.m);S.money+=pay;S.xp+=Math.ceil(pay/15);S.ug.heat=Math.min(100,S.ug.heat+k*.6*f.risk);
+  SFX.coin();vib(15);fx('+'+fmt(pay)+' Cr','#a3e635',e.clientX,e.clientY-30);
+  if(Math.random()<f.risk*.04){toast('🚨 '+f.n+' war ein Spitzel! Die Polizei kommt!');setTimeout(()=>{if(!OV)raid()},1200)}
+  render();
+}
+function siren(ov){let i=0;const iv=setInterval(()=>{if(!ov.alive){clearInterval(iv);return}tone(i++%2?660:880,.28,'square',.035)},300)}
+function raid(){
+  if(OV)return;S.ug.nextRaid=Date.now()+90000;
+  const ov=openOv(`<h3 style="color:#fb7185">🚨 RAZZIA!</h3><div class="sub">Die Polizei steht vor der Tür! Tippe deine Schmuggelware an, um sie ins Versteck zu schaffen. Was liegen bleibt, wird beschlagnahmt.</div><div class="msg" id="m">6</div><div id="rl"></div><div class="timer"><i id="tm" style="width:100%"></i></div>`);
+  $('ovbox').classList.add('alarm');siren(ov);vib([200,100,200]);
+  const draw=()=>{const rl=$('rl');if(!rl)return;rl.innerHTML='';
+    const list=illLager();if(!list.length){rl.innerHTML='<p class="sub" style="text-align:center">Nichts mehr im Lager – alles versteckt! 😎</p>';return}
+    list.forEach(g=>{const b=document.createElement('button');b.className='card raidc';b.style.setProperty('--c',G[g].c);
+      b.innerHTML=`<div class="art" style="width:46px;height:46px;flex-basis:46px">${ic(g,34)}</div><div class="i">${Math.floor(S.stock[g])}× ${G[g].n}<small>Versteck: ${stashUsed()} / ${stashCap()}</small></div><b>Verstecken ›</b>`;
+      b.onclick=()=>{const k=hideG(g,1e9);if(k){SFX.good();vib(15)}else{SFX.err();toast('Dein Versteck ist voll!')}draw()};rl.appendChild(b)})};
+  draw();const t0=performance.now(),D=6000;
+  (function loop(){
+    if(!ov.alive)return;const l=1-(performance.now()-t0)/D;$('tm').style.width=Math.max(0,l*100)+'%';$('m').textContent=Math.max(0,Math.ceil(l*6))+' s';
+    if(l>0)return requestAnimationFrame(loop);
+    const left=illLager();let val=0;left.forEach(g=>{val+=Math.floor(S.stock[g])*G[g].base;S.stock[g]=0});
+    const fine=Math.min(S.money,Math.round(val*.5));S.money-=fine;S.ug.heat=Math.max(0,S.ug.heat-(left.length?25:10));
+    $('ovbox').classList.remove('alarm');ov.alive=false;
+    if(left.length){SFX.crash();vib([100,50,100])}else SFX.win();
+    openOv(`<h3>${left.length?'🚔 Erwischt!':'😎 Nichts gefunden'}</h3><p class="sub">${left.length?'Beschlagnahmt: Ware im Wert von '+fmt(val)+' Cr. Strafe: '+fmt(fine)+' Cr.':'Die Polizei zieht ab. Glück gehabt – dein Verdacht sinkt etwas.'}</p><button class="btn big b" id="ok">Weiter</button>`);
+    $('ok').onclick=closeOv})();
+}
+function gangDemand(){
+  const amt=Math.max(50,Math.min(3000,Math.round(S.money*.05)));
+  openOv(`<h3>🐍 Die Kobras</h3><div class="sub">Drei Typen in Lederjacken stehen in deiner Halle. „Nettes Geschäft hast du da. Wäre schade, wenn deinem Versteck was passiert …"</div>
+    <div class="card" style="--c:#fb7185"><div class="ava" style="background:#111827">🐍</div><div class="i">Schutzgeld<small>Zahlst du, lassen sie dich in Ruhe. Lehnst du ab, kommen sie wieder.</small></div><b class="num" style="color:var(--gold)">${fmt(amt)} Cr</b></div>
+    <div class="col"><button class="btn" id="pay" ${S.money<amt?'disabled':''}>Zahlen</button><button class="btn r" id="no">Ablehnen</button></div>`);
+  $('pay').onclick=()=>{S.money-=amt;S.ug.gang=0;SFX.coin();toast('Die Kobras ziehen zufrieden ab.');closeOv()};
+  $('no').onclick=()=>{S.ug.gang++;S.ug.nextAttack=Date.now()+60000+Math.random()*60000;SFX.err();toast('„Das wirst du bereuen …"');closeOv()};
+}
+async function gangAttack(){
+  S.ug.nextAttack=0;
+  if(!stashUsed()){toast('🐍 Die Kobras haben dein Versteck durchwühlt – aber es war leer.');return}
+  const sc=await gTiming(4,'🐍 Überfall aufs Versteck!','Die Kobras brechen ein! Triff die Zone, um sie zu vertreiben.');
+  if(sc==null){const ks=Object.keys(S.ug.stash);ks.forEach(g=>S.ug.stash[g]=Math.floor(S.ug.stash[g]*.6));toast('Du bist weggelaufen – die Kobras haben 40 % deines Verstecks geklaut.');return}
+  closeOv();
+  if(sc>=.6){S.ug.gang=Math.max(0,S.ug.gang-1);SFX.win();toast('💪 Abgewehrt! Die Kobras ziehen sich zurück.')}
+  else{let lost=0;Object.keys(S.ug.stash).forEach(g=>{const k=Math.ceil(S.ug.stash[g]*.4);S.ug.stash[g]-=k;lost+=k});SFX.crash();toast('Die Kobras haben '+lost+' Teile aus deinem Versteck geklaut!')}
+  render();
+}
+function tickUnder(dt){
+  const u=S.ug,now=Date.now();u.heat=Math.max(0,u.heat-.04*dt);
+  if(lvl()<3)return;
+  if(!u.fences||now>u.fenceAt)genFences();
+  if(OV)return;
+  const exposed=illLager().length>0;
+  if((exposed||u.heat>50)&&now>u.nextRaid){u.nextRaid=now+20000;if(Math.random()<u.heat/100*.18+(exposed?.04:0))return raid()}
+  if(u.active&&now>u.nextGang){if(u.nextGang)gangDemand();u.nextGang=now+(4+Math.random()*3)*60000;return}
+  if(u.nextAttack&&now>u.nextAttack)gangAttack();
+}
+function renderUnder(){
+  const el=$('s-under'),u=S.ug;
+  el.innerHTML='<h2>Untergrund</h2><p class="sub">Schmuggelware bringt das große Geld – aber die Polizei und die Kobras schauen zu. Lagere heiße Ware im Versteck, nicht im normalen Lager!</p>';
+  if(lvl()<3){el.insertAdjacentHTML('beforeend',`<div class="card idle" style="--c:#fb7185"><div class="art"><span style="font-size:30px">🔒</span></div><div class="i">Noch zu unbekannt<small>Ab Level 3 nimmt dich die Unterwelt ernst.</small></div></div>`);return}
+  const hc=u.heat>=75?'var(--g4)':u.heat>=50?'linear-gradient(90deg,#f97316,#fb7185)':u.heat>=25?'var(--g2)':'var(--g3)';
+  const h=document.createElement('div');h.className='card';h.style.setProperty('--c','#fb7185');
+  h.innerHTML=`<div class="art"><span style="font-size:30px">🚔</span></div><div class="i">Polizei-Verdacht: ${heatTier()} <span class="chip num">${Math.round(u.heat)} %</span><div class="meter"><i style="width:${u.heat}%;background:${hc}"></i></div><small>Steigt durch Herstellen und Verkaufen. Sinkt langsam von selbst.</small></div><button class="btn ghost" ${S.money<bribeCost()||u.heat<5?'disabled':''}>Bestechen<br>${fmt(bribeCost())}</button>`;
+  h.querySelector('button').onclick=()=>{const c=bribeCost();if(S.money<c)return;S.money-=c;u.heat=Math.max(0,u.heat-25);SFX.coin();toast('Ein Beamter schaut ab jetzt weg … Verdacht −25');render()};
+  el.appendChild(h);
+  if(u.gang)el.insertAdjacentHTML('beforeend',`<div class="card broken" style="--c:#fb7185"><div class="ava" style="background:#111827">🐍</div><div class="i">Die Kobras sind sauer<small>Du hast Schutzgeld verweigert. Rechne mit einem Überfall auf dein Versteck.</small></div></div>`);
+  addSec(el,'Schwarzproduktion');
+  ST.filter(s=>s.grp==='ill').forEach(s=>{
+    const locked=s.lv>lvl(),need=Object.keys(s.in).map(k=>`<span class="${S.stock[k]>=s.in[k]?'up':'dn'}">${s.in[k]}× ${G[k].n} (${Math.floor(S.stock[k])})</span>`).join(' · ');
+    const d=document.createElement('div');d.className='card'+(locked?' idle':'');d.style.setProperty('--c',G[s.out].c);
+    d.innerHTML=`<div class="art">${ic(s.out,42)}</div><div class="i">${s.n}<small>Braucht ${need} · Verdacht +${s.heat}</small></div>`+(locked?`<button class="btn ghost" disabled>🔒 Lv ${s.lv}</button>`:`<button class="btn ${Object.keys(s.in).every(k=>S.stock[k]>=s.in[k])?'':'ghost'}">Spielen</button>`);
+    if(!locked)d.querySelector('button').onclick=()=>runStation(s);el.appendChild(d)});
+  addSec(el,'Versteck · '+stashUsed()+' / '+stashCap());
+  const sc=stashCost(),sb=document.createElement('div');sb.className='card';sb.style.setProperty('--c','#a3e635');
+  sb.innerHTML=`<div class="art"><span style="font-size:30px">🗄️</span></div><div class="i">Geheimes Versteck<small>Die Polizei findet hier nichts – aber die Kobras könnten einbrechen.</small></div><button class="btn ghost" ${S.money<sc||u.slvl>=6?'disabled':''}>${u.slvl>=6?'MAX':'+20 Platz<br>'+fmt(sc)}</button>`;
+  sb.querySelector('button').onclick=()=>{if(S.money<sc||u.slvl>=6)return;S.money-=sc;u.slvl++;SFX.buy();render()};el.appendChild(sb);
+  illGoods().filter(g=>unl(g)||S.stock[g]>0||u.stash[g]).forEach(g=>{
+    const inL=Math.floor(S.stock[g]),inS=u.stash[g]||0,d=document.createElement('div');d.className='card'+(inL?' broken':'');d.style.setProperty('--c',G[g].c);
+    d.innerHTML=`<div class="art" style="width:46px;height:46px;flex-basis:46px">${ic(g,34)}</div><div class="i">${G[g].n}<small>${inL?'<span class="dn">⚠️ Lager: '+inL+' (gefährdet!)</span>':'Lager: 0'} · Versteck: ${inS}</small></div><div class="col"><button class="btn" ${inL?'':'disabled'}>Verstecken</button><button class="btn ghost" ${inS?'':'disabled'}>Holen</button></div>`;
+    const [a,b]=d.querySelectorAll('button');a.onclick=()=>{const k=hideG(g,1e9);if(!k){SFX.err();toast('Versteck ist voll!')}else SFX.good();render()};b.onclick=()=>{unhideG(g,1e9);SFX.tick();render()};
+    el.appendChild(d)});
+  addSec(el,'Hehler · neue Kontakte in '+fmtT(u.fenceAt-Date.now()));
+  (u.fences||[]).forEach(f=>{const have=Math.floor(S.stock[f.g])+(u.stash[f.g]||0),d=document.createElement('div');d.className='card';d.style.setProperty('--c','#a3e635');
+    d.innerHTML=`<div class="ava" style="background:${nameColor(f.n)}">${f.n.split(' ').pop()[0]}</div><div class="i">${f.n}<small>Kauft ${G[f.g].n} für <b style="color:var(--gold)">${Math.round(G[f.g].base*f.m)} Cr</b>/Stk · Risiko ${'🔥'.repeat(f.risk)}</small><small>Du hast: ${have}</small></div><button class="btn" ${have?'':'disabled'}>Verkaufen</button>`;
+    d.querySelector('button').onclick=e=>fenceSell(f,e);el.appendChild(d)});
+}
 function addSec(el,t){const h=document.createElement('div');h.className='sec';h.textContent=t;el.appendChild(h)}
 function badges(){
   const set=(s,on)=>{const b=document.querySelector(`#nav [data-s="${s}"]`);if(b)b.classList.toggle('dot',!!on)};
   set('trade',custQ.length>0||S.orders.some(canDeliver));
+  set('under',lvl()>=3&&illLager().length>0);
   set('farm',S.farm.plots.some(p=>p.pest||p.ready||(p.c&&p.w<=0))||S.cellar.items.some(i=>Date.now()>=i.end));
 }
 
 (function(){const dt=Math.min((Date.now()-S.last)/1000,8*3600);if(dt<30)return;
-  offlineB(dt);tickRivals(dt);offlineFarm(dt);const s=offlineShop(dt);
+  offlineB(dt);tickRivals(dt);offlineFarm(dt);S.ug.heat=Math.max(0,S.ug.heat-.04*dt);const s=offlineShop(dt);
   if(s>0)setTimeout(()=>toast('Dein Laden hat in deiner Abwesenheit für '+fmt(s)+' Credits verkauft.'),4200)})();
 function buildOrUpgrade(b,e){
   const s=bst(b),c=bCost(b);if(s.lvl>=BMAX||S.money<c||(b.lv&&b.lv>lvl()))return;
@@ -1362,6 +1549,7 @@ async function runStation(s,srcEl){
   S.combo=score>=.85?S.combo+1:0;
   out=Math.min(out,Math.floor(cap()-S.stock[s.out]));
   S.stock[s.out]+=out;S.xp+=out*(G[s.out].base>10?4:1)+1;
+  if(s.heat){S.ug.heat=Math.min(100,S.ug.heat+s.heat);S.ug.active=1}
   if(out>0){SFX.win();vib([30,40,60]);fx('+'+out+' '+G[s.out].n,G[s.out].c);burst(innerWidth/2,innerHeight*.4,G[s.out].c,20)}
   else{SFX.crash();fx('Fehlschlag','#fb7185')}
   toast((out>0?`Score ${Math.round(score*100)}% – ${out}× ${G[s.out].n} hergestellt`:'Material verloren 😬 Versuch es nochmal!')+(S.combo>=2?` · 🔥 Combo ×${S.combo}`:''));
@@ -1633,12 +1821,12 @@ function render(){
   if(l>lastLvl){const was=lastLvl;lastLvl=l;SFX.win();fx('LEVEL '+l,'#22d3ee');
     toast(was<4&&l>=4?'⭐ Level '+l+'! Elektronik freigeschaltet: Baue Smartphones!':'⭐ Level '+l+' erreicht!')}
   if(OV)return;
-  ({work:renderWork,farm:renderFarm,bld:renderBld,shop:renderShop,orders:renderOrders,ship:renderShip,market:renderMarket})[cur]();
+  ({work:renderWork,farm:renderFarm,bld:renderBld,shop:renderShop,orders:renderOrders,ship:renderShip,market:renderMarket,export:renderExport,under:renderUnder})[cur]();
   if(isTrade(cur))tradeTabs($('s-'+cur));
   badges();
 }
 (function loop(){shown+=(S.money-shown)*.18;if(Math.abs(S.money-shown)<.5)shown=S.money;$('money').textContent=fmt(Math.floor(shown));requestAnimationFrame(loop)})();
-const TRADE=[['market','Markt'],['shop','Laden'],['orders','Aufträge'],['ship','Transport']];
+const TRADE=[['market','Markt'],['shop','Laden'],['orders','Aufträge'],['ship','Transport'],['export','Export']];
 let tradeSub='market';
 const isTrade=k=>TRADE.some(t=>t[0]===k);
 function go(k){
@@ -1670,7 +1858,7 @@ setInterval(()=>{
     const gl=GKU(),g=gl[Math.floor(Math.random()*gl.length)],up=Math.random()<0.6;mood[g]=up?2.2:0.45;setTimeout(()=>mood[g]=1,35000);
     const rv=pick(S.rivals).n;
     toast(up?`🔥 ${rv} kauft ${G[g].n} auf – 35 s lang hohe Preise!`:`❄️ ${rv} überschwemmt den Markt mit ${G[g].n} – Preissturz!`);SFX.coin()}
-  tickOrders();tickShop(dt);tickRivals(dt);tickFarm(dt);
+  tickOrders();tickShop(dt);tickRivals(dt);tickFarm(dt);tickExport();tickUnder(dt);
   if(!OV&&!pressing&&cur!=='ship'&&cur!=='work')render();else badges();
   S.last=Date.now();try{localStorage.setItem(SAVE,JSON.stringify(S))}catch(e){}
 },1000);
