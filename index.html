@@ -53,6 +53,12 @@
   .btn.ghost{background:var(--glass2);color:var(--ink);box-shadow:none;border:1px solid var(--line)}
   .btn:disabled{background:rgba(255,255,255,.07);color:#6b7692;box-shadow:none;cursor:default}
   .btn.big{width:100%;padding:18px;font-size:19px;border-radius:18px}
+  .sec{margin:18px 2px 0;font-size:11px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--mut)}
+  .card.idle .art{filter:grayscale(.6);opacity:.8}
+  .card.broken{border-color:var(--bad);animation:bk 1s infinite alternate}@keyframes bk{to{box-shadow:0 0 22px -2px rgba(251,113,133,.6)}}
+  .col{display:flex;flex-direction:column;gap:6px;align-items:stretch}.col .btn{padding:9px 12px;font-size:13px;white-space:nowrap}
+  .btn.pulse{animation:pl .6s infinite alternate}@keyframes pl{to{transform:scale(1.08)}}
+  nav button{font-size:10px !important}
   .chip{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:700;background:var(--glass2)}
   .up{color:var(--ok)}.dn{color:var(--bad)}
   .meter{height:8px;border-radius:6px;background:rgba(255,255,255,.08);overflow:hidden;margin-top:8px}
@@ -129,6 +135,7 @@
   <symbol id="i-truck" viewBox="0 0 64 64"><ellipse cx="32" cy="55" rx="27" ry="4" fill="#0006"/><rect x="3" y="18" width="36" height="28" rx="4" fill="url(#gSteel)"/><path d="M39 26h12l9 10v10H39z" fill="url(#gRed)"/><path d="M43 29h7l5 6h-12z" fill="#bfe8ff"/><circle cx="14" cy="48" r="7" fill="#111827"/><circle cx="14" cy="48" r="3" fill="#9aa4b8"/><circle cx="49" cy="48" r="7" fill="#111827"/><circle cx="49" cy="48" r="3" fill="#9aa4b8"/></symbol>
   <symbol id="i-hafen" viewBox="0 0 64 64"><path d="M4 42h56l-9 14H13z" fill="url(#gBlue)"/><rect x="14" y="26" width="14" height="16" rx="2" fill="url(#gRed)"/><rect x="30" y="30" width="14" height="12" rx="2" fill="url(#gGold)"/><path d="M52 8v34M52 8l-14 8" stroke="#cbd5e1" stroke-width="3" stroke-linecap="round"/></symbol>
   <symbol id="i-stadt" viewBox="0 0 64 64"><rect x="6" y="28" width="16" height="28" rx="2" fill="url(#gGrayD)"/><rect x="26" y="10" width="20" height="46" rx="2" fill="url(#gGray)"/><rect x="48" y="32" width="10" height="24" rx="2" fill="url(#gGrayD)"/><g fill="#ffe08a"><rect x="10" y="33" width="4" height="4"/><rect x="16" y="33" width="3" height="4"/><rect x="31" y="16" width="4" height="4"/><rect x="38" y="16" width="4" height="4"/><rect x="31" y="26" width="4" height="4"/><rect x="38" y="36" width="4" height="4"/></g></symbol>
+  <symbol id="i-shop" viewBox="0 0 64 64"><ellipse cx="32" cy="57" rx="26" ry="4" fill="#0006"/><rect x="8" y="28" width="48" height="26" rx="3" fill="url(#gGray)"/><rect x="14" y="34" width="22" height="20" rx="2" fill="#1a2140"/><rect x="40" y="34" width="12" height="12" rx="2" fill="#bfe8ff"/><path d="M5 16h54l-4 14H9z" fill="#fff"/><path d="M9 16h8l-2 14H9zM25 16h8l-1 14h-8zM41 16h8l1 14h-8z" fill="url(#gRed)"/><path d="M14 36h18" stroke="#fbbf24" stroke-width="2" opacity=".8"/></symbol>
   <symbol id="i-coin" viewBox="0 0 64 64"><circle cx="32" cy="32" r="24" fill="url(#gGold)"/><circle cx="32" cy="32" r="17" fill="none" stroke="#b45309" stroke-width="3" opacity=".55"/><path d="M26 22h12M26 42h12M32 20v24" stroke="#b45309" stroke-width="3.5" stroke-linecap="round" opacity=".7"/></symbol>
   <symbol id="i-lvl" viewBox="0 0 64 64"><path d="M32 6l7 16 17 2-13 12 4 17-15-9-15 9 4-17L8 24l17-2z" fill="url(#gGold)"/></symbol>
 </defs></svg>
@@ -147,6 +154,7 @@
 
 <main>
   <section class="screen on" id="s-work"></section>
+  <section class="screen" id="s-bld"></section>
   <section class="screen" id="s-store"></section>
   <section class="screen" id="s-ship"></section>
   <section class="screen" id="s-market"></section>
@@ -155,6 +163,7 @@
 
 <nav id="nav">
   <button class="on" data-s="work"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/></svg>Werkstatt</button>
+  <button data-s="bld"><svg viewBox="0 0 24 24"><path d="M3 21h18M5 21V9l5-3v15M10 21V12l5-3v12M15 21V4h4v17"/></svg>Betriebe</button>
   <button data-s="store"><svg viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5v8l9 5 9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg>Lager</button>
   <button data-s="ship"><svg viewBox="0 0 24 24"><path d="M2 6h12v10H2zM14 10h4l4 3v3h-8z"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg>Transport</button>
   <button data-s="market"><svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg>Markt</button>
@@ -187,18 +196,30 @@ const UP=[
  {id:'pick',n:'Spitzhacke',d:'+30% Ertrag beim Abbauen',base:60,i:'erz',c:'#f59e0b'},
  {id:'bench',n:'Werkbank',d:'+30% Ertrag bei Presse, Ofen & Montage',base:120,i:'maschine',c:'#fbbf24'},
  {id:'truck',n:'LKW-Ladefläche',d:'+10 Plätze pro Fahrt',base:80,i:'truck',c:'#22d3ee'},
- {id:'store',n:'Lagerhalle',d:'+100 Lagerplatz pro Ware',base:50,i:'ziegel',c:'#ef4444'},
- {id:'worker',n:'Arbeiter',d:'Fördern Rohstoffe automatisch (+0.08/s je Stufe)',base:200,i:'kohle',c:'#94a3b8'}
+ {id:'store',n:'Lagerhalle',d:'+100 Lagerplatz pro Ware',base:50,i:'ziegel',c:'#ef4444'}
 ];
+const BLD=[
+ {id:'lehmgrube',kind:'mine',n:'Lehmgrube',out:'lehm',rate:0.3,base:100},
+ {id:'erzmine',kind:'mine',n:'Erzmine',out:'erz',rate:0.25,base:150},
+ {id:'kohlemine',kind:'mine',n:'Kohlemine',out:'kohle',rate:0.25,base:150},
+ {id:'ziegelei',kind:'fac',n:'Ziegelei',in:{lehm:2},out:'ziegel',t:6,base:400},
+ {id:'stahlwerk',kind:'fac',n:'Stahlwerk',in:{erz:2,kohle:1},out:'stahl',t:8,base:1200},
+ {id:'maschinenfabrik',kind:'fac',n:'Maschinenfabrik',in:{stahl:3,ziegel:2},out:'maschine',t:14,base:4000},
+ {id:'baumarkt',kind:'shop',n:'Baumarkt',goods:['lehm','ziegel'],base:300,c:'#ef4444'},
+ {id:'eisenwaren',kind:'shop',n:'Eisenwarenhandel',goods:['erz','kohle','stahl'],base:800,c:'#38bdf8'},
+ {id:'maschinenhandel',kind:'shop',n:'Maschinenhandel',goods:['maschine'],base:2500,c:'#fbbf24'}
+];
+const BMAX=10,WEAR=100/480,SHOPT=5,KEEPS=[0,10,25,50,100];
 const SAVE='industry-action-v2';
 const $=id=>document.getElementById(id);
 const fmt=n=>n>=1e6?(n/1e6).toFixed(2)+'M':n>=1e4?(n/1e3).toFixed(1)+'k':(Math.round(n*10)/10).toString();
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 
-let S={money:30,xp:0,stock:{},up:{},last:Date.now(),hist:{},mute:false};
+let S={money:30,xp:0,stock:{},up:{},last:Date.now(),hist:{},mute:false,b:{}};
 try{const l=JSON.parse(localStorage.getItem(SAVE));if(l&&l.stock)S=Object.assign(S,l)}catch(e){}
 GK.forEach(g=>{if(S.stock[g]==null)S.stock[g]=0;if(!S.hist[g])S.hist[g]=[]});
 UP.forEach(u=>{if(S.up[u.id]==null)S.up[u.id]=0});
+BLD.forEach(b=>{if(!S.b[b.id])S.b[b.id]={lvl:0,hp:100,p:0,keep:0,cust:0,nc:0,warned:0}});
 const mood={},sat={};GK.forEach(g=>{mood[g]=1;sat[g]=0});
 const lvl=()=>1+Math.floor(Math.sqrt(S.xp/40));
 const cap=()=>100+100*S.up.store;
@@ -229,10 +250,70 @@ let toastT;function toast(t){const e=$('toast');e.textContent=t;e.classList.add(
 $('snd').onclick=()=>{S.mute=!S.mute;$('snd').textContent=S.mute?'🔇':'🔊';if(!S.mute)SFX.good()};
 $('snd').textContent=S.mute?'🔇':'🔊';
 
-/* offline: Arbeiter */
-(function(){const dt=Math.min((Date.now()-S.last)/1000,8*3600);if(dt<30||!S.up.worker)return;
-  ['erz','kohle','lehm'].forEach(g=>S.stock[g]=Math.min(cap(),S.stock[g]+0.08*S.up.worker*dt));
-  setTimeout(()=>toast('Deine Arbeiter haben in deiner Abwesenheit Rohstoffe gefördert.'),400)})();
+/* ===== Betriebe: Minen, Fabriken, Geschäfte ===== */
+const bst=b=>S.b[b.id];
+const bc=b=>b.c||G[b.out].c;
+const bCost=b=>Math.ceil(b.base*Math.pow(1.9,bst(b).lvl));
+const mineRate=b=>b.rate*bst(b).lvl;
+const facTime=b=>b.t/(1+0.4*(bst(b).lvl-1));
+const shopPrem=b=>1.12+0.03*bst(b).lvl;
+function sellShop(b,units){
+  const s=bst(b);let earned=0;
+  for(const g of b.goods)while(units>0&&S.stock[g]-s.keep>=1){earned+=price(g)*shopPrem(b);S.stock[g]-=1;sat[g]+=1;units--}
+  S.money+=earned;S.xp+=Math.ceil(earned/20);return earned;
+}
+function tickB(dt){
+  const now=Date.now();
+  BLD.forEach(b=>{
+    const s=bst(b);if(!s.lvl)return;
+    if(b.kind!=='shop'){
+      s.hp=Math.max(0,s.hp-WEAR*dt);
+      if(s.hp<=0){if(!s.warned){s.warned=1;toast('💥 '+b.n+' ist ausgefallen – Wartung nötig!');SFX.crash();vib([60,30,60])}return}
+      s.warned=0;
+    }
+    if(b.kind==='mine')S.stock[b.out]=Math.min(cap(),S.stock[b.out]+mineRate(b)*dt);
+    else if(b.kind==='fac'){
+      if(s.p<=0&&S.stock[b.out]<cap()&&Object.keys(b.in).every(k=>S.stock[k]>=b.in[k])){for(const k in b.in)S.stock[k]-=b.in[k];s.p=0.001}
+      if(s.p>0){s.p+=dt;if(s.p>=facTime(b)){s.p=0;S.stock[b.out]=Math.min(cap(),S.stock[b.out]+1);S.xp+=1}}
+    }else{
+      s.p+=dt;if(s.p>=SHOPT){s.p=0;sellShop(b,s.lvl)}
+      if(!s.nc)s.nc=now+20000;
+      if(!s.cust&&now>s.nc){s.cust=now+9000;s.nc=now+25000+Math.random()*30000;SFX.coin();toast('🛎️ Kunde wartet im '+b.n+'!')}
+      if(s.cust&&now>s.cust)s.cust=0;
+    }
+  });
+}
+function offlineB(dt){
+  const m0=S.money,order=['mine','fac','shop'].flatMap(k=>BLD.filter(b=>b.kind===k));let any=false;
+  order.forEach(b=>{
+    const s=bst(b);if(!s.lvl)return;any=true;
+    if(b.kind==='shop'){sellShop(b,Math.floor(dt/SHOPT)*s.lvl);return}
+    const t=Math.min(dt,s.hp/WEAR);s.hp=Math.max(0,s.hp-WEAR*dt);
+    if(b.kind==='mine'){S.stock[b.out]=Math.min(cap(),S.stock[b.out]+mineRate(b)*t);return}
+    let cyc=Math.floor(t/facTime(b));
+    for(const k in b.in)cyc=Math.min(cyc,Math.floor(S.stock[k]/b.in[k]));
+    cyc=Math.max(0,Math.min(cyc,cap()-Math.floor(S.stock[b.out])));
+    for(const k in b.in)S.stock[k]-=b.in[k]*cyc;S.stock[b.out]+=cyc;
+  });
+  GK.forEach(g=>sat[g]=0);
+  if(any)setTimeout(()=>toast('Willkommen zurück! Deine Betriebe haben '+fmt(S.money-m0)+' Credits erwirtschaftet.'),500);
+}
+(function(){const dt=Math.min((Date.now()-S.last)/1000,8*3600);if(dt>=30)offlineB(dt)})();
+function buildOrUpgrade(b,e){
+  const s=bst(b),c=bCost(b);if(s.lvl>=BMAX||S.money<c)return;
+  S.money-=c;s.lvl++;if(s.lvl===1)s.hp=100;S.xp+=10*s.lvl;SFX.buy();vib(25);
+  burst(e.clientX,e.clientY,bc(b),16);fx(s.lvl===1?'Gebaut!':'Stufe '+s.lvl,bc(b));render();
+}
+async function repairB(b){
+  const sc=await gTiming(3,'Wartung · '+b.n,'Triff die Zone – je besser, desto mehr Zustand.');
+  if(sc==null)return;closeOv();
+  const s=bst(b);s.hp=Math.min(100,40+60*sc);s.warned=0;SFX.win();fx('Zustand '+Math.round(s.hp)+'%','#34d399');render();
+}
+function serveCustomer(b,e){
+  const s=bst(b);if(!s.cust||s.cust<Date.now())return;
+  const bonus=Math.round(25+30*s.lvl+Math.random()*20);S.money+=bonus;S.xp+=5;s.cust=0;
+  SFX.coin();vib(20);burst(e.clientX,e.clientY,'#fbbf24',16);fx('+'+bonus+' Trinkgeld','#fbbf24',e.clientX,e.clientY-30);render();
+}
 
 /* ===== Overlay ===== */
 let OV=null;
@@ -244,8 +325,8 @@ const pop=(el,t)=>{el.textContent=t;el.classList.remove('pop');void el.offsetWid
 const center=el=>{const r=el.getBoundingClientRect();return [r.left+r.width/2,r.top+r.height/2]};
 
 /* ===== Minispiele (Score 0..1, null = abgebrochen) ===== */
-function gTiming(rounds=6){return new Promise(res=>{
-  const ov=openOv(xbtn()+`<h3>Abbau</h3><div class="sub">Stoppe den Marker in der grünen Zone. Die Mitte zählt perfekt.</div><div class="dots" id="dots">${'<i></i>'.repeat(rounds)}</div><div class="msg" id="m">Los!</div><div class="track" id="b"><div class="zone" id="z"></div><div class="mark" id="k"></div></div><button class="btn big" id="hit">SCHLAG!</button>`);
+function gTiming(rounds=6,title='Abbau',sub='Stoppe den Marker in der grünen Zone. Die Mitte zählt perfekt.'){return new Promise(res=>{
+  const ov=openOv(xbtn()+`<h3>${title}</h3><div class="sub">${sub}</div><div class="dots" id="dots">${'<i></i>'.repeat(rounds)}</div><div class="msg" id="m">Los!</div><div class="track" id="b"><div class="zone" id="z"></div><div class="mark" id="k"></div></div><button class="btn big" id="hit">SCHLAG!</button>`);
   bindX();ov.abort=()=>res(null);
   let pos=0,dir=1,speed=0.9,zone=0.2,zc=0.5,round=0,pts=0,last=performance.now();
   const newZone=()=>{zc=0.2+Math.random()*0.6;$('z').style.left=((zc-zone/2)*100)+'%';$('z').style.width=(zone*100)+'%'};newZone();
@@ -469,6 +550,31 @@ function renderMarket(){
     const tag=mood[g]>1.8?'<span class="chip up">🔥 BOOM</span>':mood[g]<.6?'<span class="chip dn">❄️ CRASH</span>':'';
     c.innerHTML=`<div class="art">${ic(g,42)}</div><div class="i">${G[g].n} ${tag}<small><b class="num" style="font-size:17px;color:var(--ink)">${p.toFixed(2)}</b> / Stk · <span class="${d>=1?'up':'dn'}">${d>=1?'▲':'▼'} ${Math.round(Math.abs(d-1)*100)}%</span></small></div>${spark(g)}`;el.appendChild(c)});
 }
+function renderBld(){
+  const el=$('s-bld');el.innerHTML='<h2>Betriebe</h2><p class="sub">Baue Minen, Fabriken und Geschäfte aus. Sie arbeiten automatisch – auch wenn du offline bist. Kümmere dich um die Wartung!</p>';
+  [['mine','Rohstoffe'],['fac','Fabriken'],['shop','Geschäfte']].forEach(([kind,title])=>{
+    const h=document.createElement('div');h.className='sec';h.textContent=title;el.appendChild(h);
+    BLD.filter(b=>b.kind===kind).forEach(b=>{
+      const s=bst(b),built=s.lvl>0,max=s.lvl>=BMAX,cost=bCost(b),broken=built&&kind!=='shop'&&s.hp<=0;
+      const d=document.createElement('div');d.className='card'+(broken?' broken':'')+(built?'':' idle');d.style.setProperty('--c',bc(b));
+      let line='';
+      if(kind==='mine')line=built?`+${mineRate(b).toFixed(2)}/s ${G[b.out].n}`:`Fördert ${b.rate}/s je Stufe`;
+      if(kind==='fac')line=Object.keys(b.in).map(k=>b.in[k]+'× '+G[k].n).join(' + ')+` → 1× ${G[b.out].n} · ${(built?facTime(b):b.t).toFixed(1)}s`;
+      if(kind==='shop')line=`Verkauft ${built?s.lvl:1} Stk / ${SHOPT}s · Preis +${Math.round(((built?shopPrem(b):1.15)-1)*100)}%<br>${b.goods.map(g=>G[g].n).join(', ')}`;
+      let extra='';
+      if(built&&kind!=='shop'){const hc=s.hp>50?'var(--ok)':s.hp>20?'var(--gold)':'var(--bad)';extra+=`<div class="meter" style="height:6px"><i style="width:${s.hp}%;background:${hc}"></i></div><small>${broken?'⚠️ Ausgefallen – Wartung nötig':'Zustand '+Math.round(s.hp)+'%'}</small>`}
+      if(built&&kind==='fac'){const t=facTime(b);extra+=`<div class="meter" style="height:6px"><i style="width:${s.p>0?Math.min(100,s.p/t*100):0}%;background:${bc(b)};transition:width 1s linear"></i></div>`}
+      d.innerHTML=`<div class="art">${ic(kind==='shop'?'shop':b.out,42)}</div><div class="i">${b.n}${built?' <span class="chip">Lv '+s.lvl+'</span>':''}<small>${line}</small>${extra}<div class="pips">${Array.from({length:BMAX},(_,k)=>`<i class="${k<s.lvl?'on':''}"></i>`).join('')}</div></div><div class="col"></div>`;
+      const col=d.querySelector('.col');
+      const mk=(t,cls,f,dis)=>{const bt=document.createElement('button');bt.className='btn '+cls;bt.innerHTML=t;bt.disabled=!!dis;bt.onclick=f;col.appendChild(bt)};
+      if(s.cust&&s.cust>Date.now())mk('🛎️ Kunde!','a pulse',e=>serveCustomer(b,e));
+      if(!max)mk(built?'⬆ '+fmt(cost):'Bauen '+fmt(cost),built?'b':'',e=>buildOrUpgrade(b,e),S.money<cost);else mk('MAX','ghost',null,true);
+      if(built&&kind!=='shop'&&s.hp<85)mk('🔧 Wartung',broken?'r':'ghost',()=>repairB(b));
+      if(built&&kind==='shop')mk('Vorrat ≥ '+s.keep,'ghost',()=>{s.keep=KEEPS[(KEEPS.indexOf(s.keep)+1)%KEEPS.length];render()});
+      el.appendChild(d);
+    });
+  });
+}
 function renderUpg(){
   const el=$('s-upg');el.innerHTML='<h2>Upgrades</h2><p class="sub">Investiere deine Credits in bessere Ausrüstung.</p>';
   UP.forEach(u=>{const d=document.createElement('div'),cost=upCost(u);d.className='card';d.style.setProperty('--c',u.c);
@@ -482,7 +588,7 @@ function render(){
   $('ringc').style.strokeDashoffset=113.1*(1-Math.max(0,Math.min(1,(S.xp-a)/(b-a))));
   if(l>lastLvl){lastLvl=l;SFX.win();toast('⭐ Level '+l+' erreicht!');fx('LEVEL '+l,'#22d3ee')}
   if(OV)return;
-  ({work:renderWork,store:renderStore,ship:renderShip,market:renderMarket,upg:renderUpg})[cur]();
+  ({work:renderWork,bld:renderBld,store:renderStore,ship:renderShip,market:renderMarket,upg:renderUpg})[cur]();
 }
 (function loop(){shown+=(S.money-shown)*.18;if(Math.abs(S.money-shown)<.5)shown=S.money;$('money').textContent=fmt(Math.floor(shown));requestAnimationFrame(loop)})();
 document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{
@@ -490,16 +596,19 @@ document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{
   document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id==='s-'+cur));$('s-'+cur).scrollTop=0;render()});
 
 /* ===== Hintergrund: Arbeiter, Markt, Events ===== */
-let nextEv=Date.now()+40000,histT=0;
+let nextEv=Date.now()+40000,histT=0,pressing=false;
+addEventListener('pointerdown',()=>pressing=true,true);
+addEventListener('pointerup',()=>pressing=false,true);
+addEventListener('pointercancel',()=>pressing=false,true);
 setInterval(()=>{
   const dt=1;
-  if(S.up.worker)['erz','kohle','lehm'].forEach(g=>S.stock[g]=Math.min(cap(),S.stock[g]+0.08*S.up.worker*dt));
+  tickB(dt);
   GK.forEach(g=>{sat[g]*=Math.exp(-dt/45);mood[g]+=(1-mood[g])*0.01+(Math.random()-0.5)*0.03;mood[g]=Math.max(0.35,mood[g])});
   if((histT+=dt)>=4){histT=0;GK.forEach(g=>{S.hist[g].push(price(g));if(S.hist[g].length>30)S.hist[g].shift()})}
   if(Date.now()>nextEv){nextEv=Date.now()+50000+Math.random()*50000;
     const g=GK[Math.floor(Math.random()*GK.length)],up=Math.random()<0.6;mood[g]=up?2.2:0.45;setTimeout(()=>mood[g]=1,35000);
     toast(up?`🔥 Boom! ${G[g].n} ist 35s lang sehr gefragt – schnell liefern!`:`❄️ Preissturz bei ${G[g].n} – lieber lagern!`);SFX.coin()}
-  if(!OV&&cur!=='ship'&&cur!=='work')render();
+  if(!OV&&!pressing&&cur!=='ship'&&cur!=='work')render();
   S.last=Date.now();try{localStorage.setItem(SAVE,JSON.stringify(S))}catch(e){}
 },1000);
 render();
