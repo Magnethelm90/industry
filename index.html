@@ -56,6 +56,41 @@
   .holes{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:8px 0 14px}
   .hole{aspect-ratio:1;max-width:100%;border:0;padding:0;border-radius:50%;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 58%,#03050b 0 46%,#2a3150 47% 62%,#171d36 63%);box-shadow:inset 0 6px 14px #000c,0 2px 0 #ffffff10}
   .rise{display:flex;animation:rise .18s ease-out}@keyframes rise{from{transform:translateY(18px) scale(.4);opacity:0}}
+  .amt{display:flex;gap:6px;margin:8px 0 2px}
+  .chip2{flex:1;padding:9px 0;border-radius:12px;border:1px solid var(--line);background:var(--glass);color:var(--ink);font-weight:800;font-size:13px}
+  .chip2.on{background:var(--g1);border-color:transparent;color:#fff}
+  .mtop{display:flex;align-items:center;justify-content:space-between;gap:8px}.mtop>span{min-width:0}
+  .mrow{display:flex;gap:6px;margin-top:8px}
+  .btn.sm{flex:1;padding:7px 6px;font-size:12.5px;border-radius:12px}.btn.sm span{display:block;font-size:10.5px;font-weight:700;opacity:.85;margin-top:1px}
+  .mixwrap{display:flex;gap:16px;justify-content:center;align-items:flex-end;margin:6px 0}
+  .beaker{position:relative;width:120px;height:190px;border:3px solid rgba(203,213,225,.6);border-top:0;border-radius:0 0 24px 24px;overflow:hidden;background:rgba(255,255,255,.04)}
+  .liq{position:absolute;inset:0;display:flex;flex-direction:column-reverse}
+  .liq i{display:block;flex:0 0 auto;box-shadow:inset 0 2px 0 rgba(255,255,255,.25)}
+  .glass{position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,rgba(255,255,255,.18),transparent 28%,transparent 72%,rgba(255,255,255,.1))}
+  .ruler{width:22px;height:190px;display:flex;flex-direction:column-reverse;border-radius:6px;overflow:hidden;border:1px solid var(--line)}
+  .ruler i{display:block;flex:0 0 auto;opacity:.85;border-top:2px dashed rgba(255,255,255,.7)}
+  .pours{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+  .pour{height:80px;border:0;border-radius:16px;color:#fff;font-weight:800;font-size:14px;touch-action:none;background:linear-gradient(160deg,var(--pc),color-mix(in srgb,var(--pc) 45%,#000));box-shadow:inset 0 2px 0 rgba(255,255,255,.35);transition:transform .08s}
+  .pour small{display:block;font-weight:600;font-size:11px;opacity:.9;margin-top:4px}
+  .pour.on{transform:scale(.94);box-shadow:0 0 24px var(--pc)}
+  .pcb{position:relative;aspect-ratio:1;max-width:100%;margin:8px 0 12px;border-radius:20px;border:1px solid rgba(34,197,94,.35);box-shadow:inset 0 4px 16px #0008;
+    background:linear-gradient(90deg,transparent 47%,rgba(250,204,21,.18) 47% 53%,transparent 53%) 0 0/50px 50px,linear-gradient(0deg,transparent 47%,rgba(250,204,21,.18) 47% 53%,transparent 53%) 0 0/50px 50px,radial-gradient(circle at 30% 20%,#1f8a4c,#0b3d22)}
+  .spad{position:absolute;transform:translate(-50%,-50%);width:60px;height:60px;padding:0;border:0;border-radius:50%;display:flex;align-items:center;justify-content:center;touch-action:none;background:conic-gradient(var(--rc,#fbbf24) calc(var(--p,0) * 1%),rgba(0,0,0,.45) 0)}
+  .spad::after{content:"";width:30px;height:30px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fde68a,#ca8a04 60%,#713f12)}
+  .spad.wait{opacity:.35;pointer-events:none}
+  .spad.act{animation:pg .6s infinite alternate}@keyframes pg{from{box-shadow:0 0 0 2px rgba(255,255,255,.3)}to{box-shadow:0 0 0 6px rgba(255,255,255,.15),0 0 26px #fbbf24}}
+  .spad.ok,.spad.bad{background:none;pointer-events:none;animation:none}
+  .spad.ok::after{background:radial-gradient(circle at 35% 30%,#fff,#cbd5e1 40%,#64748b)}
+  .spad.bad::after{background:radial-gradient(circle,#1f2937,#000)}
+  .phonewrap{display:flex;gap:12px;align-items:center}
+  .phone{position:relative;flex:0 0 46%;max-width:170px}.phone svg{display:block;width:100%;height:auto;filter:drop-shadow(0 10px 18px #000a)}
+  .tray{flex:1;min-width:0;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .part{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 2px;border-radius:14px;border:1px solid var(--line);background:var(--glass2);color:var(--ink);font-size:10.5px;font-weight:700;touch-action:none;cursor:grab}
+  .part.gone{visibility:hidden}
+  .drag{position:fixed;z-index:200;pointer-events:none;transform:translate(-50%,-50%) scale(1.15);filter:drop-shadow(0 10px 14px #000a)}
+  .screw{position:absolute;transform:translate(-50%,-50%);width:30px;height:30px;padding:0;border:0;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#94a3b8 50%,#334155);box-shadow:0 0 0 3px rgba(251,191,36,.7),0 3px 6px #000a;transition:transform .25s}
+  .screw::after{content:"";position:absolute;left:7px;right:7px;top:50%;height:3px;margin-top:-1.5px;background:#1e293b;border-radius:2px}
+  .screw.ok{transform:translate(-50%,-50%) rotate(270deg) scale(.75);box-shadow:0 2px 4px #000a;pointer-events:none}
   .wall{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;padding:6px;margin:8px 0 12px;border-radius:16px;background:#0b0f1d;box-shadow:inset 0 4px 14px #000a}
   .wall.slide{animation:slide .35s ease-out}@keyframes slide{from{transform:translateX(40px);opacity:0}}
   .tile{position:relative;aspect-ratio:1;max-width:100%;border:0;padding:0;border-radius:8px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:linear-gradient(145deg,#5b6274,#2f3544);box-shadow:inset 0 2px 0 #ffffff22,inset 0 -3px 0 #0005}
@@ -153,6 +188,23 @@
   <symbol id="i-hafen" viewBox="0 0 64 64"><path d="M4 42h56l-9 14H13z" fill="url(#gBlue)"/><rect x="14" y="26" width="14" height="16" rx="2" fill="url(#gRed)"/><rect x="30" y="30" width="14" height="12" rx="2" fill="url(#gGold)"/><path d="M52 8v34M52 8l-14 8" stroke="#cbd5e1" stroke-width="3" stroke-linecap="round"/></symbol>
   <symbol id="i-stadt" viewBox="0 0 64 64"><rect x="6" y="28" width="16" height="28" rx="2" fill="url(#gGrayD)"/><rect x="26" y="10" width="20" height="46" rx="2" fill="url(#gGray)"/><rect x="48" y="32" width="10" height="24" rx="2" fill="url(#gGrayD)"/><g fill="#ffe08a"><rect x="10" y="33" width="4" height="4"/><rect x="16" y="33" width="3" height="4"/><rect x="31" y="16" width="4" height="4"/><rect x="38" y="16" width="4" height="4"/><rect x="31" y="26" width="4" height="4"/><rect x="38" y="36" width="4" height="4"/></g></symbol>
   <symbol id="i-shop" viewBox="0 0 64 64"><ellipse cx="32" cy="57" rx="26" ry="4" fill="#0006"/><rect x="8" y="28" width="48" height="26" rx="3" fill="url(#gGray)"/><rect x="14" y="34" width="22" height="20" rx="2" fill="#1a2140"/><rect x="40" y="34" width="12" height="12" rx="2" fill="#bfe8ff"/><path d="M5 16h54l-4 14H9z" fill="#fff"/><path d="M9 16h8l-2 14H9zM25 16h8l-1 14h-8zM41 16h8l1 14h-8z" fill="url(#gRed)"/><path d="M14 36h18" stroke="#fbbf24" stroke-width="2" opacity=".8"/></symbol>
+  <linearGradient id="gSand" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fde68a"/><stop offset="1" stop-color="#b45309"/></linearGradient>
+  <linearGradient id="gCopper" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fed7aa"/><stop offset=".5" stop-color="#f97316"/><stop offset="1" stop-color="#9a3412"/></linearGradient>
+  <linearGradient id="gOil" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#4c1d95"/><stop offset=".45" stop-color="#8b5cf6"/><stop offset="1" stop-color="#2e1065"/></linearGradient>
+  <linearGradient id="gPlast" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fbcfe8"/><stop offset="1" stop-color="#be185d"/></linearGradient>
+  <linearGradient id="gPh" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d8b4fe"/><stop offset="1" stop-color="#6d28d9"/></linearGradient>
+  <linearGradient id="gScr" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#22d3ee"/><stop offset=".5" stop-color="#7c5cff"/><stop offset="1" stop-color="#e879f9"/></linearGradient>
+  <symbol id="i-sand" viewBox="0 0 64 64"><ellipse cx="32" cy="56" rx="28" ry="4" fill="#0006"/><path d="M4 54C12 34 22 20 32 20s20 14 28 34z" fill="url(#gSand)"/><path d="M18 34c6-6 12-8 18-6" stroke="#fff" stroke-width="3" stroke-linecap="round" fill="none" opacity=".45"/><g fill="#92400e" opacity=".55"><circle cx="24" cy="44" r="1.6"/><circle cx="36" cy="38" r="1.4"/><circle cx="44" cy="48" r="1.6"/><circle cx="30" cy="50" r="1.2"/></g></symbol>
+  <symbol id="i-kupfer" viewBox="0 0 64 64"><ellipse cx="32" cy="56" rx="22" ry="4" fill="#0006"/><path d="M10 40c-2-12 8-26 22-28s24 8 22 22-12 20-24 20S12 52 10 40z" fill="url(#gCopper)"/><ellipse cx="24" cy="24" rx="7" ry="4" fill="#fff" opacity=".45"/><g fill="#34d399" opacity=".65"><circle cx="42" cy="40" r="4"/><circle cx="20" cy="44" r="2.5"/><circle cx="46" cy="26" r="2"/></g></symbol>
+  <symbol id="i-oel" viewBox="0 0 64 64"><ellipse cx="32" cy="58" rx="20" ry="4" fill="#0006"/><rect x="14" y="8" width="36" height="48" rx="7" fill="url(#gOil)"/><rect x="14" y="18" width="36" height="4" fill="#0006"/><rect x="14" y="42" width="36" height="4" fill="#0006"/><path d="M32 26c-5 7-7 10-7 13a7 7 0 0 0 14 0c0-3-2-6-7-13z" fill="#0b0b12"/><circle cx="29" cy="38" r="1.8" fill="#fff" opacity=".7"/></symbol>
+  <symbol id="i-glas" viewBox="0 0 64 64"><ellipse cx="32" cy="57" rx="24" ry="4" fill="#0006"/><polygon points="14,10 54,10 50,52 10,52" fill="#67e8f9" opacity=".35" stroke="#a5f3fc" stroke-width="2.5"/><path d="M20 18l10 0-14 22M36 18l8 0-16 26" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".7"/></symbol>
+  <symbol id="i-kunststoff" viewBox="0 0 64 64"><ellipse cx="32" cy="57" rx="24" ry="4" fill="#0006"/><g fill="url(#gPlast)"><circle cx="20" cy="42" r="9"/><circle cx="38" cy="44" r="9"/><circle cx="29" cy="28" r="9"/><circle cx="46" cy="28" r="7"/><circle cx="14" cy="26" r="6"/></g><g fill="#fff" opacity=".6"><circle cx="17" cy="39" r="2.5"/><circle cx="35" cy="41" r="2.5"/><circle cx="26" cy="25" r="2.5"/></g></symbol>
+  <symbol id="i-draht" viewBox="0 0 64 64"><ellipse cx="32" cy="57" rx="22" ry="4" fill="#0006"/><g fill="none" stroke="url(#gCopper)" stroke-width="5"><ellipse cx="32" cy="20" rx="18" ry="7"/><ellipse cx="32" cy="29" rx="18" ry="7"/><ellipse cx="32" cy="38" rx="18" ry="7"/><ellipse cx="32" cy="47" rx="18" ry="7"/></g><path d="M50 20l8-10" stroke="#f97316" stroke-width="4" stroke-linecap="round"/></symbol>
+  <symbol id="i-platine" viewBox="0 0 64 64"><ellipse cx="32" cy="57" rx="26" ry="4" fill="#0006"/><rect x="6" y="12" width="52" height="40" rx="5" fill="#15803d"/><path d="M12 22h16M12 30h10v12M36 18v10h14M44 44h8M28 46h8" stroke="#facc15" stroke-width="2" fill="none" opacity=".85"/><rect x="24" y="24" width="16" height="16" rx="2" fill="#0f172a"/><g fill="#94a3b8"><rect x="22" y="27" width="2" height="2"/><rect x="22" y="33" width="2" height="2"/><rect x="40" y="27" width="2" height="2"/><rect x="40" y="33" width="2" height="2"/></g><circle cx="12" cy="46" r="3" fill="#facc15"/></symbol>
+  <symbol id="i-akku" viewBox="0 0 64 64"><ellipse cx="32" cy="57" rx="20" ry="4" fill="#0006"/><rect x="26" y="4" width="12" height="6" rx="2" fill="#94a3b8"/><rect x="16" y="9" width="32" height="46" rx="6" fill="url(#gGrayD)"/><rect x="20" y="30" width="24" height="21" rx="3" fill="#a3e635"/><path d="M34 14l-8 12h6l-3 10 9-13h-6z" fill="#fde047"/></symbol>
+  <symbol id="i-display" viewBox="0 0 64 64"><ellipse cx="32" cy="57" rx="22" ry="4" fill="#0006"/><rect x="14" y="4" width="36" height="52" rx="6" fill="#0b0f1d" stroke="#475569" stroke-width="2"/><rect x="17" y="9" width="30" height="42" rx="3" fill="url(#gScr)"/><path d="M19 12h14L21 36z" fill="#fff" opacity=".25"/></symbol>
+  <symbol id="i-gehaeuse" viewBox="0 0 64 64"><ellipse cx="32" cy="58" rx="20" ry="4" fill="#0006"/><rect x="14" y="4" width="36" height="52" rx="8" fill="url(#gPh)"/><rect x="18" y="8" width="12" height="16" rx="4" fill="#1e1b4b"/><circle cx="24" cy="12.5" r="3" fill="#0f172a" stroke="#94a3b8"/><circle cx="24" cy="19.5" r="3" fill="#0f172a" stroke="#94a3b8"/><path d="M40 10v40" stroke="#fff" stroke-width="2" opacity=".3"/></symbol>
+  <symbol id="i-handy" viewBox="0 0 64 64"><ellipse cx="32" cy="58" rx="20" ry="4" fill="#0006"/><rect x="14" y="3" width="36" height="54" rx="8" fill="#111827" stroke="#c084fc" stroke-width="2"/><rect x="17" y="7" width="30" height="46" rx="5" fill="url(#gScr)"/><rect x="27" y="9" width="10" height="3" rx="1.5" fill="#000"/><rect x="22" y="22" width="8" height="8" rx="2" fill="#fff" opacity=".85"/><rect x="34" y="22" width="8" height="8" rx="2" fill="#fff" opacity=".6"/><rect x="22" y="34" width="8" height="8" rx="2" fill="#fff" opacity=".6"/><rect x="34" y="34" width="8" height="8" rx="2" fill="#fff" opacity=".85"/></symbol>
   <symbol id="i-tnt" viewBox="0 0 64 64"><ellipse cx="32" cy="58" rx="22" ry="4" fill="#0006"/><rect x="11" y="24" width="13" height="32" rx="5" fill="url(#gRed)"/><rect x="25.5" y="21" width="13" height="35" rx="5" fill="url(#gRed)"/><rect x="40" y="24" width="13" height="32" rx="5" fill="url(#gRed)"/><rect x="9" y="36" width="46" height="7" rx="2" fill="#1a2140"/><path d="M32 21c0-8 5-11 10-14" stroke="#cbd5e1" stroke-width="2.5" fill="none"/><circle cx="43" cy="7" r="4.5" fill="#fbbf24"/><circle cx="43" cy="7" r="2" fill="#fff"/></symbol>
   <symbol id="i-coin" viewBox="0 0 64 64"><circle cx="32" cy="32" r="24" fill="url(#gGold)"/><circle cx="32" cy="32" r="17" fill="none" stroke="#b45309" stroke-width="3" opacity=".55"/><path d="M26 22h12M26 42h12M32 20v24" stroke="#b45309" stroke-width="3.5" stroke-linecap="round" opacity=".7"/></symbol>
   <symbol id="i-lvl" viewBox="0 0 64 64"><path d="M32 6l7 16 17 2-13 12 4 17-15-9-15 9 4-17L8 24l17-2z" fill="url(#gGold)"/></symbol>
@@ -195,7 +247,11 @@
 const ic=(k,s=40)=>`<svg width="${s}" height="${s}" viewBox="0 0 64 64"><use href="#i-${k}"/></svg>`;
 const G={
  erz:{n:'Eisenerz',base:3,c:'#f59e0b'},kohle:{n:'Kohle',base:3,c:'#94a3b8'},lehm:{n:'Lehm',base:2,c:'#d97706'},
- ziegel:{n:'Ziegel',base:8,c:'#ef4444'},stahl:{n:'Stahl',base:20,c:'#38bdf8'},maschine:{n:'Maschine',base:100,c:'#fbbf24'}
+ ziegel:{n:'Ziegel',base:8,c:'#ef4444'},stahl:{n:'Stahl',base:20,c:'#38bdf8'},maschine:{n:'Maschine',base:100,c:'#fbbf24'},
+ sand:{n:'Sand',base:2,c:'#eab308',lv:4},kupfer:{n:'Kupfer',base:6,c:'#f97316',lv:4},oel:{n:'Rohöl',base:5,c:'#a78bfa',lv:4},
+ glas:{n:'Glas',base:14,c:'#67e8f9',lv:4},kunststoff:{n:'Kunststoff',base:16,c:'#f472b6',lv:4},draht:{n:'Kupferdraht',base:12,c:'#fb923c',lv:4},
+ platine:{n:'Platine',base:60,c:'#22c55e',lv:4},akku:{n:'Akku',base:55,c:'#a3e635',lv:4},display:{n:'Display',base:70,c:'#38bdf8',lv:4},
+ gehaeuse:{n:'Gehäuse',base:40,c:'#c084fc',lv:4},handy:{n:'Smartphone',base:480,c:'#e879f9',lv:4}
 };
 const GK=Object.keys(G);
 const ST=[
@@ -204,7 +260,18 @@ const ST=[
  {id:'lehm',n:'Lehm graben',games:['catch','wall','timing','whack'],in:{},out:'lehm',max:8,mult:'pick'},
  {id:'ziegel',n:'Ziegelei',games:['stack','mash'],in:{lehm:4},out:'ziegel',max:3,mult:'bench'},
  {id:'stahl',n:'Schmelzofen',games:['heat','heatMove'],in:{erz:4,kohle:2},out:'stahl',max:3,mult:'bench'},
- {id:'maschine',n:'Montage',games:['simon','bolts'],in:{stahl:3,ziegel:2},out:'maschine',max:2,mult:'bench'}
+ {id:'maschine',n:'Montage',games:['simon','bolts'],in:{stahl:3,ziegel:2},out:'maschine',max:2,mult:'bench'},
+ {id:'sand',n:'Sand schaufeln',games:['catch','whack','timing'],in:{},out:'sand',max:8,mult:'pick',lv:4},
+ {id:'kupfer',n:'Kupfer abbauen',games:['wall','whack','timingMove'],in:{},out:'kupfer',max:6,mult:'pick',lv:4},
+ {id:'oel',n:'Öl fördern',games:['catch','timingMove','timing'],in:{},out:'oel',max:6,mult:'pick',lv:4},
+ {id:'glas',n:'Glashütte',games:['heat','heatMove'],in:{sand:4},out:'glas',max:3,mult:'bench',lv:4},
+ {id:'kunststoff',n:'Kunststoff mischen',games:['mix'],in:{oel:3},out:'kunststoff',max:3,mult:'bench',lv:4},
+ {id:'draht',n:'Draht ziehen',games:['mash','timing'],in:{kupfer:2},out:'draht',max:4,mult:'bench',lv:4},
+ {id:'platine',n:'Platine löten',games:['solder'],in:{draht:2,kunststoff:1},out:'platine',max:2,mult:'bench',lv:4},
+ {id:'akku',n:'Akku bauen',games:['mix','solder'],in:{draht:1,kunststoff:2,stahl:1},out:'akku',max:2,mult:'bench',lv:4},
+ {id:'display',n:'Display fertigen',games:['solder','bolts'],in:{glas:2,draht:1},out:'display',max:2,mult:'bench',lv:4},
+ {id:'gehaeuse',n:'Gehäuse gießen',games:['mix','timing'],in:{kunststoff:2,stahl:1},out:'gehaeuse',max:2,mult:'bench',lv:4},
+ {id:'handy',n:'Smartphone montieren',games:['phone'],in:{platine:1,akku:1,display:1,gehaeuse:1},out:'handy',max:1,mult:'bench',lv:4}
 ];
 const ROUTES=[
  {id:'stadt',n:'Stadtmarkt',icon:'stadt',T:20,speed:170,mult:1.0,desc:'Kurze, sichere Strecke',c:'#22d3ee'},
@@ -225,7 +292,11 @@ const BLD=[
  {id:'maschinenfabrik',kind:'fac',n:'Maschinenfabrik',in:{stahl:3,ziegel:2},out:'maschine',t:14,base:4000},
  {id:'baumarkt',kind:'shop',n:'Baumarkt',goods:['lehm','ziegel'],base:300,c:'#ef4444'},
  {id:'eisenwaren',kind:'shop',n:'Eisenwarenhandel',goods:['erz','kohle','stahl'],base:800,c:'#38bdf8'},
- {id:'maschinenhandel',kind:'shop',n:'Maschinenhandel',goods:['maschine'],base:2500,c:'#fbbf24'}
+ {id:'maschinenhandel',kind:'shop',n:'Maschinenhandel',goods:['maschine'],base:2500,c:'#fbbf24'},
+ {id:'sandgrube',kind:'mine',n:'Sandgrube',out:'sand',rate:0.3,base:600,lv:4},
+ {id:'kupfermine',kind:'mine',n:'Kupfermine',out:'kupfer',rate:0.2,base:900,lv:4},
+ {id:'oelpumpe',kind:'mine',n:'Ölpumpe',out:'oel',rate:0.2,base:900,lv:4},
+ {id:'elektronikmarkt',kind:'shop',n:'Elektronikmarkt',goods:['handy','display','akku','platine'],base:8000,c:'#e879f9',lv:4}
 ];
 const BMAX=10,WEAR=100/480,SHOPT=5,KEEPS=[0,10,25,50,100];
 const SAVE='industry-action-v2';
@@ -245,6 +316,9 @@ const truckCap=()=>20+10*S.up.truck;
 const mult=k=>1+0.3*S.up[k];
 const upCost=u=>Math.ceil(u.base*Math.pow(1.8,S.up[u.id]));
 const price=g=>Math.max(0.2,G[g].base*mood[g]/(1+sat[g]/60));
+const unl=g=>(G[g].lv||1)<=lvl();
+const GKU=()=>GK.filter(unl);
+const buyP=g=>price(g)*1.2,sellP=g=>price(g)*0.75;
 
 /* ===== Sound, Haptik, Effekte ===== */
 let AC=null;
@@ -318,7 +392,7 @@ function offlineB(dt){
 }
 (function(){const dt=Math.min((Date.now()-S.last)/1000,8*3600);if(dt>=30)offlineB(dt)})();
 function buildOrUpgrade(b,e){
-  const s=bst(b),c=bCost(b);if(s.lvl>=BMAX||S.money<c)return;
+  const s=bst(b),c=bCost(b);if(s.lvl>=BMAX||S.money<c||(b.lv&&b.lv>lvl()))return;
   S.money-=c;s.lvl++;if(s.lvl===1)s.hp=100;S.xp+=10*s.lvl;SFX.buy();vib(25);
   burst(e.clientX,e.clientY,bc(b),16);fx(s.lvl===1?'Gebaut!':'Stufe '+s.lvl,bc(b));render();
 }
@@ -362,8 +436,8 @@ function gTiming(rounds=6,title='Abbau',sub='Stoppe den Marker in der grünen Zo
     if(round>=rounds){$('hit').disabled=true;await sleep(700);if(ov.alive)res(pts/rounds);return}
     newZone()};
 })}
-function gMash(){return new Promise(res=>{
-  const ov=openOv(xbtn()+`<h3>Ziegelpresse</h3><div class="sub">Tippe so schnell du kannst. 6 Sekunden ab dem ersten Schlag.</div><div class="msg" id="m">Tippe zum Start!</div><div class="meter" style="height:16px;margin:6px 0 16px"><i id="f" style="width:0;background:var(--g2)"></i></div><button class="tapbtn" id="t">PRESSEN!</button><div class="timer" style="margin-top:14px"><i id="tm" style="width:100%"></i></div>`);
+function gMash(s){return new Promise(res=>{
+  const ov=openOv(xbtn()+`<h3>${s?s.n:'Presse'}</h3><div class="sub">Tippe so schnell du kannst. 6 Sekunden ab dem ersten Schlag.</div><div class="msg" id="m">Tippe zum Start!</div><div class="meter" style="height:16px;margin:6px 0 16px"><i id="f" style="width:0;background:var(--g2)"></i></div><button class="tapbtn" id="t">PRESSEN!</button><div class="timer" style="margin-top:14px"><i id="tm" style="width:100%"></i></div>`);
   bindX();ov.abort=()=>res(null);
   let taps=0,started=false;const target=36;
   $('t').onpointerdown=e=>{
@@ -373,8 +447,8 @@ function gMash(){return new Promise(res=>{
       const iv=setInterval(()=>{if(!ov.alive){clearInterval(iv);return}const l=Math.max(0,1-(performance.now()-t0)/6000);$('tm').style.width=(l*100)+'%';
         if(l<=0){clearInterval(iv);$('t').disabled=true;pop($('m'),taps>=target?'MAXIMAL! 💥':taps+' Schläge');setTimeout(()=>ov.alive&&res(Math.min(1,taps/target)),600)}},50)}};
 })}
-function gHeat(moving=false){return new Promise(res=>{
-  const ov=openOv(xbtn()+`<h3>Schmelzofen${moving?' · Wandernde Hitze':''}</h3><div class="sub">Halte den Knopf zum Heizen. Lass los zum Abkühlen. Bleib im Bereich!</div><div class="msg" id="m">Aufheizen …</div><div class="track heat" style="height:52px"><div class="zone" id="hz"></div><div class="mark" id="k"></div></div><div class="timer"><i id="tm" style="width:100%"></i></div><button class="btn big r" id="h" style="height:120px;margin-top:16px;font-size:22px">🔥 HEIZEN (halten)</button>`);
+function gHeat(moving=false,s){return new Promise(res=>{
+  const ov=openOv(xbtn()+`<h3>${s?s.n:'Schmelzofen'}${moving?' · Wandernde Hitze':''}</h3><div class="sub">Halte den Knopf zum Heizen. Lass los zum Abkühlen. Bleib im Bereich!</div><div class="msg" id="m">Aufheizen …</div><div class="track heat" style="height:52px"><div class="zone" id="hz"></div><div class="mark" id="k"></div></div><div class="timer"><i id="tm" style="width:100%"></i></div><button class="btn big r" id="h" style="height:120px;margin-top:16px;font-size:22px">🔥 HEIZEN (halten)</button>`);
   bindX();ov.abort=()=>res(null);
   let temp=25,hold=false,inZ=0,tt=0,last=performance.now(),prev='';const D=12;
   const zw=20+Math.random()*10;let zl=moving?40:25+Math.random()*(55-zw),zd=Math.random()<.5?1:-1;
@@ -591,16 +665,132 @@ function gBolts(s,title){return new Promise(res=>{
   (function loop(){if(!ov.alive||dead)return;const l=1-(performance.now()-t0)/(T*1000);$('tm').style.width=Math.max(0,l*100)+'%';
     if(l<=0){pop($('m'),'Zeit um!');end();return}requestAnimationFrame(loop)})();
 })}
+function gMix(s){return new Promise(res=>{
+  const ING=[{n:'Basis',c:'#a78bfa'},{n:'Härter',c:'#22d3ee'},{n:'Farbe',c:'#f472b6'}];
+  const w=[1+Math.random()*2,.6+Math.random()*1.5,.4+Math.random()],sw=w.reduce((a,b)=>a+b),T=w.map(x=>x/sw*100);
+  const D=15,amt=[0,0,0];
+  const ov=openOv(xbtn()+`<h3>Mischen · ${G[s.out].n}</h3><div class="sub">Halte die Knöpfe zum Einfüllen. Treffe die Schichten der Zielskala rechts. Bei 100 % ist der Behälter voll.</div><div class="msg" id="m">Rezept beachten!</div>
+   <div class="mixwrap"><div class="beaker"><div class="liq" id="lq">${ING.map(g=>`<i style="height:0;background:linear-gradient(90deg,${g.c},color-mix(in srgb,${g.c} 60%,#000))"></i>`).join('')}</div><div class="glass"></div></div>
+   <div class="ruler">${ING.map((g,i)=>`<i style="height:${T[i]}%;background:${g.c}"></i>`).join('')}</div></div>
+   <div class="pours">${ING.map((g,i)=>`<button class="pour" data-i="${i}" style="--pc:${g.c}">${g.n}<small id="pv${i}">0 / ${Math.round(T[i])}</small></button>`).join('')}</div>
+   <button class="btn big" id="fill" style="margin-top:10px">✓ Abfüllen</button>
+   <div class="timer" style="margin-top:12px"><i id="tm" style="width:100%"></i></div>`);
+  bindX();ov.abort=()=>res(null);
+  let act=-1,done=false,last=performance.now(),tick=0;const t0=performance.now();
+  $('fill').onclick=()=>{if(!done&&amt.some(v=>v>0))finish()};
+  const btns=[...document.querySelectorAll('.pour')],layers=[...document.querySelectorAll('#lq i')];
+  btns.forEach((b,i)=>{b.onpointerdown=e=>{e.preventDefault();act=i;b.classList.add('on')};
+    const off=()=>{if(act===i)act=-1;b.classList.remove('on')};b.onpointerup=off;b.onpointerleave=off;b.onpointercancel=off});
+  function finish(){
+    done=true;btns.forEach(b=>b.classList.remove('on'));const tot=amt.reduce((a,b)=>a+b);
+    const err=amt.reduce((a,v,i)=>a+Math.abs(v-T[i]),0),sc=Math.max(0,1-err/60)*Math.min(1,tot/100);
+    pop($('m'),'Mischung '+Math.round(sc*100)+' % genau');sc>.7?SFX.win():SFX.miss();
+    setTimeout(()=>ov.alive&&res(sc),900)}
+  (function loop(now){
+    if(!ov.alive||done)return;const dt=Math.min(.05,(now-last)/1000);last=now;
+    const tot=amt.reduce((a,b)=>a+b);
+    if(act>=0){amt[act]+=Math.min(22*dt,100-tot);if((tick+=dt)>.12){tick=0;tone(300+act*120+tot*3,.05,'sine',.03)}}
+    amt.forEach((v,i)=>{layers[i].style.height=v+'%';$('pv'+i).textContent=Math.round(v)+' / '+Math.round(T[i])});
+    const el=(now-t0)/1000;$('tm').style.width=Math.max(0,100-el/D*100)+'%';
+    if(amt.reduce((a,b)=>a+b)>=99.9||el>=D){finish();return}
+    requestAnimationFrame(loop)})(performance.now());
+})}
+function gSolder(s){return new Promise(res=>{
+  const N=6;
+  const ov=openOv(xbtn()+`<h3>Löten · ${G[s.out].n}</h3><div class="sub">Halte den leuchtenden Lötpunkt gedrückt und lass los, wenn der Ring grün ist. Zu lange = verbrannt.</div><div class="msg" id="m">Lötkolben bereit</div><div class="pcb" id="bd"></div>`);
+  bindX();ov.abort=()=>res(null);
+  const pts=[];let guard=0;
+  while(pts.length<N&&guard++<2000){const x=14+Math.random()*72,y=14+Math.random()*72;if(pts.every(p=>Math.hypot(p.x-x,p.y-y)>22))pts.push({x,y})}
+  const pads=pts.map(p=>{const b=document.createElement('button');b.className='spad wait';b.style.left=p.x+'%';b.style.top=p.y+'%';$('bd').appendChild(b);return b});
+  let idx=0,holding=false,p=0,score=0,last=performance.now(),done=false;
+  const activate=()=>{pads.forEach((b,i)=>b.classList.toggle('wait',i>idx&&!b.classList.contains('ok')&&!b.classList.contains('bad')));if(pads[idx]){pads[idx].classList.remove('wait');pads[idx].classList.add('act')}};
+  function release(){
+    if(!holding)return;holding=false;const b=pads[idx];b.classList.remove('act');
+    let v=0,t='Kalte Lötstelle ❄️';
+    if(p>=75&&p<=105){v=1;t='Perfekt! ✨';SFX.perfect();vib(20)}else if((p>=55&&p<75)||(p>105&&p<=120)){v=.6;t='Geht so';SFX.good()}else SFX.miss();
+    b.classList.add(v>0?'ok':'bad');b.style.setProperty('--p',0);score+=v;pop($('m'),t);
+    const [x,y]=center(b);burst(x,y,v>0?'#e5e7eb':'#6b7280',v===1?12:5);next()}
+  function next(){p=0;idx++;if(idx>=N){done=true;setTimeout(()=>ov.alive&&res(score/N),700);return}activate()}
+  pads.forEach((b,i)=>b.onpointerdown=e=>{e.preventDefault();if(i!==idx||done)return;holding=true;p=0});
+  const up=()=>release();addEventListener('pointerup',up);addEventListener('pointercancel',up);
+  activate();
+  (function loop(now){
+    if(!ov.alive){removeEventListener('pointerup',up);removeEventListener('pointercancel',up);return}
+    const dt=Math.min(.05,(now-last)/1000);last=now;
+    if(holding){p+=dt/0.9*100;const b=pads[idx];b.style.setProperty('--p',Math.min(100,p));b.style.setProperty('--rc',p<75?'#fbbf24':p<=105?'#34d399':'#fb7185');
+      if(p>=75&&p<=105)$('m').textContent='Jetzt loslassen!';
+      if(p>135){holding=false;b.classList.remove('act');b.classList.add('bad');b.style.setProperty('--p',0);SFX.crash();vib([60,30,60]);pop($('m'),'Verbrannt! 🔥');next()}}
+    if(done){removeEventListener('pointerup',up);removeEventListener('pointercancel',up);return}
+    requestAnimationFrame(loop)})(performance.now());
+})}
+function phoneSVG(has,next,powered){
+  const SL={gehaeuse:[10,6,140,288,26],platine:[26,26,108,112,8],akku:[30,150,100,118,10],display:[16,14,128,272,20]};
+  let o='<svg viewBox="0 0 160 300">';
+  if(!has.gehaeuse)o+='<rect x="10" y="6" width="140" height="288" rx="26" fill="#ffffff05"/>';
+  else o+='<rect x="10" y="6" width="140" height="288" rx="26" fill="url(#gPh)"/><rect x="18" y="16" width="124" height="268" rx="18" fill="#0b0f1d"/>';
+  if(has.platine)o+='<rect x="26" y="26" width="108" height="112" rx="8" fill="#15803d"/><path d="M34 50h40M34 62h60M90 40v60M50 90h70M40 110h30M110 40v26" stroke="#facc15" stroke-width="2" opacity=".7"/><rect x="58" y="56" width="34" height="34" rx="3" fill="#0f172a"/><rect x="104" y="96" width="20" height="14" rx="2" fill="#0f172a"/><circle cx="40" cy="126" r="4" fill="#facc15"/>';
+  if(has.akku)o+='<rect x="30" y="150" width="100" height="118" rx="10" fill="url(#gGrayD)"/><rect x="40" y="166" width="80" height="12" rx="4" fill="#a3e635"/><text x="80" y="226" fill="#e5e7eb" font-size="14" font-weight="800" text-anchor="middle" font-family="system-ui,sans-serif">4500 mAh</text>';
+  if(has.display)o+=powered
+    ?'<rect x="16" y="14" width="128" height="272" rx="20" fill="url(#gScr)"/><text x="80" y="148" fill="#fff" font-size="15" font-weight="900" text-anchor="middle" letter-spacing="2" font-family="system-ui,sans-serif">INDUSTRY</text><text x="80" y="168" fill="#fff" font-size="9" text-anchor="middle" opacity=".8" font-family="system-ui,sans-serif">ACTION OS</text><rect x="62" y="22" width="36" height="8" rx="4" fill="#000"/>'
+    :'<rect x="16" y="14" width="128" height="272" rx="20" fill="#05070f"/><path d="M30 30h60L40 150z" fill="#ffffff12"/><rect x="62" y="22" width="36" height="8" rx="4" fill="#000"/>';
+  if(next&&SL[next]){const [x,y,w,h,r]=SL[next];o+=`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${r}" fill="#22d3ee10" stroke="#22d3ee" stroke-width="2" stroke-dasharray="6 5"><animate attributeName="stroke-dashoffset" from="0" to="22" dur="1s" repeatCount="indefinite"/></rect>`}
+  return o+'</svg>';
+}
+function gPhone(s){return new Promise(res=>{
+  const PH=[{p:'gehaeuse'},{p:'platine'},{p:'akku'},{screws:1},{p:'display'},{power:1}];
+  const SC=[[20,11],[80,11],[20,44],[80,44]];
+  const decoy=['maschine','ziegel','stahl','glas'][Math.floor(Math.random()*4)];
+  const parts=['gehaeuse','platine','akku','display',decoy].sort(()=>Math.random()-.5);
+  const ov=openOv(xbtn()+`<h3>Smartphone montieren</h3><div class="sub">Zieh die Teile in der richtigen Reihenfolge ins Handy (oder tippe sie an). Ein Teil gehört nicht dazu!</div><div class="msg" id="m">Womit fängst du an?</div><div class="phonewrap"><div class="phone" id="ph"></div><div class="tray" id="tr"></div></div><div id="pw" style="margin-top:12px"></div><div class="timer" style="margin-top:12px"><i id="tm" style="width:100%"></i></div>`);
+  bindX();ov.abort=()=>res(null);
+  let ph=0,mist=0,powered=false,done=false;const has={},t0=performance.now();
+  const cur=()=>PH[ph];
+  function finish(){
+    done=true;const el=(performance.now()-t0)/1000;
+    const sc=Math.max(0,Math.min(1,1-mist*.15-Math.max(0,el-25)/50));
+    setTimeout(()=>ov.alive&&res(sc),1400)}
+  function draw(){
+    const c=cur();$('ph').innerHTML=phoneSVG(has,c&&c.p,powered);
+    if(c&&c.screws){let left=4;pop($('m'),'Platine festschrauben!');
+      SC.forEach(([x,y])=>{const b=document.createElement('button');b.className='screw';b.style.left=x+'%';b.style.top=y+'%';
+        b.onpointerdown=()=>{if(b.classList.contains('ok')||done)return;b.classList.add('ok');SFX.tick();vib(10);
+          if(--left<=0){SFX.good();ph++;setTimeout(()=>ov.alive&&draw(),300)}};$('ph').appendChild(b)})}
+    if(c&&c.power){pop($('m'),'Fertig montiert – einschalten!');$('pw').innerHTML='<button class="btn big b" id="pon">⏻ Einschalten</button>';
+      $('pon').onclick=()=>{if(done)return;powered=true;ph++;$('pw').innerHTML='';draw();SFX.win();vib([30,40,80]);
+        const r=$('ph').getBoundingClientRect();burst(r.left+r.width/2,r.top+r.height/2,'#e879f9',26);pop($('m'),'Es lebt! 📱');finish()}}
+  }
+  function place(btn,part){
+    if(done)return;const c=cur();
+    if(c&&c.p===part){has[part]=1;btn.classList.add('gone');ph++;SFX.good();vib(15);const r=$('ph').getBoundingClientRect();burst(r.left+r.width/2,r.top+r.height/2,G[part].c,12);pop($('m'),G[part].n+' eingebaut ✓');draw()}
+    else{mist++;SFX.miss();vib([40,30,40]);shakeBox();pop($('m'),c&&c.screws?'Erst festschrauben!':c&&c.power?'Alles drin – einschalten!':part===decoy?'Das gehört nicht ins Handy! ❌':'Falsche Reihenfolge! ❌')}}
+  parts.forEach(part=>{
+    const b=document.createElement('button');b.className='part';b.innerHTML=ic(part,40)+'<span>'+G[part].n+'</span>';$('tr').appendChild(b);
+    b.onpointerdown=e=>{
+      if(done||!ov.alive||b.classList.contains('gone'))return;e.preventDefault();
+      const g=document.createElement('div');g.className='drag';g.innerHTML=ic(part,64);document.body.appendChild(g);
+      const sx=e.clientX,sy=e.clientY;let moved=false;
+      const mv=ev=>{g.style.left=ev.clientX+'px';g.style.top=ev.clientY+'px';if(Math.hypot(ev.clientX-sx,ev.clientY-sy)>8)moved=true};
+      const stop=()=>{removeEventListener('pointermove',mv);removeEventListener('pointerup',up);removeEventListener('pointercancel',cancel);g.remove()};
+      const cancel=()=>stop();
+      const up=ev=>{stop();const p=$('ph');if(!p||!ov.alive)return;const r=p.getBoundingClientRect();
+        const inside=ev.clientX>=r.left&&ev.clientX<=r.right&&ev.clientY>=r.top&&ev.clientY<=r.bottom;
+        if(moved&&!inside)return;place(b,part)};
+      mv(e);addEventListener('pointermove',mv);addEventListener('pointerup',up);addEventListener('pointercancel',cancel)}});
+  draw();
+  (function loop(){if(!ov.alive||done)return;const el=(performance.now()-t0)/1000;$('tm').style.width=Math.max(0,100-el/40*100)+'%';requestAnimationFrame(loop)})();
+})}
 const GAMES={
-  timing:s=>gTiming(6,'Abbau · '+G[s.out].n),
-  timingMove:s=>gTiming(6,'Abbau · '+G[s.out].n,'Die grüne Zone wandert! Stoppe den Marker darin.',true),
+  timing:s=>gTiming(6,s.n),
+  timingMove:s=>gTiming(6,s.n,'Die grüne Zone wandert! Stoppe den Marker darin.',true),
   whack:gWhack,wall:gWall,catch:gCatch,stack:gStack,mash:gMash,
-  heat:()=>gHeat(false),heatMove:()=>gHeat(true),simon:gSimon,bolts:s=>gBolts(s)
+  heat:s=>gHeat(false,s),heatMove:s=>gHeat(true,s),simon:gSimon,bolts:s=>gBolts(s),
+  mix:gMix,solder:gSolder,phone:gPhone
 };
-const GNAME={wall:'Flöz',timing:'Timing',timingMove:'Wandernde Zone',whack:'Erzader',catch:'Auffangen',stack:'Stapeln',mash:'Presse',heat:'Hitze halten',heatMove:'Wandernde Hitze',simon:'Gedächtnis',bolts:'Schrauben'};
+const GNAME={mix:'Mischen',solder:'Löten',phone:'Zusammenbauen',wall:'Flöz',timing:'Timing',timingMove:'Wandernde Zone',whack:'Erzader',catch:'Auffangen',stack:'Stapeln',mash:'Presse',heat:'Hitze halten',heatMove:'Wandernde Hitze',simon:'Gedächtnis',bolts:'Schrauben'};
 
 /* ===== Station starten ===== */
 async function runStation(s,srcEl){
+  if(s.lv&&s.lv>lvl()){SFX.err();toast('Wird mit Level '+s.lv+' freigeschaltet');return}
   for(const k in s.in)if(S.stock[k]<s.in[k]){SFX.err();toast('Es fehlt: '+(s.in[k]-Math.floor(S.stock[k]))+'× '+G[k].n);return}
   if(S.stock[s.out]>=cap()){SFX.err();toast('Lager für '+G[s.out].n+' ist voll – bring Ware zum Markt!');return}
   const pool=s.games.length>1?s.games.filter(g=>g!==s.lastG):s.games,gname=pool[Math.floor(Math.random()*pool.length)];
@@ -721,17 +911,23 @@ async function startDrive(route){
 
 /* ===== Screens ===== */
 function renderWork(){
-  const el=$('s-work');el.innerHTML='<h2>Werkstatt</h2><p class="sub">Stelle Waren in Minispielen selbst her.</p>';
-  ST.forEach(s=>{
-    const need=Object.keys(s.in).map(k=>`<span class="${S.stock[k]>=s.in[k]?'up':'dn'}">${s.in[k]}× ${G[k].n} (${Math.floor(S.stock[k])})</span>`).join(' · ');
-    const can=Object.keys(s.in).every(k=>S.stock[k]>=s.in[k]);
-    const d=document.createElement('div');d.className='card';d.style.setProperty('--c',G[s.out].c);
-    d.innerHTML=`<div class="art">${ic(s.out,42)}</div><div class="i">${s.n}<small>🎲 ${s.games.map(g=>GNAME[g]).join(' · ')}</small><small>${need?'Braucht '+need:'Kostenlos'} → bis ${Math.max(1,Math.round(s.max*mult(s.mult)))}× ${G[s.out].n}</small></div><button class="btn ${can?'':'ghost'}">Spielen</button>`;
-    d.querySelector('button').onclick=()=>runStation(s);el.appendChild(d)});
+  const el=$('s-work'),L=lvl();el.innerHTML='<h2>Werkstatt</h2><p class="sub">Stelle Waren in Minispielen selbst her. Jede Station lost eins ihrer Minispiele aus.</p>';
+  [['Rohstoffe',s=>!s.lv&&!Object.keys(s.in).length],['Verarbeitung',s=>!s.lv&&Object.keys(s.in).length>0],['Elektronik'+(L<4?' · ab Level 4':''),s=>!!s.lv]].forEach(([title,f])=>{
+    const h=document.createElement('div');h.className='sec';h.textContent=title;el.appendChild(h);
+    ST.filter(f).forEach(s=>{
+      const locked=s.lv&&s.lv>L;
+      const need=Object.keys(s.in).map(k=>`<span class="${S.stock[k]>=s.in[k]?'up':'dn'}">${s.in[k]}× ${G[k].n} (${Math.floor(S.stock[k])})</span>`).join(' · ');
+      const can=Object.keys(s.in).every(k=>S.stock[k]>=s.in[k]);
+      const d=document.createElement('div');d.className='card'+(locked?' idle':'');d.style.setProperty('--c',G[s.out].c);
+      d.innerHTML=`<div class="art">${ic(s.out,42)}</div><div class="i">${s.n}<small>🎲 ${s.games.map(g=>GNAME[g]).join(' · ')}</small><small>${need?'Braucht '+need:'Kostenlos'} → bis ${Math.max(1,Math.round(s.max*mult(s.mult)))}× ${G[s.out].n}</small></div>`+
+        (locked?`<button class="btn ghost" disabled>🔒 Lv ${s.lv}</button>`:`<button class="btn ${can?'':'ghost'}">Spielen</button>`);
+      if(!locked)d.querySelector('button').onclick=()=>runStation(s);
+      el.appendChild(d)});
+  });
 }
 function renderStore(){
   const el=$('s-store');el.innerHTML='<h2>Lager</h2><p class="sub">Deine Vorräte. Kapazität pro Ware: '+cap()+'</p>';
-  GK.forEach(g=>{const d=document.createElement('div');d.className='card';d.style.setProperty('--c',G[g].c);const f=S.stock[g]/cap();
+  GKU().forEach(g=>{const d=document.createElement('div');d.className='card';d.style.setProperty('--c',G[g].c);const f=S.stock[g]/cap();
     d.innerHTML=`<div class="art">${ic(g,42)}</div><div class="i">${G[g].n} <span class="chip num">${Math.floor(S.stock[g])} / ${cap()}</span><div class="meter"><i style="width:${f*100}%;background:${f>.9?'var(--g4)':'linear-gradient(90deg,'+G[g].c+',#fff6)'}"></i></div></div>`;el.appendChild(d)});
 }
 function renderShip(){
@@ -739,7 +935,7 @@ function renderShip(){
   let est=0;for(const g in cargo)est+=price(g)*cargo[g];
   el.innerHTML=`<h2>Transport</h2><p class="sub">Belade den LKW und bring die Ware zum Markt.</p>
    <div class="card" style="--c:#22d3ee"><div class="art">${ic('truck',44)}</div><div class="i">Ladefläche <span class="chip num">${used} / ${truckCap()}</span><div class="meter"><i style="width:${used/truckCap()*100}%"></i></div><small>Geschätzter Warenwert: ${fmt(est)} Credits</small></div></div>`;
-  GK.forEach(g=>{const have=Math.floor(S.stock[g]),c=cargo[g]||0;
+  GKU().forEach(g=>{const have=Math.floor(S.stock[g]),c=cargo[g]||0;
     const d=document.createElement('div');d.className='card';d.style.setProperty('--c',G[g].c);
     d.innerHTML=`<div class="art" style="width:48px;height:48px;flex-basis:48px">${ic(g,34)}</div><div class="i">${G[g].n}<small>Lager ${have} · ~${price(g).toFixed(1)}/Stk</small></div><div class="step"><button data-d="-1">−</button><b class="num">${c}</b><button data-d="1">+</button><button data-d="max" style="width:46px;font-size:11px;font-weight:800">MAX</button></div>`;
     d.querySelectorAll('button').forEach(b=>b.onclick=()=>{
@@ -754,11 +950,29 @@ function renderShip(){
 function spark(g){const h=S.hist[g];if(h.length<2)return '';const mn=Math.min(...h),mx=Math.max(...h),r=mx-mn||1;
   const pts=h.map((v,i)=>[(i/(h.length-1)*84),(26-(v-mn)/r*22)]);const line=pts.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ');
   return `<svg width="84" height="30" viewBox="0 0 84 30"><defs><linearGradient id="sf${g}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${G[g].c}" stop-opacity=".45"/><stop offset="1" stop-color="${G[g].c}" stop-opacity="0"/></linearGradient></defs><polygon points="0,30 ${line} 84,30" fill="url(#sf${g})"/><polyline points="${line}" fill="none" stroke="${G[g].c}" stroke-width="2" stroke-linejoin="round"/></svg>`}
+let mAmt=10;
+function mTrade(g,buy,e){
+  let n=mAmt==='max'?1e9:mAmt,k=0,sum=0;
+  if(buy){n=Math.min(n,Math.floor(cap()-S.stock[g]));while(k<n){const p=buyP(g);if(S.money<sum+p)break;sum+=p;sat[g]=Math.max(-45,sat[g]-1);k++}
+    if(!k){SFX.err();toast(S.stock[g]>=cap()?'Lager für '+G[g].n+' ist voll':'Nicht genug Credits');return}
+    S.money-=sum;S.stock[g]+=k;SFX.buy();fx('+'+k+' '+G[g].n,G[g].c,e.clientX,e.clientY-30)}
+  else{n=Math.min(n,Math.floor(S.stock[g]));while(k<n){sum+=sellP(g);sat[g]+=1;k++}
+    if(!k){SFX.err();return}
+    S.stock[g]-=k;S.money+=sum;S.xp+=Math.ceil(sum/12);SFX.coin();fx('+'+fmt(sum)+' Cr','#fbbf24',e.clientX,e.clientY-30)}
+  vib(12);renderMarket();
+}
 function renderMarket(){
-  const el=$('s-market');el.innerHTML='<h2>Markt</h2><p class="sub">Preise schwanken. Viel verkaufen drückt den Preis. Der Hafen zahlt +60%.</p>';
-  GK.forEach(g=>{const p=price(g),d=p/G[g].base,c=document.createElement('div');c.className='card';c.style.setProperty('--c',G[g].c);
+  const el=$('s-market');
+  el.innerHTML='<h2>Markt</h2><p class="sub">Direkt handeln: Ankauf 20 % über, Verkauf 25 % unter Marktpreis. Per LKW bekommst du den vollen Preis, am Hafen +60 %.</p>';
+  const bar=document.createElement('div');bar.className='amt';
+  [1,10,50,'max'].forEach(a=>{const b=document.createElement('button');b.className='chip2'+(a===mAmt?' on':'');b.textContent=a==='max'?'Max':'× '+a;b.onclick=()=>{mAmt=a;SFX.tick();renderMarket()};bar.appendChild(b)});
+  el.appendChild(bar);
+  GKU().forEach(g=>{const p=price(g),d=p/G[g].base,c=document.createElement('div');c.className='card';c.style.setProperty('--c',G[g].c);
     const tag=mood[g]>1.8?'<span class="chip up">🔥 BOOM</span>':mood[g]<.6?'<span class="chip dn">❄️ CRASH</span>':'';
-    c.innerHTML=`<div class="art">${ic(g,42)}</div><div class="i">${G[g].n} ${tag}<small><b class="num" style="font-size:17px;color:var(--ink)">${p.toFixed(2)}</b> / Stk · <span class="${d>=1?'up':'dn'}">${d>=1?'▲':'▼'} ${Math.round(Math.abs(d-1)*100)}%</span></small></div>${spark(g)}`;el.appendChild(c)});
+    c.innerHTML=`<div class="art">${ic(g,42)}</div><div class="i"><div class="mtop"><span>${G[g].n} ${tag}<small><b class="num" style="font-size:17px;color:var(--ink)">${p.toFixed(2)}</b> · <span class="${d>=1?'up':'dn'}">${d>=1?'▲':'▼'} ${Math.round(Math.abs(d-1)*100)}%</span> · Lager ${Math.floor(S.stock[g])}</small></span>${spark(g)}</div>
+      <div class="mrow"><button class="btn b sm" data-a="buy">Kaufen<span class="num">${buyP(g).toFixed(1)} / Stk</span></button><button class="btn sm" data-a="sell" ${S.stock[g]<1?'disabled':''}>Verkaufen<span class="num">${sellP(g).toFixed(1)} / Stk</span></button></div></div>`;
+    c.querySelectorAll('.mrow button').forEach(b=>b.onclick=e=>mTrade(g,b.dataset.a==='buy',e));
+    el.appendChild(c)});
 }
 function renderBld(){
   const el=$('s-bld');el.innerHTML='<h2>Betriebe</h2><p class="sub">Baue Minen, Fabriken und Geschäfte aus. Sie arbeiten automatisch – auch wenn du offline bist. Kümmere dich um die Wartung!</p>';
@@ -778,7 +992,8 @@ function renderBld(){
       const col=d.querySelector('.col');
       const mk=(t,cls,f,dis)=>{const bt=document.createElement('button');bt.className='btn '+cls;bt.innerHTML=t;bt.disabled=!!dis;bt.onclick=f;col.appendChild(bt)};
       if(s.cust&&s.cust>Date.now())mk('🛎️ Kunde!','a pulse',e=>serveCustomer(b,e));
-      if(!max)mk(built?'⬆ '+fmt(cost):'Bauen '+fmt(cost),built?'b':'',e=>buildOrUpgrade(b,e),S.money<cost);else mk('MAX','ghost',null,true);
+      if(b.lv&&b.lv>lvl())mk('🔒 Lv '+b.lv,'ghost',null,true);
+      else if(!max)mk(built?'⬆ '+fmt(cost):'Bauen '+fmt(cost),built?'b':'',e=>buildOrUpgrade(b,e),S.money<cost);else mk('MAX','ghost',null,true);
       if(built&&kind!=='shop'&&s.hp<85)mk('🔧 Wartung',broken?'r':'ghost',()=>repairB(b));
       if(built&&kind==='shop')mk('Vorrat ≥ '+s.keep,'ghost',()=>{s.keep=KEEPS[(KEEPS.indexOf(s.keep)+1)%KEEPS.length];render()});
       el.appendChild(d);
@@ -796,7 +1011,8 @@ function render(){
   $('capi').textContent=truckCap();
   const l=lvl(),a=40*(l-1)*(l-1),b=40*l*l;$('lvl').textContent=l;
   $('ringc').style.strokeDashoffset=113.1*(1-Math.max(0,Math.min(1,(S.xp-a)/(b-a))));
-  if(l>lastLvl){lastLvl=l;SFX.win();toast('⭐ Level '+l+' erreicht!');fx('LEVEL '+l,'#22d3ee')}
+  if(l>lastLvl){const was=lastLvl;lastLvl=l;SFX.win();fx('LEVEL '+l,'#22d3ee');
+    toast(was<4&&l>=4?'⭐ Level '+l+'! Elektronik freigeschaltet: Baue Smartphones!':'⭐ Level '+l+' erreicht!')}
   if(OV)return;
   ({work:renderWork,bld:renderBld,store:renderStore,ship:renderShip,market:renderMarket,upg:renderUpg})[cur]();
 }
@@ -816,7 +1032,7 @@ setInterval(()=>{
   GK.forEach(g=>{sat[g]*=Math.exp(-dt/45);mood[g]+=(1-mood[g])*0.01+(Math.random()-0.5)*0.03;mood[g]=Math.max(0.35,mood[g])});
   if((histT+=dt)>=4){histT=0;GK.forEach(g=>{S.hist[g].push(price(g));if(S.hist[g].length>30)S.hist[g].shift()})}
   if(Date.now()>nextEv){nextEv=Date.now()+50000+Math.random()*50000;
-    const g=GK[Math.floor(Math.random()*GK.length)],up=Math.random()<0.6;mood[g]=up?2.2:0.45;setTimeout(()=>mood[g]=1,35000);
+    const gl=GKU(),g=gl[Math.floor(Math.random()*gl.length)],up=Math.random()<0.6;mood[g]=up?2.2:0.45;setTimeout(()=>mood[g]=1,35000);
     toast(up?`🔥 Boom! ${G[g].n} ist 35s lang sehr gefragt – schnell liefern!`:`❄️ Preissturz bei ${G[g].n} – lieber lagern!`);SFX.coin()}
   if(!OV&&!pressing&&cur!=='ship'&&cur!=='work')render();
   S.last=Date.now();try{localStorage.setItem(SAVE,JSON.stringify(S))}catch(e){}
