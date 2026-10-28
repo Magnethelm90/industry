@@ -56,6 +56,51 @@
   .holes{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:8px 0 14px}
   .hole{aspect-ratio:1;max-width:100%;border:0;padding:0;border-radius:50%;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 58%,#03050b 0 46%,#2a3150 47% 62%,#171d36 63%);box-shadow:inset 0 6px 14px #000c,0 2px 0 #ffffff10}
   .rise{display:flex;animation:rise .18s ease-out}@keyframes rise{from{transform:translateY(18px) scale(.4);opacity:0}}
+  .seg{display:flex;gap:4px;padding:4px;margin:6px 0 4px;border-radius:14px;background:var(--glass);border:1px solid var(--line);overflow-x:auto;scrollbar-width:none}
+  .seg button{position:relative;flex:1 0 auto;padding:9px 10px;border:0;border-radius:10px;background:none;color:var(--mut);font-weight:800;font-size:12.5px}
+  .seg button.on{background:var(--g1);color:#fff}
+  .seg button.dot::after{content:"";position:absolute;top:4px;right:4px;width:7px;height:7px;border-radius:50%;background:var(--bad)}
+  .cats{display:flex;gap:6px;overflow-x:auto;margin:8px 0 0;scrollbar-width:none}.cats .chip2{flex:0 0 auto;padding:7px 12px;font-size:12px}
+  .plots{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+  .plot{position:relative;aspect-ratio:1;max-width:100%;padding:0;border-radius:16px;border:1px solid rgba(255,255,255,.08);overflow:hidden;color:#fff;
+    background:repeating-linear-gradient(0deg,#5a3a22 0 9px,#4a2f1b 9px 18px);box-shadow:inset 0 4px 10px rgba(0,0,0,.45)}
+  .plot.buy{background:var(--glass);border-style:dashed;box-shadow:none}.plot.buy:disabled{opacity:.5}
+  .plot .crop{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;transition:transform .5s}
+  .plot .pl{position:absolute;left:0;right:0;bottom:6px;font-size:11px;font-weight:800;text-align:center;text-shadow:0 1px 3px #000}
+  .plot:not(.buy) .pl:only-child{top:0;bottom:0;display:flex;align-items:center;justify-content:center;font-size:13px}
+  .plot .pbar,.plot .wbar{position:absolute;left:6px;right:6px;height:4px;border-radius:2px;background:rgba(0,0,0,.4);overflow:hidden}
+  .plot .pbar{top:6px}.plot .pbar i{display:block;height:100%;background:#84cc16}
+  .plot .wbar{top:13px}.plot .wbar i{display:block;height:100%;background:#38bdf8}
+  .plot.dry{filter:saturate(.4)}.plot.dry .pl{color:#7dd3fc}
+  .plot.ready{box-shadow:0 0 0 2px #fbbf24,0 0 18px rgba(251,191,36,.6);animation:rdy 1s infinite alternate}@keyframes rdy{to{box-shadow:0 0 0 2px #fbbf24,0 0 28px rgba(251,191,36,.9)}}
+  .plot.pest{box-shadow:0 0 0 2px #fb7185}.plot .bug{position:absolute;right:8px;top:20px;font-size:22px;animation:bugw .4s infinite alternate}@keyframes bugw{to{transform:translate(-6px,4px) rotate(-15deg)}}
+  .mold{position:relative;width:150px;height:190px;margin:8px auto;border:4px solid #64748b;border-top:0;border-radius:0 0 18px 18px;background:#0b1020;overflow:hidden}
+  .mfill{position:absolute;left:0;right:0;bottom:0;height:0;background:linear-gradient(#fff7ae,#fb923c 35%,#dc2626);box-shadow:0 0 22px #f97316}
+  .mline{position:absolute;left:0;right:0;height:3px;background:#34d399;box-shadow:0 0 10px #34d399}
+  .anvil{position:relative;height:190px;display:flex;align-items:center;justify-content:center}
+  .work{width:92px;height:92px;border-radius:50%;background:radial-gradient(circle,#fff7ae,#f97316 50%,#7c2d12);box-shadow:0 0 34px #f97316}
+  .fring{position:absolute;width:92px;height:92px;border-radius:50%;border:4px solid #fff;box-shadow:0 0 14px #fff;pointer-events:none}
+  .pipewrap{position:relative;margin:8px 14px 12px}
+  .pipes{display:grid;grid-template-columns:repeat(5,1fr);gap:3px;padding:5px;border-radius:14px;background:#0b1020}
+  .pc{aspect-ratio:1;max-width:100%;padding:0;border:0;border-radius:8px;background:#1a2242}
+  .pc svg{display:block;width:100%;height:100%;transition:transform .15s}.pc path{stroke:#64748b;stroke-width:24;fill:none}
+  .pc.on path{stroke:#22d3ee;filter:drop-shadow(0 0 4px #22d3ee)}
+  .src,.drn{position:absolute;width:12px;height:22px;margin-top:-11px;border-radius:4px}.src{left:-12px;background:#22d3ee;box-shadow:0 0 10px #22d3ee}.drn{right:-12px;background:#34d399}
+  .wires{position:relative;height:250px;margin:8px 0 12px;border-radius:16px;background:#0b1020}
+  .wires svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+  .wn{position:absolute;width:46px;height:30px;padding:0;border:0;border-radius:8px;transform:translate(-50%,-50%);box-shadow:inset 0 2px 0 rgba(255,255,255,.4)}
+  .wn.sel{box-shadow:0 0 0 3px #fff,0 0 16px #fff}.wn.ok{opacity:.55}
+  .belt{position:relative;height:160px;margin:8px 0 12px;border-radius:16px;overflow:hidden;background:repeating-linear-gradient(90deg,#1f2937 0 20px,#273244 20px 40px);animation:beltmv .6s linear infinite}
+  @keyframes beltmv{to{background-position:40px 0}}
+  .belt .bin{position:absolute;right:0;top:0;bottom:0;width:15%;display:flex;align-items:center;justify-content:center;background:rgba(52,211,153,.18);border-left:2px dashed #34d399}
+  .belt .it{position:absolute;padding:0;border:0;background:none;transform:translateY(-50%)}
+  .sea{position:relative;height:170px;border-radius:18px;overflow:hidden;background:linear-gradient(#38bdf8,#0369a1 55%,#0c4a6e)}
+  .sea .wave{position:absolute;inset:0;background:repeating-radial-gradient(ellipse at 50% 0,transparent 0 18px,rgba(255,255,255,.08) 18px 20px);animation:wv 3s linear infinite}@keyframes wv{to{background-position:0 40px}}
+  .bob{position:absolute;left:50%;top:42%;width:18px;height:26px;margin-left:-9px;border-radius:50% 50% 45% 45%;background:linear-gradient(#ef4444 50%,#fff 50%);box-shadow:0 0 0 6px rgba(255,255,255,.12);animation:bob 1.6s ease-in-out infinite}
+  @keyframes bob{50%{transform:translateY(5px)}}.bob.dip{animation:dip .18s ease-in-out infinite alternate}@keyframes dip{to{transform:translateY(18px)}}.bob.gone{display:none}
+  .fishic{position:absolute;bottom:18px;left:15%;transition:left .1s}
+  .tens{height:30px;margin:4px 0 8px;background:linear-gradient(90deg,#38bdf8,#34d399 40%,#fbbf24 75%,#ef4444)}
+  .wall.gas{box-shadow:inset 0 0 40px rgba(132,204,22,.8);background:#1a2e05}
   nav button.dot::after{content:"";position:absolute;top:5px;right:calc(50% - 17px);width:9px;height:9px;border-radius:50%;background:var(--bad);box-shadow:0 0 8px var(--bad);animation:pg2 1s infinite alternate}
   @keyframes pg2{to{transform:scale(1.3)}}
   .pick{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:12px 0}
@@ -237,6 +282,34 @@
   <symbol id="i-smartwatch" viewBox="0 0 64 64"><ellipse cx="32" cy="58" rx="16" ry="3.5" fill="#0006"/><rect x="22" y="2" width="20" height="60" rx="8" fill="#1e1b4b"/><rect x="14" y="16" width="36" height="34" rx="10" fill="#111827" stroke="#f0abfc" stroke-width="2"/><rect x="18" y="20" width="28" height="26" rx="7" fill="url(#gScr)"/><text x="32" y="37" font-size="10" font-weight="900" fill="#fff" text-anchor="middle" font-family="system-ui,sans-serif">12:30</text><rect x="50" y="28" width="3" height="8" rx="1.5" fill="#94a3b8"/></symbol>
   <symbol id="i-drohne" viewBox="0 0 64 64"><ellipse cx="32" cy="58" rx="22" ry="3.5" fill="#0006"/><path d="M14 18l36 26M50 18L14 44" stroke="#475569" stroke-width="4" stroke-linecap="round"/><g fill="#fde047" opacity=".85"><ellipse cx="14" cy="18" rx="11" ry="3"/><ellipse cx="50" cy="18" rx="11" ry="3"/><ellipse cx="14" cy="44" rx="11" ry="3"/><ellipse cx="50" cy="44" rx="11" ry="3"/></g><rect x="22" y="24" width="20" height="14" rx="6" fill="url(#gGrayD)"/><circle cx="32" cy="38" r="4" fill="#0f172a" stroke="#22d3ee" stroke-width="2"/></symbol>
   <symbol id="i-roboter" viewBox="0 0 64 64"><ellipse cx="32" cy="59" rx="20" ry="3.5" fill="#0006"/><path d="M32 4v8" stroke="#94a3b8" stroke-width="2.5"/><circle cx="32" cy="4" r="3" fill="#fb7185"/><rect x="16" y="12" width="32" height="22" rx="7" fill="url(#gGray)"/><circle cx="25" cy="23" r="4.5" fill="#22d3ee"/><circle cx="39" cy="23" r="4.5" fill="#22d3ee"/><rect x="26" y="29" width="12" height="2.5" rx="1" fill="#334155"/><rect x="18" y="36" width="28" height="20" rx="5" fill="url(#gGrayD)"/><circle cx="32" cy="45" r="4" fill="#fbbf24"/><rect x="8" y="38" width="8" height="14" rx="4" fill="url(#gGray)"/><rect x="48" y="38" width="8" height="14" rx="4" fill="url(#gGray)"/></symbol>
+  <linearGradient id="gFish" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e0f2fe"/><stop offset="1" stop-color="#3b82f6"/></linearGradient>
+  <linearGradient id="gWheat" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fef08a"/><stop offset="1" stop-color="#ca8a04"/></linearGradient>
+  <symbol id="i-junk" viewBox="0 0 64 64"><ellipse cx="32" cy="54" rx="18" ry="4" fill="#0006"/><path d="M14 40c-2-10 8-20 18-20s20 8 18 18-10 14-18 14-16-4-18-12z" fill="url(#gGrayD)"/><circle cx="26" cy="32" r="3" fill="#9ca3af"/><circle cx="38" cy="40" r="2" fill="#374151"/></symbol>
+  <symbol id="i-weizen" viewBox="0 0 64 64"><path d="M32 60V16M22 60l10-18M42 60L32 42" stroke="#a16207" stroke-width="3"/><g fill="url(#gWheat)"><ellipse cx="32" cy="12" rx="4" ry="7"/><ellipse cx="26" cy="22" rx="4" ry="7" transform="rotate(-30 26 22)"/><ellipse cx="38" cy="22" rx="4" ry="7" transform="rotate(30 38 22)"/><ellipse cx="26" cy="33" rx="4" ry="7" transform="rotate(-30 26 33)"/><ellipse cx="38" cy="33" rx="4" ry="7" transform="rotate(30 38 33)"/></g></symbol>
+  <symbol id="i-kartoffel" viewBox="0 0 64 64"><ellipse cx="32" cy="56" rx="24" ry="4" fill="#0006"/><ellipse cx="24" cy="40" rx="15" ry="12" fill="#c08a4a"/><ellipse cx="42" cy="34" rx="14" ry="11" fill="#d6a35c"/><g fill="#8a5a2b"><circle cx="20" cy="38" r="1.6"/><circle cx="28" cy="44" r="1.4"/><circle cx="44" cy="30" r="1.6"/><circle cx="38" cy="38" r="1.3"/></g></symbol>
+  <symbol id="i-trauben" viewBox="0 0 64 64"><path d="M32 4v10" stroke="#65a30d" stroke-width="3"/><path d="M34 10c8-6 16-2 18 4-8 2-14 0-18-4z" fill="#65a30d"/><g fill="#9333ea" stroke="#581c87" stroke-width="1"><circle cx="24" cy="20" r="7"/><circle cx="38" cy="20" r="7"/><circle cx="31" cy="30" r="7"/><circle cx="20" cy="32" r="6"/><circle cx="42" cy="32" r="6"/><circle cx="26" cy="42" r="6"/><circle cx="37" cy="42" r="6"/><circle cx="31" cy="53" r="6"/></g><circle cx="22" cy="18" r="2" fill="#fff" opacity=".5"/></symbol>
+  <symbol id="i-hopfen" viewBox="0 0 64 64"><path d="M32 4v8" stroke="#3f6212" stroke-width="3"/><path d="M32 10c-12 6-16 18-12 30 3 10 9 16 12 18 3-2 9-8 12-18 4-12 0-24-12-30z" fill="#84cc16"/><path d="M22 22h20M20 32h24M21 42h22M25 51h14" stroke="#4d7c0f" stroke-width="2"/></symbol>
+  <symbol id="i-baumwolle" viewBox="0 0 64 64"><path d="M32 62V34" stroke="#78350f" stroke-width="3"/><g fill="#f8fafc"><circle cx="24" cy="26" r="11"/><circle cx="40" cy="26" r="11"/><circle cx="32" cy="16" r="11"/><circle cx="32" cy="32" r="9"/></g><g fill="#78350f"><path d="M18 34l6-4 2 6zM46 34l-6-4-2 6z"/></g></symbol>
+  <symbol id="i-milch" viewBox="0 0 64 64"><ellipse cx="32" cy="58" rx="14" ry="3" fill="#0006"/><path d="M24 4h16v8l6 10v34a4 4 0 0 1-4 4H22a4 4 0 0 1-4-4V22l6-10z" fill="#f8fafc"/><rect x="18" y="30" width="28" height="16" fill="#3b82f6"/><path d="M24 34c3 4 6 4 8 0s5-4 8 0" stroke="#fff" stroke-width="2" fill="none"/></symbol>
+  <symbol id="i-eier" viewBox="0 0 64 64"><ellipse cx="32" cy="56" rx="24" ry="4" fill="#0006"/><ellipse cx="22" cy="38" rx="12" ry="16" fill="#fef3c7"/><ellipse cx="42" cy="40" rx="12" ry="15" fill="#fde68a"/><ellipse cx="18" cy="30" rx="3" ry="5" fill="#fff" opacity=".7"/></symbol>
+  <symbol id="i-hering" viewBox="0 0 64 64"><path d="M6 32c10-12 30-14 44-4l10-8v24l-10-8C36 46 16 44 6 32z" fill="url(#gFish)"/><circle cx="16" cy="30" r="2.5" fill="#0f172a"/><path d="M26 26c4 4 4 8 0 12" stroke="#1e3a8a" stroke-width="1.5" fill="none" opacity=".5"/></symbol>
+  <symbol id="i-lachs" viewBox="0 0 64 64"><path d="M4 32c10-14 32-16 46-4l10-9v26l-10-9C36 48 14 46 4 32z" fill="#fb7185"/><path d="M4 32c10-14 32-16 46-4" fill="#94a3b8"/><circle cx="14" cy="30" r="2.5" fill="#0f172a"/><g fill="#be123c" opacity=".6"><circle cx="30" cy="34" r="1.5"/><circle cx="38" cy="32" r="1.5"/><circle cx="34" cy="38" r="1.5"/></g></symbol>
+  <symbol id="i-thunfisch" viewBox="0 0 64 64"><path d="M2 32c8-16 34-18 48-6l12-12v36L50 38C36 50 10 48 2 32z" fill="#1e3a8a"/><path d="M2 32c10 8 30 12 48 6" fill="#cbd5e1"/><path d="M28 18l6-8 4 10z" fill="#fbbf24"/><circle cx="12" cy="30" r="3" fill="#fff"/><circle cx="12" cy="30" r="1.5" fill="#000"/></symbol>
+  <symbol id="i-hummer" viewBox="0 0 64 64"><g fill="#dc2626"><ellipse cx="32" cy="38" rx="9" ry="16"/><path d="M24 18c-10-2-16-10-12-14 4 6 10 6 14 8zM40 18c10-2 16-10 12-14-4 6-10 6-14 8z"/><path d="M26 54l6 8 6-8z"/></g><g stroke="#991b1b" stroke-width="2"><path d="M24 32l-10 4M24 40l-10 6M40 32l10 4M40 40l10 6M26 30h12M26 38h12M26 46h12"/></g><g stroke="#fca5a5" stroke-width="1.5"><path d="M30 22L20 4M34 22l10-18"/></g></symbol>
+  <symbol id="i-mehl" viewBox="0 0 64 64"><ellipse cx="32" cy="58" rx="20" ry="4" fill="#0006"/><path d="M16 14c4-6 28-6 32 0l4 40c0 4-40 4-40 0z" fill="#fef3c7"/><path d="M20 8l24 0-4 8H24z" fill="#e7d9b0"/><text x="32" y="40" font-size="10" font-weight="900" fill="#a16207" text-anchor="middle" font-family="system-ui,sans-serif">MEHL</text></symbol>
+  <symbol id="i-brot" viewBox="0 0 64 64"><ellipse cx="32" cy="54" rx="26" ry="4" fill="#0006"/><path d="M6 40c0-14 12-22 26-22s26 8 26 22c0 8-52 8-52 0z" fill="#d97706"/><path d="M20 28l-4 8M30 26l-4 9M40 26l-4 9M50 30l-4 7" stroke="#fde68a" stroke-width="3" stroke-linecap="round"/></symbol>
+  <symbol id="i-kaese" viewBox="0 0 64 64"><ellipse cx="32" cy="56" rx="26" ry="4" fill="#0006"/><path d="M6 46L44 16l14 12v18z" fill="#fde047"/><path d="M6 46h52v6H6z" fill="#eab308"/><g fill="#ca8a04"><circle cx="30" cy="36" r="4"/><circle cx="44" cy="30" r="3"/><circle cx="48" cy="42" r="2.5"/><circle cx="20" cy="44" r="2"/></g></symbol>
+  <symbol id="i-chips" viewBox="0 0 64 64"><ellipse cx="32" cy="58" rx="18" ry="3" fill="#0006"/><path d="M16 8h32l-4 8 4 8-4 30H20L16 24l4-8z" fill="#ef4444"/><ellipse cx="32" cy="34" rx="10" ry="8" fill="#fbbf24"/><path d="M26 32c4 2 8 2 12 0" stroke="#b45309" stroke-width="1.5" fill="none"/></symbol>
+  <symbol id="i-raeucherlachs" viewBox="0 0 64 64"><ellipse cx="32" cy="54" rx="26" ry="4" fill="#0006"/><path d="M6 40c4-14 46-20 52-8 2 6-4 14-26 16S4 48 6 40z" fill="#f97316"/><path d="M14 38c8-6 12-6 18 0M28 34c8-6 12-6 18 0M38 42c6-4 10-4 14 0" stroke="#fed7aa" stroke-width="2.5" fill="none"/></symbol>
+  <symbol id="i-wein" viewBox="0 0 64 64"><ellipse cx="32" cy="59" rx="22" ry="3" fill="#0006"/><path d="M14 4h8v12c4 4 4 8 4 12v28a2 2 0 0 1-2 2H12a2 2 0 0 1-2-2V28c0-4 0-8 4-12z" fill="#4c1d95"/><rect x="10" y="32" width="16" height="12" fill="#f5f5f4"/><path d="M38 24h18c0 10-4 16-9 16s-9-6-9-16z" fill="#7e22ce" opacity=".85"/><path d="M47 40v14M40 56h14" stroke="#e5e7eb" stroke-width="2.5"/></symbol>
+  <symbol id="i-bier" viewBox="0 0 64 64"><ellipse cx="30" cy="59" rx="18" ry="3" fill="#0006"/><rect x="14" y="18" width="30" height="40" rx="4" fill="#f59e0b"/><path d="M44 26h6a4 4 0 0 1 4 4v12a4 4 0 0 1-4 4h-6" stroke="#fde68a" stroke-width="4" fill="none"/><path d="M12 18c0-6 6-10 10-8 2-4 10-4 12 0 4-2 10 2 10 8z" fill="#fff"/><g fill="#fde68a" opacity=".7"><circle cx="22" cy="34" r="1.5"/><circle cx="30" cy="44" r="1.5"/><circle cx="36" cy="30" r="1.5"/></g></symbol>
+  <symbol id="i-stoff" viewBox="0 0 64 64"><ellipse cx="32" cy="56" rx="24" ry="4" fill="#0006"/><rect x="8" y="18" width="40" height="30" rx="4" fill="#a78bfa"/><ellipse cx="48" cy="33" rx="8" ry="15" fill="#c4b5fd"/><ellipse cx="48" cy="33" rx="3" ry="6" fill="#7c3aed"/><path d="M12 26h32M12 34h32M12 42h32" stroke="#ddd6fe" stroke-width="1.5" opacity=".6"/></symbol>
+  <symbol id="i-kleidung" viewBox="0 0 64 64"><ellipse cx="32" cy="58" rx="20" ry="3" fill="#0006"/><path d="M22 6l-16 10 6 12 6-4v32h28V24l6 4 6-12L42 6c-2 6-6 8-10 8s-8-2-10-8z" fill="#ec4899"/><path d="M24 30h16" stroke="#fbcfe8" stroke-width="3"/></symbol>
+  <symbol id="i-jahrgangswein" viewBox="0 0 64 64"><ellipse cx="32" cy="59" rx="16" ry="3" fill="#0006"/><path d="M27 2h10v14c6 4 7 8 7 14v26a3 3 0 0 1-3 3H23a3 3 0 0 1-3-3V30c0-6 1-10 7-14z" fill="#3b0764"/><rect x="20" y="32" width="24" height="16" fill="#fbbf24"/><text x="32" y="44" font-size="8" font-weight="900" fill="#3b0764" text-anchor="middle" font-family="system-ui,sans-serif">1987</text><rect x="27" y="2" width="10" height="5" fill="#b91c1c"/></symbol>
+  <symbol id="i-bergkaese" viewBox="0 0 64 64"><ellipse cx="32" cy="56" rx="26" ry="4" fill="#0006"/><ellipse cx="32" cy="42" rx="26" ry="10" fill="#b45309"/><rect x="6" y="28" width="52" height="14" fill="#ca8a04"/><ellipse cx="32" cy="28" rx="26" ry="10" fill="#fde047"/><path d="M32 28l20-6" stroke="#ca8a04" stroke-width="2"/></symbol>
+  <symbol id="i-schnaps" viewBox="0 0 64 64"><ellipse cx="32" cy="59" rx="18" ry="3" fill="#0006"/><path d="M26 6h12v8c10 4 14 12 14 22v18a4 4 0 0 1-4 4H16a4 4 0 0 1-4-4V36c0-10 4-18 14-22z" fill="#a3e635" opacity=".75"/><path d="M18 30h28v16H18z" fill="#f5f5f4"/><text x="32" y="42" font-size="11" font-weight="900" fill="#b91c1c" text-anchor="middle" font-family="system-ui,sans-serif">XXX</text><rect x="26" y="2" width="12" height="6" rx="2" fill="#78350f"/></symbol>
+  <symbol id="i-replika" viewBox="0 0 64 64"><rect x="24" y="2" width="16" height="60" rx="5" fill="#78350f"/><circle cx="32" cy="32" r="18" fill="url(#gGold)"/><circle cx="32" cy="32" r="13" fill="#f8fafc"/><path d="M32 22v10l7 4" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/><text x="32" y="46" font-size="5" fill="#64748b" text-anchor="middle" font-family="system-ui">ROLAX</text></symbol>
+  <symbol id="i-raubkopie" viewBox="0 0 64 64"><ellipse cx="32" cy="58" rx="22" ry="3" fill="#0006"/><circle cx="32" cy="32" r="24" fill="url(#gSteel)"/><circle cx="32" cy="32" r="24" fill="url(#gScr)" opacity=".35"/><circle cx="32" cy="32" r="6" fill="#0b0f1d"/><path d="M14 20l8 6M44 14l-4 8" stroke="#fff" stroke-width="2" opacity=".7"/><path d="M8 40l48-12" stroke="#ef4444" stroke-width="4"/></symbol>
   <symbol id="i-tnt" viewBox="0 0 64 64"><ellipse cx="32" cy="58" rx="22" ry="4" fill="#0006"/><rect x="11" y="24" width="13" height="32" rx="5" fill="url(#gRed)"/><rect x="25.5" y="21" width="13" height="35" rx="5" fill="url(#gRed)"/><rect x="40" y="24" width="13" height="32" rx="5" fill="url(#gRed)"/><rect x="9" y="36" width="46" height="7" rx="2" fill="#1a2140"/><path d="M32 21c0-8 5-11 10-14" stroke="#cbd5e1" stroke-width="2.5" fill="none"/><circle cx="43" cy="7" r="4.5" fill="#fbbf24"/><circle cx="43" cy="7" r="2" fill="#fff"/></symbol>
   <symbol id="i-coin" viewBox="0 0 64 64"><circle cx="32" cy="32" r="24" fill="url(#gGold)"/><circle cx="32" cy="32" r="17" fill="none" stroke="#b45309" stroke-width="3" opacity=".55"/><path d="M26 22h12M26 42h12M32 20v24" stroke="#b45309" stroke-width="3.5" stroke-linecap="round" opacity=".7"/></symbol>
   <symbol id="i-lvl" viewBox="0 0 64 64"><path d="M32 6l7 16 17 2-13 12 4 17-15-9-15 9 4-17L8 24l17-2z" fill="url(#gGold)"/></symbol>
@@ -256,6 +329,7 @@
 
 <main>
   <section class="screen on" id="s-work"></section>
+  <section class="screen" id="s-farm"></section>
   <section class="screen" id="s-bld"></section>
   <section class="screen" id="s-shop"></section>
   <section class="screen" id="s-orders"></section>
@@ -265,11 +339,9 @@
 
 <nav id="nav">
   <button class="on" data-s="work"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/></svg>Werkstatt</button>
+  <button data-s="farm"><svg viewBox="0 0 24 24"><path d="M12 21v-9M12 12c0-4 3-7 7-7 0 4-3 7-7 7zM12 15c0-3-2.5-5.5-6-5.5 0 3 2.5 5.5 6 5.5zM5 21h14"/></svg>Farm</button>
   <button data-s="bld"><svg viewBox="0 0 24 24"><path d="M3 21h18M5 21V9l5-3v15M10 21V12l5-3v12M15 21V4h4v17"/></svg>Betriebe</button>
-  <button data-s="shop"><svg viewBox="0 0 24 24"><path d="M3 9l2-5h14l2 5M3 9h18v2a3 3 0 0 1-6 0 3 3 0 0 1-6 0 3 3 0 0 1-6 0zM5 13v8h14v-8M10 21v-5h4v5"/></svg>Laden</button>
-  <button data-s="orders"><svg viewBox="0 0 24 24"><path d="M9 4h6v3H9zM7 5H5v16h14V5h-2M8 12l2 2 4-4M8 17h8"/></svg>Aufträge</button>
-  <button data-s="ship"><svg viewBox="0 0 24 24"><path d="M2 6h12v10H2zM14 10h4l4 3v3h-8z"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg>Transport</button>
-  <button data-s="market"><svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg>Markt</button>
+  <button data-s="trade"><svg viewBox="0 0 24 24"><path d="M3 9l2-5h14l2 5M3 9h18v2a3 3 0 0 1-6 0 3 3 0 0 1-6 0 3 3 0 0 1-6 0zM5 13v8h14v-8M10 21v-5h4v5"/></svg>Handel</button>
 </nav>
 <div id="ov"><div id="ovbox"></div></div>
 <div id="toast"></div>
@@ -289,35 +361,62 @@ const G={
  ebike:{n:'E-Bike',base:260,c:'#4ade80',lv:4,secret:1},smartwatch:{n:'Smartwatch',base:220,c:'#f0abfc',lv:4,secret:1},
  drohne:{n:'Drohne',base:300,c:'#fde047',lv:4,secret:1},roboter:{n:'Roboter',base:600,c:'#94a3b8',lv:4,secret:1}
 };
+Object.assign(G,{
+ weizen:{n:'Weizen',base:3,c:'#facc15',cat:'agrar'},kartoffel:{n:'Kartoffeln',base:3,c:'#d6a35c',cat:'agrar'},
+ trauben:{n:'Trauben',base:6,c:'#a855f7',cat:'agrar',lv:3},hopfen:{n:'Hopfen',base:5,c:'#84cc16',cat:'agrar',lv:3},
+ baumwolle:{n:'Baumwolle',base:5,c:'#e2e8f0',cat:'agrar',lv:3},milch:{n:'Milch',base:4,c:'#e0f2fe',cat:'agrar'},eier:{n:'Eier',base:3,c:'#fde68a',cat:'agrar'},
+ hering:{n:'Hering',base:6,c:'#93c5fd',cat:'fisch'},lachs:{n:'Lachs',base:16,c:'#fb7185',cat:'fisch'},
+ thunfisch:{n:'Thunfisch',base:40,c:'#3b82f6',cat:'fisch',lv:3},hummer:{n:'Hummer',base:70,c:'#ef4444',cat:'fisch'},
+ mehl:{n:'Mehl',base:9,c:'#fef3c7',cat:'food'},brot:{n:'Brot',base:30,c:'#d97706',cat:'food'},kaese:{n:'Käse',base:24,c:'#fcd34d',cat:'food'},
+ chips:{n:'Chips',base:16,c:'#fbbf24',cat:'food'},raeucherlachs:{n:'Räucherlachs',base:50,c:'#f97316',cat:'food'},
+ wein:{n:'Wein',base:40,c:'#9333ea',cat:'food',lv:3},bier:{n:'Bier',base:24,c:'#f59e0b',cat:'food',lv:3},
+ stoff:{n:'Stoff',base:22,c:'#c4b5fd',cat:'bau',lv:3},kleidung:{n:'Kleidung',base:90,c:'#ec4899',cat:'lux',lv:4},
+ jahrgangswein:{n:'Jahrgangswein',base:180,c:'#7e22ce',cat:'lux',lv:3},bergkaese:{n:'Bergkäse',base:100,c:'#ca8a04',cat:'lux'},
+ schnaps:{n:'Schwarzgebrannter',base:55,c:'#a3e635',cat:'ill',illegal:1,lv:3},replika:{n:'Replika-Uhr',base:150,c:'#fbbf24',cat:'ill',illegal:1,lv:4},
+ raubkopie:{n:'Raubkopie',base:45,c:'#94a3b8',cat:'ill',illegal:1,lv:4}
+});
+const CAT={erz:'roh',kohle:'roh',lehm:'roh',sand:'roh',kupfer:'roh',oel:'roh',ziegel:'bau',stahl:'bau',maschine:'bau',glas:'bau',kunststoff:'bau',
+ draht:'elek',platine:'elek',akku:'elek',display:'elek',gehaeuse:'elek',handy:'elek'};
+const CATS=[['alle','Alle'],['roh','Rohstoffe'],['bau','Bau'],['elek','Elektronik'],['agrar','Agrar'],['food','Lebensmittel'],['fisch','Fisch'],['lux','Spezial']];
+const catOf=g=>G[g].cat||CAT[g]||'lux';
 const GK=Object.keys(G);
 const REC=[
- {out:'kamin',in:['ziegel','stahl','kohle'],games:['mix','bolts'],hint:'Wärmt das Haus – aus Stein, Metall und Brennstoff.'},
- {out:'dampfmaschine',in:['maschine','kohle','stahl'],games:['bolts','simon'],hint:'Die Urkraft der Industrie: Mechanik trifft Feuer.'},
+ {out:'kamin',in:['ziegel','stahl','kohle'],games:['mix','bolts','forge'],hint:'Wärmt das Haus – aus Stein, Metall und Brennstoff.'},
+ {out:'dampfmaschine',in:['maschine','kohle','stahl'],games:['bolts','simon','pipes'],hint:'Die Urkraft der Industrie: Mechanik trifft Feuer.'},
  {out:'glasfaser',in:['glas','kunststoff','draht'],games:['mix','solder'],hint:'Licht reist durch eine ummantelte Leitung.'},
  {out:'solar',in:['glas','platine','stahl'],games:['solder','bolts'],hint:'Fängt Sonnenlicht hinter Glas ein.'},
  {out:'ebike',in:['stahl','akku','draht'],games:['bolts','solder'],hint:'Zwei Räder, ein Rahmen und gespeicherte Energie.'},
  {out:'smartwatch',in:['display','akku','kunststoff'],games:['solder','simon'],hint:'Ein winziger Bildschirm fürs Handgelenk.'},
  {out:'drohne',in:['akku','platine','kunststoff'],games:['solder','bolts'],hint:'Leicht, smart – und sie fliegt.'},
- {out:'roboter',in:['maschine','platine','akku'],games:['simon','solder','bolts'],hint:'Mechanik mit Gehirn und eigener Energie.'}
+ {out:'roboter',in:['maschine','platine','akku'],games:['simon','solder','bolts','wires'],hint:'Mechanik mit Gehirn und eigener Energie.'}
 ];
 const ST=[
  {id:'erz',n:'Eisenerz abbauen',games:['wall','whack','catch','timing'],in:{},out:'erz',max:8,mult:'pick'},
  {id:'kohle',n:'Kohle abbauen',games:['wall','whack','timingMove','catch'],in:{},out:'kohle',max:8,mult:'pick'},
- {id:'lehm',n:'Lehm graben',games:['catch','wall','timing','whack'],in:{},out:'lehm',max:8,mult:'pick'},
+ {id:'lehm',n:'Lehm graben',games:['catch','wall','timing','whack','sort'],in:{},out:'lehm',max:8,mult:'pick'},
  {id:'ziegel',n:'Ziegelei',games:['stack','mash'],in:{lehm:4},out:'ziegel',max:3,mult:'bench'},
- {id:'stahl',n:'Schmelzofen',games:['heat','heatMove'],in:{erz:4,kohle:2},out:'stahl',max:3,mult:'bench'},
- {id:'maschine',n:'Montage',games:['simon','bolts'],in:{stahl:3,ziegel:2},out:'maschine',max:2,mult:'bench'},
- {id:'sand',n:'Sand schaufeln',games:['catch','whack','timing'],in:{},out:'sand',max:8,mult:'pick',lv:4},
+ {id:'stahl',n:'Schmelzofen',games:['heat','heatMove','pour','forge'],in:{erz:4,kohle:2},out:'stahl',max:3,mult:'bench'},
+ {id:'maschine',n:'Montage',games:['simon','bolts','pipes','forge'],in:{stahl:3,ziegel:2},out:'maschine',max:2,mult:'bench'},
+ {id:'sand',n:'Sand schaufeln',games:['catch','whack','timing','sort'],in:{},out:'sand',max:8,mult:'pick',lv:4},
  {id:'kupfer',n:'Kupfer abbauen',games:['wall','whack','timingMove'],in:{},out:'kupfer',max:6,mult:'pick',lv:4},
  {id:'oel',n:'Öl fördern',games:['catch','timingMove','timing'],in:{},out:'oel',max:6,mult:'pick',lv:4},
- {id:'glas',n:'Glashütte',games:['heat','heatMove'],in:{sand:4},out:'glas',max:3,mult:'bench',lv:4},
- {id:'kunststoff',n:'Kunststoff mischen',games:['mix'],in:{oel:3},out:'kunststoff',max:3,mult:'bench',lv:4},
+ {id:'glas',n:'Glashütte',games:['heat','heatMove','pour'],in:{sand:4},out:'glas',max:3,mult:'bench',lv:4},
+ {id:'kunststoff',n:'Kunststoff mischen',games:['mix','pipes'],in:{oel:3},out:'kunststoff',max:3,mult:'bench',lv:4},
  {id:'draht',n:'Draht ziehen',games:['mash','timing'],in:{kupfer:2},out:'draht',max:4,mult:'bench',lv:4},
- {id:'platine',n:'Platine löten',games:['solder'],in:{draht:2,kunststoff:1},out:'platine',max:2,mult:'bench',lv:4},
- {id:'akku',n:'Akku bauen',games:['mix','solder'],in:{draht:1,kunststoff:2,stahl:1},out:'akku',max:2,mult:'bench',lv:4},
- {id:'display',n:'Display fertigen',games:['solder','bolts'],in:{glas:2,draht:1},out:'display',max:2,mult:'bench',lv:4},
- {id:'gehaeuse',n:'Gehäuse gießen',games:['mix','timing'],in:{kunststoff:2,stahl:1},out:'gehaeuse',max:2,mult:'bench',lv:4},
- {id:'handy',n:'Smartphone montieren',games:['phone'],in:{platine:1,akku:1,display:1,gehaeuse:1},out:'handy',max:1,mult:'bench',lv:4}
+ {id:'platine',n:'Platine löten',games:['solder','wires'],in:{draht:2,kunststoff:1},out:'platine',max:2,mult:'bench',lv:4},
+ {id:'akku',n:'Akku bauen',games:['mix','solder','wires'],in:{draht:1,kunststoff:2,stahl:1},out:'akku',max:2,mult:'bench',lv:4},
+ {id:'display',n:'Display fertigen',games:['solder','bolts','wires'],in:{glas:2,draht:1},out:'display',max:2,mult:'bench',lv:4},
+ {id:'gehaeuse',n:'Gehäuse gießen',games:['mix','timing','pour'],in:{kunststoff:2,stahl:1},out:'gehaeuse',max:2,mult:'bench',lv:4},
+ {id:'handy',n:'Smartphone montieren',games:['phone'],in:{platine:1,akku:1,display:1,gehaeuse:1},out:'handy',max:1,mult:'bench',lv:4},
+ {id:'muehle',n:'Mühle',grp:'food',games:['mash','sort'],in:{weizen:3},out:'mehl',max:3,mult:'bench'},
+ {id:'baeckerei',n:'Bäckerei',grp:'food',games:['heat','heatMove'],in:{mehl:2,eier:1},out:'brot',max:3,mult:'bench'},
+ {id:'kaeserei',n:'Käserei',grp:'food',games:['mix','pour'],in:{milch:3},out:'kaese',max:2,mult:'bench'},
+ {id:'chipsfabrik',n:'Chips frittieren',grp:'food',games:['sort','heat'],in:{kartoffel:3},out:'chips',max:3,mult:'bench'},
+ {id:'raeucherei',n:'Räucherei',grp:'food',games:['heat','heatMove'],in:{lachs:2},out:'raeucherlachs',max:2,mult:'bench'},
+ {id:'kelterei',n:'Kelterei',grp:'food',games:['mix','pour'],in:{trauben:4},out:'wein',max:2,mult:'bench',lv:3},
+ {id:'brauerei',n:'Brauerei',grp:'food',games:['mix','pipes'],in:{hopfen:2,weizen:2},out:'bier',max:3,mult:'bench',lv:3},
+ {id:'weberei',n:'Weberei',grp:'food',games:['simon','mash'],in:{baumwolle:3},out:'stoff',max:2,mult:'bench',lv:3},
+ {id:'schneiderei',n:'Schneiderei',grp:'food',games:['wires','simon'],in:{stoff:2,draht:1},out:'kleidung',max:1,mult:'bench',lv:4}
 ];
 REC.forEach(r=>ST.push({id:'r_'+r.out,n:G[r.out].n+' bauen',games:r.games,in:Object.fromEntries(r.in.map(k=>[k,2])),out:r.out,max:3,mult:'bench',lv:G[r.out].lv,secret:true}));
 const ROUTES=[
@@ -328,7 +427,10 @@ const UP=[
  {id:'pick',n:'Spitzhacke',d:'+30% Ertrag beim Abbauen',base:60,i:'erz',c:'#f59e0b'},
  {id:'bench',n:'Werkbank',d:'+30% Ertrag bei Presse, Ofen & Montage',base:120,i:'maschine',c:'#fbbf24'},
  {id:'truck',n:'LKW-Ladefläche',d:'+10 Plätze pro Fahrt',base:80,i:'truck',c:'#22d3ee'},
- {id:'store',n:'Lagerhalle',d:'+100 Lagerplatz pro Ware',base:50,i:'ziegel',c:'#ef4444'}
+ {id:'store',n:'Lagerhalle',d:'+100 Lagerplatz pro Ware',base:50,i:'ziegel',c:'#ef4444'},
+ {id:'tractor',n:'Traktor',d:'+25% Ernte auf der Farm',base:400,i:'weizen',c:'#facc15'},
+ {id:'sprinkler',n:'Bewässerung',d:'Stufe 1: Felder gießen sich selbst · jede weitere Stufe +10% Wachstum',base:1500,i:'milch',c:'#38bdf8'},
+ {id:'rod',n:'Angelrute',d:'Seltene Fische beißen häufiger an',base:300,i:'lachs',c:'#fb7185'}
 ];
 const BLD=[
  {id:'lehmgrube',kind:'mine',n:'Lehmgrube',out:'lehm',rate:0.3,base:100},
@@ -343,7 +445,11 @@ const BLD=[
  {id:'sandgrube',kind:'mine',n:'Sandgrube',out:'sand',rate:0.3,base:600,lv:4},
  {id:'kupfermine',kind:'mine',n:'Kupfermine',out:'kupfer',rate:0.2,base:900,lv:4},
  {id:'oelpumpe',kind:'mine',n:'Ölpumpe',out:'oel',rate:0.2,base:900,lv:4},
- {id:'elektronikmarkt',kind:'shop',n:'Elektronikmarkt',goods:['handy','display','akku','platine'],base:8000,c:'#e879f9',lv:4}
+ {id:'elektronikmarkt',kind:'shop',n:'Elektronikmarkt',goods:['handy','display','akku','platine'],base:8000,c:'#e879f9',lv:4},
+ {id:'kutter',kind:'mine',n:'Fischkutter',out:'hering',rate:0.12,base:1500},
+ {id:'kuhstall',kind:'fac',n:'Kuhstall',in:{weizen:1},out:'milch',t:8,base:700},
+ {id:'huehnerstall',kind:'fac',n:'Hühnerstall',in:{weizen:1},out:'eier',t:6,base:450},
+ {id:'feinkost',kind:'shop',n:'Feinkostladen',goods:['brot','kaese','raeucherlachs','wein','bier'],base:3000,c:'#f59e0b'}
 ];
 const BMAX=10,WEAR=100/480,SHOPT=5,KEEPS=[0,10,25,50,100];
 const SAVE='industry-action-v2';
@@ -352,7 +458,8 @@ const fmt=n=>n>=1e6?(n/1e6).toFixed(2)+'M':n>=1e4?(n/1e3).toFixed(1)+'k':(Math.r
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 
 let S={money:30,xp:0,stock:{},up:{},last:Date.now(),hist:{},mute:false,b:{},
-  rep:10,offers:[],orders:[],rec:{},shop:{lvl:1,slots:[],sold:0,earned:0,walked:0},rivals:null,oid:1,nextOffer:0};
+  rep:10,offers:[],orders:[],rec:{},shop:{lvl:1,slots:[],sold:0,earned:0,walked:0},rivals:null,oid:1,nextOffer:0,
+  combo:0,farm:{plots:[0,1,2,3].map(()=>({c:null,p:0,w:0,pest:0,half:0,ready:0})),nextPest:0},cellar:{n:2,items:[]}};
 try{const l=JSON.parse(localStorage.getItem(SAVE));if(l&&l.stock)S=Object.assign(S,l)}catch(e){}
 GK.forEach(g=>{if(S.stock[g]==null)S.stock[g]=0;if(!S.hist[g])S.hist[g]=[]});
 UP.forEach(u=>{if(S.up[u.id]==null)S.up[u.id]=0});
@@ -365,7 +472,8 @@ const mult=k=>1+0.3*S.up[k];
 const upCost=u=>Math.ceil(u.base*Math.pow(1.8,S.up[u.id]));
 const price=g=>Math.max(0.2,G[g].base*mood[g]/(1+sat[g]/60));
 const unl=g=>(G[g].lv||1)<=lvl()&&(!G[g].secret||!!S.rec[g]);
-const GKU=()=>GK.filter(unl);
+const GKU=()=>GK.filter(g=>unl(g)&&!G[g].illegal);
+const diff=()=>1+(lvl()-1)*.05;
 const buyP=g=>price(g)*1.2,sellP=g=>price(g)*0.75;
 
 /* ===== Sound, Haptik, Effekte ===== */
@@ -586,14 +694,105 @@ function openLab(){
   };
   draw();
 }
+/* ===== Farm, Fischerei, Reifekeller ===== */
+const CROPS={weizen:{grow:60,seed:4,yield:6},kartoffel:{grow:90,seed:5,yield:6},trauben:{grow:180,seed:12,yield:5},hopfen:{grow:120,seed:8,yield:5},baumwolle:{grow:120,seed:8,yield:5}};
+const AGE={wein:{to:'jahrgangswein',t:600},kaese:{to:'bergkaese',t:480}};
+const plotCost=()=>Math.ceil(150*Math.pow(1.6,S.farm.plots.length-4));
+const cellarCost=()=>Math.ceil(800*Math.pow(1.8,S.cellar.n-2));
+const growMult=()=>1+.1*Math.max(0,S.up.sprinkler-1);
+const waterPlot=p=>{p.w=CROPS[p.c].grow*.6};
+const emptyPlot=()=>({c:null,p:0,w:0,pest:0,half:0,ready:0});
+function tickFarm(dt){
+  const now=Date.now();
+  S.farm.plots.forEach((p,i)=>{
+    if(!p.c||p.ready)return;
+    if(S.up.sprinkler>0&&p.w<=0)waterPlot(p);
+    if(p.w>0){p.p+=dt*growMult()/CROPS[p.c].grow;p.w=Math.max(0,p.w-dt);if(p.p>=1){p.p=1;p.ready=1;p.pest=0}}
+    if(p.pest&&now>p.pest){p.pest=0;p.half=1;toast('🐛 Schädlinge haben Feld '+(i+1)+' angefressen – nur halbe Ernte!');SFX.miss()}
+  });
+  if(now>S.farm.nextPest){S.farm.nextPest=now+30000+Math.random()*40000;
+    const g=S.farm.plots.filter(p=>p.c&&!p.ready&&!p.pest);
+    if(g.length){pick(g).pest=now+12000;toast('🐛 Schädlinge auf deinem Feld! Schnell zur Farm!');SFX.err();vib([40,30,40])}}
+}
+function offlineFarm(dt){
+  S.farm.plots.forEach(p=>{if(!p.c||p.ready)return;const t=S.up.sprinkler>0?dt:Math.min(dt,p.w);
+    p.p=Math.min(1,p.p+t*growMult()/CROPS[p.c].grow);p.w=Math.max(0,p.w-dt);p.pest=0;if(p.p>=1)p.ready=1});
+}
+function pickCrop(i){
+  openOv(xbtn()+`<h3>Feld ${i+1} bestellen</h3><div class="sub">Saatgut kostet Credits. Nach dem Säen musst du gießen, sonst wächst nichts.</div>`+
+    Object.keys(CROPS).map(k=>{const c=CROPS[k],lk=!unl(k);return `<div class="card ${lk?'idle':''}" style="--c:${G[k].c}"><div class="art">${ic(k,40)}</div><div class="i">${G[k].n}<small>${lk?'🔒 ab Level '+G[k].lv:'Wächst '+Math.round(c.grow/growMult())+' s · Ernte '+c.yield+'× · Saat '+c.seed+' Cr'}</small></div><button class="btn" data-k="${k}" ${lk||S.money<c.seed?'disabled':''}>Säen</button></div>`}).join(''));
+  bindX();
+  document.querySelectorAll('#ovbox [data-k]').forEach(b=>b.onclick=e=>{const k=b.dataset.k,c=CROPS[k],p=S.farm.plots[i];if(S.money<c.seed)return;
+    S.money-=c.seed;Object.assign(p,emptyPlot(),{c:k});waterPlot(p);SFX.buy();vib(12);closeOv()});
+}
+function harvest(i,e){
+  const p=S.farm.plots[i];if(!p.ready)return;
+  let n=Math.round(CROPS[p.c].yield*(p.half?.5:1)*(1+.25*S.up.tractor));n=Math.max(0,Math.min(n,Math.floor(cap()-S.stock[p.c])));
+  S.stock[p.c]+=n;S.xp+=n+2;SFX.good();vib(15);burst(e.clientX,e.clientY,G[p.c].c,14);fx('+'+n+' '+G[p.c].n,G[p.c].c,e.clientX,e.clientY-30);
+  Object.assign(p,emptyPlot());render();
+}
+async function goFish(){
+  const r=await gFish();if(!r)return;closeOv();
+  const ks=Object.keys(r);if(!ks.length){toast('Heute beißt nichts … versuch es nochmal!');return}
+  ks.forEach(g=>{S.stock[g]=Math.min(cap(),S.stock[g]+r[g]);S.xp+=r[g]*2});
+  fx(ks.map(g=>'+'+r[g]+' '+G[g].n).join(' · '),'#93c5fd');toast('Fang: '+ks.map(g=>r[g]+'× '+G[g].n).join(', '));render();
+}
+function cellarPut(){
+  const ok=Object.keys(AGE).filter(g=>unl(g)&&S.stock[g]>=1);
+  openOv(xbtn()+`<h3>Fass befüllen</h3><div class="sub">Bis zu 5 Stück reifen in einem Fass zu einer edlen Ware – das dauert, lohnt sich aber.</div>`+
+    (ok.length?ok.map(g=>{const a=AGE[g];return `<div class="card" style="--c:${G[a.to].c}"><div class="art">${ic(a.to,40)}</div><div class="i">${G[g].n} → ${G[a.to].n}<small>Reift ${Math.round(a.t/60)} min · Wert ${G[g].base} → ${G[a.to].base} Cr · Lager ${Math.floor(S.stock[g])}</small></div><button class="btn" data-g="${g}">Einlagern</button></div>`}).join('')
+      :'<p class="sub">Du brauchst Wein (Kelterei, ab Level 3) oder Käse (Käserei) im Lager.</p>'));
+  bindX();
+  document.querySelectorAll('#ovbox [data-g]').forEach(b=>b.onclick=()=>{const g=b.dataset.g,n=Math.min(5,Math.floor(S.stock[g]));if(!n||S.cellar.items.length>=S.cellar.n)return;
+    S.stock[g]-=n;S.cellar.items.push({g,to:AGE[g].to,n,end:Date.now()+AGE[g].t*1000,dur:AGE[g].t});SFX.buy();closeOv()});
+}
+function cellarTake(it,e){
+  if(Date.now()<it.end)return;S.cellar.items=S.cellar.items.filter(x=>x!==it);
+  S.stock[it.to]=Math.min(cap(),S.stock[it.to]+it.n);S.xp+=it.n*8;SFX.win();burst(e.clientX,e.clientY,G[it.to].c,18);fx('+'+it.n+' '+G[it.to].n,G[it.to].c,e.clientX,e.clientY-30);render();
+}
+function renderFarm(){
+  const el=$('s-farm'),now=Date.now();
+  el.innerHTML='<h2>Farm & Meer</h2><p class="sub">Säen, gießen, ernten. Pflanzen wachsen nur mit Wasser – und vertreib die Schädlinge! Am Steg kannst du angeln, im Keller reifen edle Waren.</p>';
+  addSec(el,'Felder · '+S.farm.plots.length+' / 12'+(S.up.sprinkler?' · 💧 Bewässerung aktiv':''));
+  const grid=document.createElement('div');grid.className='plots';
+  S.farm.plots.forEach((p,i)=>{
+    const b=document.createElement('button'),c=p.c&&CROPS[p.c],dry=p.c&&!p.ready&&p.w<=0;
+    b.className='plot'+(p.ready?' ready':'')+(p.pest?' pest':'')+(dry?' dry':'');
+    if(!p.c){b.innerHTML='<span class="pl">+ Säen</span>';b.onclick=()=>pickCrop(i)}
+    else{
+      const left=(1-p.p)*c.grow/growMult()*1000;
+      b.innerHTML=`<div class="crop" style="transform:scale(${(.35+.65*p.p).toFixed(2)})">${ic(p.c,50)}</div>${p.pest?'<div class="bug">🐛</div>':''}<div class="pbar"><i style="width:${p.p*100}%"></i></div>${p.ready?'':`<div class="wbar"><i style="width:${Math.min(100,p.w/(c.grow*.6)*100)}%"></i></div>`}<span class="pl">${p.ready?'Ernten!':p.pest?'Schädlinge!':dry?'💧 Gießen!':fmtT(left)}</span>`;
+      b.onclick=e=>{
+        if(p.ready)return harvest(i,e);
+        if(p.pest){p.pest=0;SFX.good();vib(15);burst(e.clientX,e.clientY,'#84cc16',12);fx('Erwischt!','#84cc16',e.clientX,e.clientY-30);return render()}
+        if(p.w<c.grow*.3){waterPlot(p);tone(500,.08,'sine',.05);burst(e.clientX,e.clientY,'#38bdf8',12);return render()}
+        SFX.tick()}}
+    grid.appendChild(b)});
+  if(S.farm.plots.length<12){const b=document.createElement('button'),cost=plotCost();b.className='plot buy';b.disabled=S.money<cost;
+    b.innerHTML=`<span class="pl">+ Feld<br>${fmt(cost)} Cr</span>`;b.onclick=e=>{if(S.money<cost)return;S.money-=cost;S.farm.plots.push(emptyPlot());SFX.buy();burst(e.clientX,e.clientY,'#84cc16',14);render()};grid.appendChild(b)}
+  el.appendChild(grid);
+  addSec(el,'Fischerei');
+  const f=document.createElement('div');f.className='card';f.style.setProperty('--c','#38bdf8');
+  f.innerHTML=`<div class="art">${ic('lachs',42)}</div><div class="i">Am Steg angeln<small>3 Würfe pro Ausflug · Hering, Lachs${unl('thunfisch')?', Thunfisch':''} und selten Hummer. Eine bessere Angelrute lockt seltene Fische.</small></div><button class="btn b">Angeln</button>`;
+  f.querySelector('button').onclick=goFish;el.appendChild(f);
+  addSec(el,'Reifekeller · '+S.cellar.items.length+' / '+S.cellar.n+' Fässer');
+  S.cellar.items.forEach(it=>{const d=document.createElement('div'),left=it.end-now,ready=left<=0;d.className='card';d.style.setProperty('--c',G[it.to].c);
+    d.innerHTML=`<div class="art">${ic(it.to,42)}</div><div class="i">${it.n}× ${G[it.g].n} → ${G[it.to].n}<div class="meter" style="height:6px"><i style="width:${Math.min(100,(1-left/(it.dur*1000))*100)}%;background:${G[it.to].c}"></i></div><small>${ready?'Fertig gereift!':'Noch '+fmtT(left)}</small></div><button class="btn" ${ready?'':'disabled'}>Entnehmen</button>`;
+    d.querySelector('button').onclick=e=>cellarTake(it,e);el.appendChild(d)});
+  const ce=document.createElement('div');ce.className='card';ce.style.setProperty('--c','#7e22ce');const cc=cellarCost(),full=S.cellar.items.length>=S.cellar.n;
+  ce.innerHTML=`<div class="art"><span style="font-size:30px">🛢️</span></div><div class="i">Veredeln im Fass<small>Wein → Jahrgangswein, Käse → Bergkäse. Läuft auch weiter, wenn die App zu ist.</small></div><div class="col"><button class="btn" ${full?'disabled':''}>Einlagern</button><button class="btn ghost" ${S.money<cc||S.cellar.n>=6?'disabled':''}>${S.cellar.n>=6?'MAX':'+ Fass '+fmt(cc)}</button></div>`;
+  const [put,more]=ce.querySelectorAll('button');put.onclick=cellarPut;more.onclick=()=>{if(S.money<cc||S.cellar.n>=6)return;S.money-=cc;S.cellar.n++;SFX.buy();render()};
+  el.appendChild(ce);
+}
 function addSec(el,t){const h=document.createElement('div');h.className='sec';h.textContent=t;el.appendChild(h)}
 function badges(){
   const set=(s,on)=>{const b=document.querySelector(`#nav [data-s="${s}"]`);if(b)b.classList.toggle('dot',!!on)};
-  set('shop',custQ.length>0);set('orders',S.orders.some(canDeliver));
+  set('trade',custQ.length>0||S.orders.some(canDeliver));
+  set('farm',S.farm.plots.some(p=>p.pest||p.ready||(p.c&&p.w<=0))||S.cellar.items.some(i=>Date.now()>=i.end));
 }
 
 (function(){const dt=Math.min((Date.now()-S.last)/1000,8*3600);if(dt<30)return;
-  offlineB(dt);tickRivals(dt);const s=offlineShop(dt);
+  offlineB(dt);tickRivals(dt);offlineFarm(dt);const s=offlineShop(dt);
   if(s>0)setTimeout(()=>toast('Dein Laden hat in deiner Abwesenheit für '+fmt(s)+' Credits verkauft.'),4200)})();
 function buildOrUpgrade(b,e){
   const s=bst(b),c=bCost(b);if(s.lvl>=BMAX||S.money<c||(b.lv&&b.lv>lvl()))return;
@@ -625,7 +824,7 @@ function shakeBox(){const b=$('ovbox');b.classList.remove('shake');void b.offset
 function gTiming(rounds=6,title='Abbau',sub='Stoppe den Marker in der grünen Zone. Die Mitte zählt perfekt.',moving=false){return new Promise(res=>{
   const ov=openOv(xbtn()+`<h3>${title}</h3><div class="sub">${sub}</div><div class="dots" id="dots">${'<i></i>'.repeat(rounds)}</div><div class="msg" id="m">Los!</div><div class="track" id="b"><div class="zone" id="z"></div><div class="mark" id="k"></div></div><button class="btn big" id="hit">SCHLAG!</button>`);
   bindX();ov.abort=()=>res(null);
-  let pos=0,dir=1,speed=0.9,zone=0.2,zc=0.5,round=0,pts=0,last=performance.now(),zd=1;
+  let pos=0,dir=1,speed=0.9*diff(),zone=0.2,zc=0.5,round=0,pts=0,last=performance.now(),zd=1;
   const newZone=()=>{zc=0.2+Math.random()*0.6;zd=Math.random()<.5?1:-1;$('z').style.left=((zc-zone/2)*100)+'%';$('z').style.width=(zone*100)+'%'};newZone();
   function tick(t){if(!ov.alive)return;const dt=(t-last)/1000;last=t;pos+=dir*speed*dt;
     if(moving){zc+=zd*0.18*dt;const lo=zone/2+.02,hi=1-zone/2-.02;if(zc<lo||zc>hi){zd*=-1;zc=Math.max(lo,Math.min(hi,zc))}$('z').style.left=((zc-zone/2)*100)+'%'}if(pos>1){pos=1;dir=-1}if(pos<0){pos=0;dir=1}$('k').style.left=(pos*100)+'%';requestAnimationFrame(tick)}
@@ -707,7 +906,7 @@ function gWhack(s){return new Promise(res=>{
     const h=free[Math.floor(Math.random()*free.length)],bomb=Math.random()<0.18;
     h.dataset.k=bomb?'bomb':'ore';if(!bomb)ores++;
     h.innerHTML=`<span class="rise">${ic(bomb?'tnt':s.out,46)}</span>`;
-    h._t=setTimeout(()=>{if(h.dataset.k)clear(h)},Math.max(650,1300-el*40));
+    h._t=setTimeout(()=>{if(h.dataset.k)clear(h)},Math.max(600,(1300-el*40)/diff()));
   }
   (function loop(){
     if(!ov.alive)return;const el=(performance.now()-t0)/1000;
@@ -720,9 +919,9 @@ function gWhack(s){return new Promise(res=>{
 })}
 function gWall(s){return new Promise(res=>{
   const D=16,COLS=6,ROWS=6,TARGET=16;
-  const ov=openOv(xbtn()+`<h3>Flöz · ${G[s.out].n}</h3><div class="sub">Klopf ${G[s.out].n} aus der Wand. Adern brauchen 2 Schläge, glühende Adern 3 (geben dreifach). Taubes Gestein kostet Zeit.</div><div class="msg" id="m">0 / ${TARGET}</div><div class="wall" id="wl"></div><div class="timer"><i id="tm" style="width:100%"></i></div>`);
+  const ov=openOv(xbtn()+`<h3>Flöz · ${G[s.out].n}</h3><div class="sub">Klopf ${G[s.out].n} aus der Wand. Adern brauchen 2 Schläge, glühende Adern 3 (geben dreifach). Taubes Gestein kostet Zeit. Bei Grubengas sofort aufhören!</div><div class="msg" id="m">0 / ${TARGET}</div><div class="wall" id="wl"></div><div class="timer"><i id="tm" style="width:100%"></i></div>`);
   bindX();ov.abort=()=>res(null);
-  let got=0,penalty=0,walls=0,ended=false;const t0=performance.now();
+  let got=0,penalty=0,walls=0,ended=false,gas=false,gasEnd=0,nextGas=performance.now()+3500+Math.random()*3000;const t0=performance.now();
   const wob=b=>{b.classList.remove('wob');void b.offsetWidth;b.classList.add('wob')};
   function build(){
     const wl=$('wl');wl.innerHTML='';
@@ -736,6 +935,7 @@ function gWall(s){return new Promise(res=>{
   function hit(b){
     if(ended||!ov.alive)return;const k=b.dataset.k;if(k==='done')return;
     const [x,y]=center(b);wob(b);
+    if(gas){penalty+=2;got=Math.max(0,got-2);SFX.crash();vib([90,40,90]);burst(x,y,'#fb923c',22);shakeBox();pop($('m'),'💥 Explosion! −2 und −2 s');return}
     if(k==='rock'){penalty+=0.6;SFX.miss();vib(30);burst(x,y,'#6b7280',4);return}
     const hp=+b.dataset.hp-1;b.dataset.hp=hp;
     if(hp>0){b.dataset.c=+b.dataset.c+1;SFX.tick();vib(8);burst(x,y,'#9aa0ad',5);return}
@@ -748,7 +948,9 @@ function gWall(s){return new Promise(res=>{
   }
   build();
   (function loop(){
-    if(!ov.alive||ended)return;const el=(performance.now()-t0)/1000+penalty;
+    if(!ov.alive||ended)return;const now=performance.now(),el=(now-t0)/1000+penalty;
+    if(!gas&&now>nextGas){gas=true;gasEnd=now+1600;$('wl').classList.add('gas');pop($('m'),'☠️ GRUBENGAS! Nicht klopfen!');SFX.err();vib([30,30,30])}
+    if(gas&&now>gasEnd){gas=false;$('wl').classList.remove('gas');nextGas=now+3500+Math.random()*3500;pop($('m'),'Luft ist rein – weiter!')}
     $('tm').style.width=Math.max(0,Math.min(100,100-el/D*100))+'%';
     if(el>=D){ended=true;pop($('m'),got>=TARGET?'Volle Lore! 🔥':got+' / '+TARGET);setTimeout(()=>ov.alive&&res(Math.min(1,got/TARGET)),700);return}
     requestAnimationFrame(loop)})();
@@ -770,7 +972,7 @@ function gCatch(s){return new Promise(res=>{
     const dt=Math.min(.05,(now-last)/1000);last=now;t+=dt;bx+=(tx-bx)*Math.min(1,dt*16);
     spawnT-=dt;
     if(spawnT<=0&&t<D-1.5){spawnT=Math.max(.3,.75-t*.02);const st=Math.random()<.28;if(!st)good++;
-      items.push({x:24+Math.random()*(W-48),y:-20,v:140+t*9+Math.random()*60,st,r:st?14:12,rot:Math.random()*6})}
+      items.push({x:24+Math.random()*(W-48),y:-20,v:(140+t*9+Math.random()*60)*diff(),st,r:st?14:12,rot:Math.random()*6})}
     items.forEach(o=>{o.y+=o.v*dt;o.rot+=dt*2});
     items=items.filter(o=>{
       if(o.y>H-60&&o.y<H-32&&Math.abs(o.x-bx)<40){
@@ -927,6 +1129,157 @@ function gSolder(s){return new Promise(res=>{
     if(done){removeEventListener('pointerup',up);removeEventListener('pointercancel',up);return}
     requestAnimationFrame(loop)})(performance.now());
 })}
+function gPour(s){return new Promise(res=>{
+  const N=3;
+  const ov=openOv(xbtn()+`<h3>Gießen · ${G[s.out].n}</h3><div class="sub">Halte gedrückt zum Gießen. Die Schmelze fließt nach dem Loslassen noch weiter – lass rechtzeitig los, damit die Form genau bis zur grünen Linie voll ist.</div><div class="dots" id="dots">${'<i></i>'.repeat(N)}</div><div class="msg" id="m">Form 1</div><div class="mold"><div class="mfill" id="mf"></div><div class="mline" id="ml"></div></div><button class="btn big a" id="h" style="height:96px">🫗 GIESSEN (halten)</button>`);
+  bindX();ov.abort=()=>res(null);
+  let k=0,fill=0,flow=0,hold=false,target=0,score=0,phase='pour',last=performance.now();
+  const newMold=()=>{fill=0;flow=0;target=40+Math.random()*45;$('ml').style.bottom=target+'%';$('mf').style.height='0%';phase='pour'};
+  newMold();
+  const on=e=>{e.preventDefault();if(phase==='pour')hold=true},off=()=>{if(hold&&phase==='pour'&&fill>0)phase='settle';hold=false};
+  $('h').onpointerdown=on;$('h').onpointerup=off;$('h').onpointerleave=off;$('h').onpointercancel=off;
+  (function loop(now){
+    if(!ov.alive)return;const dt=Math.min(.05,(now-last)/1000);last=now;
+    flow=hold?Math.min(50*diff(),flow+95*dt):Math.max(0,flow-115*dt);
+    fill=Math.min(100,fill+flow*dt);$('mf').style.height=fill+'%';
+    if(fill>=100&&phase==='pour'){hold=false;phase='settle'}
+    if(phase==='settle'&&flow<=0){
+      const err=Math.abs(fill-target),v=err<=3?1:err<=8?.6:err<=15?.3:0;score+=v;phase='wait';
+      $('dots').children[k].className=v>=1?'p':v>0?'g':'m';
+      pop($('m'),v>=1?'Perfekt! ✨':v>0?(fill>target?'+':'')+Math.round(fill-target)+' % daneben':fill>target?'Übergelaufen! 🔥':'Viel zu wenig!');
+      v>=1?SFX.perfect():v>0?SFX.good():SFX.miss();k++;
+      setTimeout(()=>{if(!ov.alive)return;if(k>=N){res(score/N);return}newMold();pop($('m'),'Form '+(k+1))},900)}
+    requestAnimationFrame(loop)})(performance.now());
+})}
+function gForge(s){return new Promise(res=>{
+  const N=8;
+  const ov=openOv(xbtn()+`<h3>Schmieden · ${G[s.out].n}</h3><div class="sub">Schlag zu, wenn der weiße Ring genau auf dem glühenden Werkstück liegt. Der Takt wird schneller!</div><div class="dots" id="dots">${'<i></i>'.repeat(N)}</div><div class="msg" id="m">Bereit …</div><div class="anvil"><div class="work" id="wk"></div><div class="fring" id="rg"></div></div><button class="btn big r" id="hit" style="height:90px">🔨 SCHLAG!</button>`);
+  bindX();ov.abort=()=>res(null);
+  let beat=0,t=-.6,dur=1.25/diff(),score=0,done=false,last=performance.now();
+  const r=()=>2.6-2.2*Math.max(0,t)/dur;
+  function next(v,txt){
+    $('dots').children[beat].className=v>=1?'p':v>0?'g':'m';pop($('m'),txt);score+=v;beat++;t=-.25;dur*=.93;
+    $('wk').style.filter=`brightness(${.6+.4*(1-beat/N)+.3})`;
+    if(beat>=N){done=true;setTimeout(()=>ov.alive&&res(score/N),700)}}
+  $('hit').onpointerdown=()=>{
+    if(done||!ov.alive||t<0)return;const d=Math.abs(r()-1),[x,y]=center($('wk'));
+    if(d<=.09){SFX.perfect();vib(30);burst(x,y,'#fde047',22);next(1,'PERFEKT! 🔥')}
+    else if(d<=.22){SFX.good();vib(15);burst(x,y,'#fb923c',10);next(.6,'Gut!')}
+    else{SFX.miss();shakeBox();next(0,'Daneben!')}};
+  (function loop(now){
+    if(!ov.alive||done)return;const dt=Math.min(.05,(now-last)/1000);last=now;t+=dt;
+    const rr=r();$('rg').style.transform=`scale(${Math.max(.2,rr)})`;$('rg').style.opacity=t<0?0:1;
+    if(t>=0&&rr<.55){SFX.miss();next(0,'Zu spät!')}
+    requestAnimationFrame(loop)})(performance.now());
+})}
+function gPipes(s){return new Promise(res=>{
+  const C=5,R=4,T=30,BASE={I:10,L:3};
+  const rot=(b,r)=>((b<<r)|(b>>(4-r)))&15;
+  const r0=Math.floor(Math.random()*R),cells=[];
+  for(let y=0;y<R;y++)for(let x=0;x<C;x++)cells.push({t:Math.random()<.5?'I':'L',r:Math.floor(Math.random()*4)});
+  let row=r0,path=[];
+  for(let x=0;x<C;x++){const to=Math.floor(Math.random()*R);let y=row;path.push([x,y]);while(y!==to){y+=to>y?1:-1;path.push([x,y])}row=to}
+  const r1=row,DIR={N:1,E:2,S:4,W:8},OPP={1:4,4:1,2:8,8:2};
+  const dirTo=(a,b)=>b[0]>a[0]?DIR.E:b[0]<a[0]?DIR.W:b[1]>a[1]?DIR.S:DIR.N;
+  path.forEach((p,i)=>{const inn=i===0?DIR.W:OPP[dirTo(path[i-1],p)],out=i===path.length-1?DIR.E:dirTo(p,path[i+1]),m=inn|out;
+    const t=(m===10||m===5)?'I':'L';let rr=0;while(rot(BASE[t],rr)!==m)rr++;const c=cells[p[1]*C+p[0]];c.t=t;c.sol=rr;c.r=(rr+1+Math.floor(Math.random()*3))%4});
+  const ov=openOv(xbtn()+`<h3>Rohrleitung · ${G[s.out].n}</h3><div class="sub">Tippe Rohrstücke an, um sie zu drehen. Verbinde den Zulauf links mit dem Ablauf rechts.</div><div class="msg" id="m">Leitung verlegen …</div><div class="pipewrap"><div class="pipes" id="pp"></div><i class="src" style="top:${(r0+.5)/R*100}%"></i><i class="drn" style="top:${(r1+.5)/R*100}%"></i></div><div class="timer"><i id="tm" style="width:100%"></i></div>`);
+  bindX();ov.abort=()=>res(null);
+  const conn=i=>rot(BASE[cells[i].t],cells[i].r);
+  let done=false;const t0=performance.now();
+  function flow(){const seen=new Set();const st=r0*C;if(!(conn(st)&DIR.W))return seen;const q=[st];seen.add(st);
+    while(q.length){const i=q.shift(),x=i%C,y=Math.floor(i/C),m=conn(i);
+      [[DIR.N,0,-1],[DIR.E,1,0],[DIR.S,0,1],[DIR.W,-1,0]].forEach(([d,dx,dy])=>{if(!(m&d))return;const nx=x+dx,ny=y+dy;if(nx<0||ny<0||nx>=C||ny>=R)return;const j=ny*C+nx;if(!seen.has(j)&&(conn(j)&OPP[d])){seen.add(j);q.push(j)}})}
+    return seen}
+  function draw(){
+    const on=flow(),pp=$('pp');pp.innerHTML='';
+    cells.forEach((c,i)=>{const b=document.createElement('button');b.className='pc'+(on.has(i)?' on':'');
+      b.innerHTML=`<svg viewBox="0 0 100 100" style="transform:rotate(${c.r*90}deg)"><path d="${c.t==='I'?'M0 50H100':'M50 0V50H100'}"/></svg>`;
+      b.onpointerdown=()=>{if(done)return;c.r=(c.r+1)%4;SFX.tick();vib(5);draw()};pp.appendChild(b)});
+    const end=r1*C+C-1;
+    if(on.has(end)&&(conn(end)&DIR.E)&&!done){done=true;const el=(performance.now()-t0)/1000;SFX.win();vib([30,40,60]);pop($('m'),'Es fließt! 💧');
+      setTimeout(()=>ov.alive&&res(Math.max(.4,Math.min(1,1-(el-8)/40))),800)}}
+  draw();
+  (function loop(){if(!ov.alive||done)return;const el=(performance.now()-t0)/1000;$('tm').style.width=Math.max(0,100-el/T*100)+'%';
+    if(el>=T){done=true;SFX.miss();pop($('m'),'Zeit um – undicht!');setTimeout(()=>ov.alive&&res(Math.min(.3,flow().size/(C*2)*.3)),800);return}
+    requestAnimationFrame(loop)})();
+})}
+function gWires(s){return new Promise(res=>{
+  const COL=['#ef4444','#3b82f6','#facc15','#22c55e','#e879f9'],N=5,T=14;
+  const right=[...Array(N).keys()].sort(()=>Math.random()-.5);
+  const ov=openOv(xbtn()+`<h3>Kabel · ${G[s.out].n}</h3><div class="sub">Tippe links ein Kabel an und dann rechts den Anschluss mit derselben Farbe. Falsche Verbindung = Kurzschluss!</div><div class="msg" id="m">Verkabeln …</div><div class="wires" id="wr"><svg viewBox="0 0 100 100" preserveAspectRatio="none" id="wsv"></svg></div><div class="timer"><i id="tm" style="width:100%"></i></div>`);
+  bindX();ov.abort=()=>res(null);
+  let sel=null,done=new Set(),mist=0,fin=false;const t0=performance.now(),Y=i=>(i+.5)/N*100;
+  const wr=$('wr');
+  const node=(side,i,c)=>{const b=document.createElement('button');b.className='wn';b.style.cssText=`left:${side?88:12}%;top:${Y(i)}%;background:${COL[c]}`;wr.appendChild(b);return b};
+  const L=[...Array(N).keys()].map(i=>node(0,i,i)),Rn=right.map((c,i)=>{const b=node(1,i,c);b.dataset.c=c;return b});
+  function end(){fin=true;const sc=done.size/N*Math.max(0,1-mist*.18);setTimeout(()=>ov.alive&&res(sc),700)}
+  L.forEach((b,i)=>b.onpointerdown=()=>{if(fin||done.has(i))return;sel=i;L.forEach(x=>x.classList.remove('sel'));b.classList.add('sel');SFX.tick()});
+  Rn.forEach((b,j)=>b.onpointerdown=()=>{
+    if(fin||sel==null)return;const c=+b.dataset.c;
+    if(c===sel){done.add(sel);$('wsv').insertAdjacentHTML('beforeend',`<path d="M12 ${Y(sel)} C50 ${Y(sel)},50 ${Y(j)},88 ${Y(j)}" stroke="${COL[c]}" stroke-width="3" fill="none" vector-effect="non-scaling-stroke" style="stroke-width:6px"/>`);
+      L[sel].classList.remove('sel');L[sel].classList.add('ok');b.classList.add('ok');SFX.good();vib(10);sel=null;
+      if(done.size>=N){pop($('m'),'Alles verbunden ⚡');SFX.win();end()}}
+    else{mist++;SFX.crash();vib([50,30,50]);const [x,y]=center(b);burst(x,y,'#fde047',14);shakeBox();pop($('m'),'Kurzschluss! ⚡');L[sel].classList.remove('sel');sel=null}});
+  (function loop(){if(!ov.alive||fin)return;const el=(performance.now()-t0)/1000;$('tm').style.width=Math.max(0,100-el/T*100)+'%';
+    if(el>=T){pop($('m'),'Zeit um!');SFX.miss();end();return}requestAnimationFrame(loop)})();
+})}
+function gSort(s){return new Promise(res=>{
+  const D=15;
+  const ov=openOv(xbtn()+`<h3>Sortierband · ${G[s.out].n}</h3><div class="sub">Tippe Fremdkörper (graue Steine) vom Band, bevor sie im Behälter landen. ${G[s.out].n} lässt du durch!</div><div class="msg" id="m">Band läuft …</div><div class="belt" id="bt"><div class="bin">${ic(s.out,30)}</div></div><div class="timer"><i id="tm" style="width:100%"></i></div>`);
+  bindX();ov.abort=()=>res(null);
+  let items=[],good=0,got=0,badIn=0,wrong=0,spawnT=.3,fin=false,last=performance.now();const t0=performance.now(),bt=$('bt');
+  function spawn(el){const bad=Math.random()<.4,b=document.createElement('button');b.className='it';b.innerHTML=ic(bad?'junk':s.out,40);
+    const o={b,bad,x:-12,y:15+Math.random()*55,v:(22+el*1.6)*diff()};if(!bad)good++;
+    b.style.top=o.y+'%';b.onpointerdown=()=>{if(fin)return;const [x,y]=center(b);
+      if(o.bad){SFX.good();vib(8);burst(x,y,'#9ca3af',8)}else{wrong++;SFX.miss();burst(x,y,'#fb7185',8);pop($('m'),'Das war gute Ware!')}
+      o.dead=1;b.remove()};
+    bt.appendChild(b);items.push(o)}
+  (function loop(now){
+    if(!ov.alive||fin)return;const dt=Math.min(.05,(now-last)/1000);last=now;const el=(now-t0)/1000;
+    spawnT-=dt;if(spawnT<=0&&el<D-1.5){spawnT=Math.max(.38,.85-el*.03);spawn(el)}
+    items.forEach(o=>{if(o.dead)return;o.x+=o.v*dt;o.b.style.left=o.x+'%';
+      if(o.x>=84){o.dead=1;o.b.remove();if(o.bad){badIn++;SFX.err();pop($('m'),'Stein im Behälter!')}else{got++;tone(700,.04,'triangle',.03)}}});
+    items=items.filter(o=>!o.dead);
+    $('tm').style.width=Math.max(0,100-el/D*100)+'%';
+    if(el>=D&&!items.length||el>=D+3){fin=true;const sc=Math.max(0,Math.min(1,(got-2*badIn-2*wrong)/Math.max(1,good*.9)));pop($('m'),got+' sauber · '+badIn+' Steine');setTimeout(()=>ov.alive&&res(sc),700);return}
+    requestAnimationFrame(loop)})(performance.now());
+})}
+const FISH=[{g:'hering',w:60,n:4,str:.8},{g:'lachs',w:28,n:2,str:1},{g:'thunfisch',w:10,n:1,str:1.35},{g:'hummer',w:4,n:1,str:1.15,rod:2}];
+function gFish(){return new Promise(res=>{
+  const TRIES=3,catchList={};
+  const ov=openOv(xbtn()+`<h3>Angeln</h3><div class="sub">Warte, bis der Schwimmer abtaucht, und tippe sofort. Dann einholen: Halten zum Kurbeln – aber wenn die Spannung zu hoch wird, reißt die Schnur!</div><div class="dots" id="dots">${'<i></i>'.repeat(TRIES)}</div><div class="msg" id="m">Auswerfen …</div>
+   <div class="sea"><div class="wave"></div><div class="bob" id="bob"></div><div class="fishic" id="fi"></div></div>
+   <div id="reel" style="display:none"><div class="sub" style="margin:8px 0 0">Spannung</div><div class="track tens"><div class="zone" style="left:30%;width:45%"></div><div class="mark" id="tk"></div></div><div class="sub" style="margin:0">Fortschritt</div><div class="meter" style="height:12px;margin-top:4px"><i id="pg" style="width:30%;background:var(--g1);transition:none"></i></div></div>
+   <button class="btn big b" id="act" style="margin-top:12px;height:84px">Warten …</button>`);
+  bindX();ov.abort=()=>res(null);
+  let tryN=0,phase='wait',until=0,hold=false,T=0,P=30,fish=null,tug=0,last=performance.now();
+  const act=$('act'),bob=$('bob');
+  const startWait=(extra=0)=>{phase='wait';until=performance.now()+1500+Math.random()*3000+extra;bob.className='bob';act.textContent='Warten …';$('reel').style.display='none';$('fi').innerHTML=''};
+  function result(ok,txt){
+    $('dots').children[tryN].className=ok?'g':'m';pop($('m'),txt);tryN++;hold=false;phase='done';
+    if(ok){catchList[fish.g]=(catchList[fish.g]||0)+fish.n;SFX.win();vib([30,40,60])}else SFX.miss();
+    setTimeout(()=>{if(!ov.alive)return;if(tryN>=TRIES){res(catchList);return}pop($('m'),'Neuer Wurf …');startWait()},1100)}
+  function pickFish(){const pool=FISH.filter(f=>unl(f.g)),w=pool.map(f=>f.w*(f.g==='hering'?1:1+.35*S.up.rod)+(f.rod?f.rod*S.up.rod:0));let r=Math.random()*w.reduce((a,b)=>a+b);
+    for(let i=0;i<pool.length;i++){r-=w[i];if(r<=0)return pool[i]}return pool[0]}
+  act.onpointerdown=e=>{e.preventDefault();
+    if(phase==='wait'){pop($('m'),'Zu früh – Fisch verscheucht!');SFX.err();startWait(1000)}
+    else if(phase==='bite'){fish=pickFish();phase='reel';T=35;P=30;tug=.8;bob.className='bob gone';$('reel').style.display='block';$('fi').innerHTML=ic(fish.g,54);
+      act.textContent='🎣 KURBELN (halten)';pop($('m'),'Angebissen! Einholen!');SFX.good();vib(20);hold=true}
+    else if(phase==='reel')hold=true};
+  const off=()=>hold=false;act.onpointerup=off;act.onpointerleave=off;act.onpointercancel=off;
+  startWait();
+  (function loop(now){
+    if(!ov.alive)return;const dt=Math.min(.05,(now-last)/1000);last=now;
+    if(phase==='wait'&&now>until){phase='bite';until=now+850/diff();bob.className='bob dip';pop($('m'),'BISS! JETZT!');tone(880,.12,'square',.06);vib(40);act.textContent='❗ ANSCHLAGEN'}
+    else if(phase==='bite'&&now>until){result(false,'Zu langsam – weg ist er!')}
+    else if(phase==='reel'){
+      T+=(hold?55*fish.str:-42)*dt;tug-=dt;if(tug<=0){tug=.6+Math.random()*.8;T+=(8+Math.random()*16)*fish.str}
+      T=Math.max(0,T);if(hold&&T<85)P+=36*dt/Math.sqrt(fish.str)*(T>=30&&T<=75?1:.45);if(!hold)P-=7*dt;
+      $('tk').style.left=Math.min(100,T)+'%';$('pg').style.width=Math.max(0,Math.min(100,P))+'%';$('fi').style.left=(15+Math.min(70,P*.7))+'%';
+      if(T>=100)result(false,'Schnur gerissen! 💥');else if(P>=100)result(true,'Gefangen: '+fish.n+'× '+G[fish.g].n+'!');else if(P<=0)result(false,'Entwischt!')}
+    requestAnimationFrame(loop)})(performance.now());
+})}
 function phoneSVG(has,next,powered){
   const SL={gehaeuse:[10,6,140,288,26],platine:[26,26,108,112,8],akku:[30,150,100,118,10],display:[16,14,128,272,20]};
   let o='<svg viewBox="0 0 160 300">';
@@ -988,9 +1341,9 @@ const GAMES={
   timingMove:s=>gTiming(6,s.n,'Die grüne Zone wandert! Stoppe den Marker darin.',true),
   whack:gWhack,wall:gWall,catch:gCatch,stack:gStack,mash:gMash,
   heat:s=>gHeat(false,s),heatMove:s=>gHeat(true,s),simon:gSimon,bolts:s=>gBolts(s),
-  mix:gMix,solder:gSolder,phone:gPhone
+  mix:gMix,solder:gSolder,phone:gPhone,pour:gPour,forge:gForge,pipes:gPipes,wires:gWires,sort:gSort
 };
-const GNAME={mix:'Mischen',solder:'Löten',phone:'Zusammenbauen',wall:'Flöz',timing:'Timing',timingMove:'Wandernde Zone',whack:'Erzader',catch:'Auffangen',stack:'Stapeln',mash:'Presse',heat:'Hitze halten',heatMove:'Wandernde Hitze',simon:'Gedächtnis',bolts:'Schrauben'};
+const GNAME={pour:'Gießen',forge:'Schmieden',pipes:'Rohrleitung',wires:'Kabel',sort:'Sortierband',mix:'Mischen',solder:'Löten',phone:'Zusammenbauen',wall:'Flöz',timing:'Timing',timingMove:'Wandernde Zone',whack:'Erzader',catch:'Auffangen',stack:'Stapeln',mash:'Presse',heat:'Hitze halten',heatMove:'Wandernde Hitze',simon:'Gedächtnis',bolts:'Schrauben'};
 
 /* ===== Station starten ===== */
 async function runStation(s,srcEl){
@@ -1005,11 +1358,13 @@ async function runStation(s,srcEl){
   for(const k in s.in)S.stock[k]-=s.in[k];
   let out=Math.round(score*s.max*mult(s.mult));
   if(score>=0.3&&out<1)out=1;
+  const cb=Math.min(5,S.combo);if(cb&&out>0)out=Math.round(out*(1+cb*.1));
+  S.combo=score>=.85?S.combo+1:0;
   out=Math.min(out,Math.floor(cap()-S.stock[s.out]));
   S.stock[s.out]+=out;S.xp+=out*(G[s.out].base>10?4:1)+1;
   if(out>0){SFX.win();vib([30,40,60]);fx('+'+out+' '+G[s.out].n,G[s.out].c);burst(innerWidth/2,innerHeight*.4,G[s.out].c,20)}
   else{SFX.crash();fx('Fehlschlag','#fb7185')}
-  toast(out>0?`Score ${Math.round(score*100)}% – ${out}× ${G[s.out].n} hergestellt`:'Material verloren 😬 Versuch es nochmal!');
+  toast((out>0?`Score ${Math.round(score*100)}% – ${out}× ${G[s.out].n} hergestellt`:'Material verloren 😬 Versuch es nochmal!')+(S.combo>=2?` · 🔥 Combo ×${S.combo}`:''));
   render();
 }
 
@@ -1115,12 +1470,14 @@ async function startDrive(route){
 
 /* ===== Screens ===== */
 function renderWork(){
-  const el=$('s-work'),L=lvl();el.innerHTML='<h2>Werkstatt</h2><p class="sub">Stelle Waren in Minispielen selbst her. Jede Station lost eins ihrer Minispiele aus.</p>';
+  const el=$('s-work'),L=lvl();el.innerHTML='<h2>Werkstatt</h2><p class="sub">Stelle Waren in Minispielen selbst her. Jede Station lost eins ihrer Minispiele aus. Gute Runden (ab 85 %) bauen eine Combo auf: bis +50 % Ertrag.</p>'+
+    (S.combo>=1?`<span class="chip up" style="margin:0 2px 6px;display:inline-flex">🔥 Combo ×${S.combo} · +${Math.min(5,S.combo)*10} % Ertrag</span>`:'');
   const known=REC.filter(r=>S.rec[r.out]).length,lab=document.createElement('div');lab.className='card';lab.style.setProperty('--c','#22d3ee');
   lab.innerHTML=`<div class="art"><span style="font-size:30px">🧪</span></div><div class="i">Labor<small>Kombiniere Zutaten und entdecke geheime Rezepte · ${known} / ${REC.length} entdeckt</small></div><button class="btn b">Öffnen</button>`;
   lab.querySelector('button').onclick=openLab;el.appendChild(lab);
-  [['Rohstoffe',s=>!s.secret&&!s.lv&&!Object.keys(s.in).length],['Verarbeitung',s=>!s.secret&&!s.lv&&Object.keys(s.in).length>0],
-   ['Elektronik'+(L<4?' · ab Level 4':''),s=>!s.secret&&!!s.lv],['Eigene Rezepte',s=>s.secret&&S.rec[s.out]]].forEach(([title,f])=>{
+  [['Rohstoffe',s=>!s.secret&&!s.grp&&!s.lv&&!Object.keys(s.in).length],['Verarbeitung',s=>!s.secret&&!s.grp&&!s.lv&&Object.keys(s.in).length>0],
+   ['Veredelung · Lebensmittel & Textil',s=>s.grp==='food'],
+   ['Elektronik'+(L<4?' · ab Level 4':''),s=>!s.secret&&!s.grp&&!!s.lv],['Eigene Rezepte',s=>s.secret&&S.rec[s.out]]].forEach(([title,f])=>{
     const list=ST.filter(f);if(!list.length)return;
     addSec(el,title);
     list.forEach(s=>{
@@ -1144,13 +1501,15 @@ function renderShip(){
   let est=0;for(const g in cargo)est+=price(g)*cargo[g];
   el.innerHTML=`<h2>Transport</h2><p class="sub">Belade den LKW und bring die Ware zum Markt.</p>
    <div class="card" style="--c:#22d3ee"><div class="art">${ic('truck',44)}</div><div class="i">Ladefläche <span class="chip num">${used} / ${truckCap()}</span><div class="meter"><i style="width:${used/truckCap()*100}%"></i></div><small>Geschätzter Warenwert: ${fmt(est)} Credits</small></div></div>`;
-  GKU().forEach(g=>{const have=Math.floor(S.stock[g]),c=cargo[g]||0;
+  const list=GKU().filter(g=>S.stock[g]>=1||cargo[g]);
+  if(!list.length)el.insertAdjacentHTML('beforeend','<p class="sub">Dein Lager ist leer – stell zuerst etwas her.</p>');
+  list.forEach(g=>{const have=Math.floor(S.stock[g]),c=cargo[g]||0;
     const d=document.createElement('div');d.className='card';d.style.setProperty('--c',G[g].c);
     d.innerHTML=`<div class="art" style="width:48px;height:48px;flex-basis:48px">${ic(g,34)}</div><div class="i">${G[g].n}<small>Lager ${have} · ~${price(g).toFixed(1)}/Stk</small></div><div class="step"><button data-d="-1">−</button><b class="num">${c}</b><button data-d="1">+</button><button data-d="max" style="width:46px;font-size:11px;font-weight:800">MAX</button></div>`;
     d.querySelectorAll('button').forEach(b=>b.onclick=()=>{
       const free=truckCap()-Object.values(cargo).reduce((a,x)=>a+x,0);
       let n=b.dataset.d==='max'?Math.min(free,have-c):parseInt(b.dataset.d);
-      n=Math.max(-c,Math.min(n,free,have-c));if(n)SFX.tick();cargo[g]=c+n;renderShip()});
+      n=Math.max(-c,Math.min(n,free,have-c));if(n)SFX.tick();cargo[g]=c+n;render()});
     el.appendChild(d)});
   ROUTES.forEach(r=>{const d=document.createElement('div');d.className='card';d.style.setProperty('--c',r.c);
     d.innerHTML=`<div class="art">${ic(r.icon,44)}</div><div class="i">${r.n}<small>${r.desc} · ${r.T}s</small></div><button class="btn b" ${used?'':'disabled'}>Fahren</button>`;
@@ -1168,15 +1527,19 @@ function mTrade(g,buy,e){
   else{n=Math.min(n,Math.floor(S.stock[g]));while(k<n){sum+=sellP(g);sat[g]+=1;k++}
     if(!k){SFX.err();return}
     S.stock[g]-=k;S.money+=sum;S.xp+=Math.ceil(sum/12);SFX.coin();fx('+'+fmt(sum)+' Cr','#fbbf24',e.clientX,e.clientY-30)}
-  vib(12);renderMarket();
+  vib(12);render();
 }
+let mCat='alle';
 function renderMarket(){
-  const el=$('s-market');
+  const el=$('s-market'),all=GKU();
   el.innerHTML='<h2>Markt</h2><p class="sub">Direkt handeln: Ankauf 20 % über, Verkauf 25 % unter Marktpreis. Per LKW bekommst du den vollen Preis, am Hafen +60 %.</p>';
+  const cats=document.createElement('div');cats.className='cats';
+  CATS.filter(([k])=>k==='alle'||all.some(g=>catOf(g)===k)).forEach(([k,n])=>{const b=document.createElement('button');b.className='chip2'+(k===mCat?' on':'');b.textContent=n;b.onclick=()=>{mCat=k;SFX.tick();render()};cats.appendChild(b)});
+  el.appendChild(cats);
   const bar=document.createElement('div');bar.className='amt';
-  [1,10,50,'max'].forEach(a=>{const b=document.createElement('button');b.className='chip2'+(a===mAmt?' on':'');b.textContent=a==='max'?'Max':'× '+a;b.onclick=()=>{mAmt=a;SFX.tick();renderMarket()};bar.appendChild(b)});
+  [1,10,50,'max'].forEach(a=>{const b=document.createElement('button');b.className='chip2'+(a===mAmt?' on':'');b.textContent=a==='max'?'Max':'× '+a;b.onclick=()=>{mAmt=a;SFX.tick();render()};bar.appendChild(b)});
   el.appendChild(bar);
-  GKU().forEach(g=>{const p=price(g),d=p/G[g].base,c=document.createElement('div');c.className='card';c.style.setProperty('--c',G[g].c);
+  all.filter(g=>mCat==='alle'||catOf(g)===mCat).forEach(g=>{const p=price(g),d=p/G[g].base,c=document.createElement('div');c.className='card';c.style.setProperty('--c',G[g].c);
     const tag=mood[g]>1.8?'<span class="chip up">🔥 BOOM</span>':mood[g]<.6?'<span class="chip dn">❄️ CRASH</span>':'';
     c.innerHTML=`<div class="art">${ic(g,42)}</div><div class="i"><div class="mtop"><span>${G[g].n} ${tag}<small><b class="num" style="font-size:17px;color:var(--ink)">${p.toFixed(2)}</b> · <span class="${d>=1?'up':'dn'}">${d>=1?'▲':'▼'} ${Math.round(Math.abs(d-1)*100)}%</span> · Lager ${Math.floor(S.stock[g])}/${cap()}</small></span>${spark(g)}</div>
       <div class="mrow"><button class="btn b sm" data-a="buy">Kaufen<span class="num">${buyP(g).toFixed(1)} / Stk</span></button><button class="btn sm" data-a="sell" ${S.stock[g]<1?'disabled':''}>Verkaufen<span class="num">${sellP(g).toFixed(1)} / Stk</span></button></div></div>`;
@@ -1270,13 +1633,28 @@ function render(){
   if(l>lastLvl){const was=lastLvl;lastLvl=l;SFX.win();fx('LEVEL '+l,'#22d3ee');
     toast(was<4&&l>=4?'⭐ Level '+l+'! Elektronik freigeschaltet: Baue Smartphones!':'⭐ Level '+l+' erreicht!')}
   if(OV)return;
-  ({work:renderWork,bld:renderBld,shop:renderShop,orders:renderOrders,ship:renderShip,market:renderMarket})[cur]();
+  ({work:renderWork,farm:renderFarm,bld:renderBld,shop:renderShop,orders:renderOrders,ship:renderShip,market:renderMarket})[cur]();
+  if(isTrade(cur))tradeTabs($('s-'+cur));
   badges();
 }
 (function loop(){shown+=(S.money-shown)*.18;if(Math.abs(S.money-shown)<.5)shown=S.money;$('money').textContent=fmt(Math.floor(shown));requestAnimationFrame(loop)})();
-document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{
-  cur=b.dataset.s;SFX.tick();document.querySelectorAll('#nav button').forEach(x=>x.classList.toggle('on',x===b));
-  document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id==='s-'+cur));$('s-'+cur).scrollTop=0;render()});
+const TRADE=[['market','Markt'],['shop','Laden'],['orders','Aufträge'],['ship','Transport']];
+let tradeSub='market';
+const isTrade=k=>TRADE.some(t=>t[0]===k);
+function go(k){
+  cur=k;if(isTrade(k))tradeSub=k;const nk=isTrade(k)?'trade':k;
+  document.querySelectorAll('#nav button').forEach(x=>x.classList.toggle('on',x.dataset.s===nk));
+  document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id==='s-'+cur));
+  document.querySelector('main').scrollTop=0;SFX.tick();render();
+}
+function tradeTabs(el){
+  const d=document.createElement('div');d.className='seg';
+  TRADE.forEach(([k,n])=>{const b=document.createElement('button');b.textContent=n;if(k===cur)b.className='on';
+    if((k==='shop'&&custQ.length)||(k==='orders'&&S.orders.some(canDeliver)))b.classList.add('dot');
+    b.onclick=()=>go(k);d.appendChild(b)});
+  el.prepend(d);
+}
+document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>go(b.dataset.s==='trade'?tradeSub:b.dataset.s));
 
 /* ===== Hintergrund: Arbeiter, Markt, Events ===== */
 let nextEv=Date.now()+40000,histT=0,pressing=false;
@@ -1292,7 +1670,7 @@ setInterval(()=>{
     const gl=GKU(),g=gl[Math.floor(Math.random()*gl.length)],up=Math.random()<0.6;mood[g]=up?2.2:0.45;setTimeout(()=>mood[g]=1,35000);
     const rv=pick(S.rivals).n;
     toast(up?`🔥 ${rv} kauft ${G[g].n} auf – 35 s lang hohe Preise!`:`❄️ ${rv} überschwemmt den Markt mit ${G[g].n} – Preissturz!`);SFX.coin()}
-  tickOrders();tickShop(dt);tickRivals(dt);
+  tickOrders();tickShop(dt);tickRivals(dt);tickFarm(dt);
   if(!OV&&!pressing&&cur!=='ship'&&cur!=='work')render();else badges();
   S.last=Date.now();try{localStorage.setItem(SAVE,JSON.stringify(S))}catch(e){}
 },1000);
