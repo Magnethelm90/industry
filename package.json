@@ -8,7 +8,7 @@
     "build": "vite build",
     "preview": "vite preview --host",
     "lint": "eslint src",
-    "test": "vite build && node tests/smoke.cjs && node tests/newplayer.cjs && node tests/systems.cjs",
+    "test": "vite build && node tests/smoke.cjs && node tests/newplayer.cjs && node tests/systems.cjs && node tests/minigames.cjs",
     "balance": "node tools/balance.mjs"
   },
   "devDependencies": {

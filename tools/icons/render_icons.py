@@ -3,6 +3,7 @@
 Aufruf (Blender als Python-Modul, pip install bpy pillow):
     python tools/icons/render_icons.py src/assets/icons            # alle Icons
     python tools/icons/render_icons.py src/assets/icons erz kohle  # nur einzelne
+    python tools/icons/render_icons.py src/assets/icons --bounds   # nur bounds.json neu schreiben
 oder mit installiertem Blender:
     blender --background --python tools/icons/render_icons.py -- src/assets/icons
 
@@ -1209,11 +1210,30 @@ def _lvl():
 # ---------------------------------------------------------------- Ablauf
 
 
+def write_bounds(out):
+    """Sichtbare Grenzen jedes Icons (oben, unten, links, rechts als Bildanteil) nach bounds.json –
+    damit das Spiel Gegenstände exakt auf Flächen setzen kann."""
+    import json
+    import numpy as np
+    from PIL import Image
+    data = {}
+    for f in sorted(os.listdir(out)):
+        if not f.endswith('.webp'):
+            continue
+        a = np.array(Image.open(os.path.join(out, f)).convert('RGBA'))[..., 3] > 200
+        rows, cols = np.where(a.any(axis=1))[0], np.where(a.any(axis=0))[0]
+        h, w = a.shape
+        data[f[:-5]] = [round(rows.min() / h, 3), round((rows.max() + 1) / h, 3), round(cols.min() / w, 3), round((cols.max() + 1) / w, 3)]
+    json.dump(data, open(os.path.join(out, 'bounds.json'), 'w'), indent=0, sort_keys=True)
+
+
 def main():
     argv = sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else sys.argv[1:]
     out = os.path.abspath(argv[0] if argv else 'icons')
     keys = argv[1:] or list(ICONS)
     os.makedirs(out, exist_ok=True)
+    if keys == ['--bounds']:
+        keys = []
     for k in keys:
         f, cam = ICONS[k]
         reset()
@@ -1221,6 +1241,7 @@ def main():
         f()
         finish(os.path.join(out, k + '.webp'), **cam)
         print('ok', k, flush=True)
+    write_bounds(out)
 
 
 if __name__ == '__main__':

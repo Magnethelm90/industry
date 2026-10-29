@@ -39,6 +39,9 @@ Die Icons entstehen per Skript in Blender (Cycles, transparenter Hintergrund, gl
 pip install bpy pillow                                   # Blender als Python-Modul (Python 3.13)
 python tools/icons/render_icons.py src/assets/icons      # alle 59 Icons, ca. 3 Minuten auf 4 Kernen
 python tools/icons/render_icons.py src/assets/icons erz  # nur einzelne
+python tools/icons/render_props.py src/assets/props      # Requisiten der Minispiel-Szenen
 ```
+
+Für die Szenen der Minispiele (Amboss, Ofen, Presse, Gießpfanne, Becherglas …) rendert `tools/icons/render_props.py` die Requisiten in Frontansicht nach `src/assets/props/` und schreibt in `anchors.json`, wo z. B. die Ofentür oder der Ausguss im Bild liegt. `src/games/scene.js` setzt die Requisiten danach auf die Bühne.
 
 Jedes Icon ist eine kleine Funktion in `tools/icons/render_icons.py`. Ein neues Icon braucht dort eine Funktion mit `@icon('schluessel')`; das Spiel findet die Datei dann automatisch.

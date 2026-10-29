@@ -21,7 +21,7 @@ const URL='file://'+path.resolve(__dirname,'../dist/index.html')+'?debug';
     await p.waitForTimeout(200);
     const t0=Date.now();
     while(Date.now()-t0<2500){
-      const bs=await p.$$('#ovbox button:not(#ovx), #ovbox canvas, #ovbox .hole, #ovbox .pad');
+      const bs=await p.$$('#ovbox button:not(#ovx), #ovbox canvas, #ovbox .hole, #ovbox .pad, #ovbox .stage');
       if(!bs.length)break;
       const el=bs[Math.floor(Math.random()*bs.length)];
       try{await el.click({timeout:300,force:true})}catch(e){}

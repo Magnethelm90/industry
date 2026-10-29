@@ -63,7 +63,7 @@ export function gangDemand(){
 export async function gangAttack(){
   S.ug.nextAttack=0;
   if(!stashUsed()){toast('🐍 Die Kobras haben dein Versteck durchwühlt – aber es war leer.');return}
-  const sc=await gTiming(4,'🐍 Überfall aufs Versteck!','Die Kobras brechen ein! Triff die Zone, um sie zu vertreiben.');
+  const sc=await gTiming(4,'🐍 Überfall aufs Versteck!','Die Kobras brechen ein! Tippe, wenn die Nadel im grünen Bereich steht.');
   if(sc==null){const ks=Object.keys(S.ug.stash);ks.forEach(g=>S.ug.stash[g]=Math.floor(S.ug.stash[g]*.6));toast('Du bist weggelaufen – die Kobras haben 40 % deines Verstecks geklaut.');return}
   closeOv();
   if(sc>=.6){S.ug.gang=Math.max(0,S.ug.gang-1);SFX.win();toast('💪 Abgewehrt! Die Kobras ziehen sich zurück.')}

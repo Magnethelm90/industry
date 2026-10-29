@@ -61,7 +61,7 @@ export function buildOrUpgrade(b,e){
   burst(e.clientX,e.clientY,bc(b),16);fx(s.lvl===1?'Gebaut!':'Stufe '+s.lvl,bc(b));render();
 }
 export async function repairB(b){
-  const sc=Math.random()<.5?await gBolts(null,'Wartung · '+b.n):await gTiming(3,'Wartung · '+b.n,'Triff die Zone – je besser, desto mehr Zustand.');
+  const sc=Math.random()<.5?await gBolts(null,'Wartung · '+b.n):await gTiming(3,'Wartung · '+b.n,'Tippe, wenn die Nadel im grünen Bereich steht – je besser, desto mehr Zustand.');
   if(sc==null)return;closeOv();
   const s=bst(b);s.hp=Math.min(100,40+60*sc);s.warned=0;SFX.win();fx('Zustand '+Math.round(s.hp)+'%','#34d399');render();
 }

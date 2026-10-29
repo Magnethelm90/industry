@@ -18,10 +18,10 @@ import {gWhack} from './whack.js';
 import {gWires} from './wires.js';
 
 export const GAMES={
-  timing:s=>gTiming(6,s.n),
-  timingMove:s=>gTiming(6,s.n,'Die grüne Zone wandert! Stoppe den Marker darin.',true),
+  timing:s=>gTiming(6,s.n,undefined,false,s),
+  timingMove:s=>gTiming(6,s.n,'Der grüne Bereich wandert! Tippe, wenn die Nadel darin steht.',true,s),
   whack:gWhack,wall:gWall,catch:gCatch,stack:gStack,mash:gMash,
   heat:s=>gHeat(false,s),heatMove:s=>gHeat(true,s),simon:gSimon,bolts:s=>gBolts(s),
   mix:gMix,solder:gSolder,phone:gPhone,pour:gPour,forge:gForge,pipes:gPipes,wires:gWires,sort:gSort
 };
-export const GNAME={pour:'Gießen',forge:'Schmieden',pipes:'Rohrleitung',wires:'Kabel',sort:'Sortierband',mix:'Mischen',solder:'Löten',phone:'Zusammenbauen',wall:'Flöz',timing:'Timing',timingMove:'Wandernde Zone',whack:'Erzader',catch:'Auffangen',stack:'Stapeln',mash:'Presse',heat:'Hitze halten',heatMove:'Wandernde Hitze',simon:'Gedächtnis',bolts:'Schrauben'};
+export const GNAME={pour:'Gießen',forge:'Schmieden',pipes:'Rohrleitung',wires:'Kabel',sort:'Sortierband',mix:'Mischen',solder:'Löten',phone:'Zusammenbauen',wall:'Flöz',timing:'Schlagkraft',timingMove:'Wandernde Zone',whack:'Erzader',catch:'Auffangen',stack:'Stapeln',mash:'Presse',heat:'Hitze halten',heatMove:'Wandernde Hitze',simon:'Gedächtnis',bolts:'Schrauben'};

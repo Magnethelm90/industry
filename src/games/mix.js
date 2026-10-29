@@ -1,35 +1,51 @@
-/* Minispiel: Mischen */
+/* Minispiel: Mischen – Flaschen gedrückt halten, sie kippen und schenken ins Becherglas; Schichten der Zielskala treffen */
 import {G} from '../data.js';
 import {SFX,tone} from '../fx.js';
 import {bindX,openOv,xbtn} from '../ui.js';
 import {$,pop} from '../util.js';
+import {at,put} from './scene.js';
 
 export function gMix(s){return new Promise(res=>{
-  const ING=[{n:'Basis',c:'#a78bfa'},{n:'Härter',c:'#22d3ee'},{n:'Farbe',c:'#f472b6'}];
+  const ING=[{n:'Basis',c:'#8b5cf6',p:'bottle_a'},{n:'Härter',c:'#06b6d4',p:'bottle_b'},{n:'Farbe',c:'#ec4899',p:'bottle_c'}];
   const w=[1+Math.random()*2,.6+Math.random()*1.5,.4+Math.random()],sw=w.reduce((a,b)=>a+b),T=w.map(x=>x/sw*100);
   const D=15,amt=[0,0,0];
-  const ov=openOv(xbtn()+`<h3>Mischen · ${G[s.out].n}</h3><div class="sub">Halte die Knöpfe zum Einfüllen. Treffe die Schichten der Zielskala rechts. Bei 100 % ist der Behälter voll.</div><div class="msg" id="m">Rezept beachten!</div>
-   <div class="mixwrap"><div class="beaker"><div class="liq" id="lq">${ING.map(g=>`<i style="height:0;background:linear-gradient(90deg,${g.c},color-mix(in srgb,${g.c} 60%,#000))"></i>`).join('')}</div><div class="glass"></div></div>
-   <div class="ruler">${ING.map((g,i)=>`<i style="height:${T[i]}%;background:${g.c}"></i>`).join('')}</div></div>
-   <div class="pours">${ING.map((g,i)=>`<button class="pour" data-i="${i}" style="--pc:${g.c}">${g.n}<small id="pv${i}">0 / ${Math.round(T[i])}</small></button>`).join('')}</div>
-   <button class="btn big" id="fill" style="margin-top:10px">✓ Abfüllen</button>
-   <div class="timer" style="margin-top:12px"><i id="tm" style="width:100%"></i></div>`);
+  const ov=openOv(xbtn()+`<h3>Mischen · ${G[s.out].n}</h3><div class="sub">Halte eine Flasche gedrückt, um einzuschenken. Triff die Schichten der Zielskala rechts – bei 100 % ist das Glas voll.</div><div class="msg" id="m">Rezept beachten!</div>
+    <div class="stage lab" id="st" style="height:290px"></div>
+    <button class="btn big" id="fill" style="margin-top:8px">✓ Abfüllen</button>
+    <div class="timer" style="margin-top:10px"><i id="tm" style="width:100%"></i></div>`);
   bindX();ov.abort=()=>res(null);
+  const st=$('st'),W=st.clientWidth;
+  // Flüssigkeit liegt hinter dem Glas, damit Spiegelungen und Skala darüber bleiben
+  const liq=document.createElement('div');liq.style.cssText='position:absolute;display:flex;flex-direction:column-reverse;overflow:hidden;border-radius:0 0 10px 10px';st.appendChild(liq);
+  const bk=put(st,'beaker',176,null,W*.44,196);
+  const [il,ib]=at(bk,'beaker','in_l'),[ir]=at(bk,'beaker','in_r'),[,it]=at(bk,'beaker','in_t'),IH=ib-it;
+  liq.style.left=il+'px';liq.style.width=(ir-il)+'px';liq.style.top=it+'px';liq.style.height=IH+'px';
+  const layers=ING.map(g=>{const e=document.createElement('i');e.className='layer';e.style.cssText=`position:relative;display:block;height:0;background:linear-gradient(90deg,${g.c},color-mix(in srgb,${g.c} 60%,#000));box-shadow:inset 0 2px 0 rgba(255,255,255,.3)`;liq.appendChild(e);return e});
+  const ruler=document.createElement('div');ruler.className='ruler';ruler.style.cssText=`position:absolute;left:${ir+22}px;top:${it}px;height:${IH}px;width:20px`;
+  ruler.innerHTML=ING.map((g,i)=>`<i style="height:${T[i]}%;background:${g.c}"></i>`).join('');st.appendChild(ruler);
+  const BW=74,bx=[W*.16,W*.44,W*.72],bcx=(il+ir)/2;
+  const bottles=ING.map((g,i)=>{const b=put(st,g.p,BW,null,bx[i],52);b.style.pointerEvents='auto';b.style.touchAction='none';b.style.transition='transform .18s';b.style.zIndex=4;
+    const lb=document.createElement('div');lb.className='pourlbl';lb.style.left=bx[i]+'px';lb.style.top='92px';lb.style.bottom='auto';lb.innerHTML=`${g.n} <span id="pv${i}">0 / ${Math.round(T[i])}</span>`;st.appendChild(lb);return b});
+  const streams=ING.map(g=>{const e=document.createElement('div');e.className='stream';e.style.cssText=`opacity:0;background:${g.c};box-shadow:0 0 10px ${g.c}`;st.appendChild(e);return e});
   let act=-1,done=false,last=performance.now(),tick=0;const t0=performance.now();
+  const ang=i=>bx[i]<bcx-10?105:bx[i]>bcx+10?-105:115;
+  bottles.forEach((b,i)=>{
+    b.onpointerdown=e=>{e.preventDefault();e.stopPropagation();if(done)return;act=i;b.style.transform=`translateY(14px) rotate(${ang(i)}deg)`};
+    const off=()=>{if(act===i)act=-1;b.style.transform='';streams[i].style.opacity=0};b.onpointerup=off;b.onpointerleave=off;b.onpointercancel=off});
   $('fill').onclick=()=>{if(!done&&amt.some(v=>v>0))finish()};
-  const btns=[...document.querySelectorAll('.pour')],layers=[...document.querySelectorAll('#lq i')];
-  btns.forEach((b,i)=>{b.onpointerdown=e=>{e.preventDefault();act=i;b.classList.add('on')};
-    const off=()=>{if(act===i)act=-1;b.classList.remove('on')};b.onpointerup=off;b.onpointerleave=off;b.onpointercancel=off});
   function finish(){
-    done=true;btns.forEach(b=>b.classList.remove('on'));const tot=amt.reduce((a,b)=>a+b);
+    done=true;act=-1;bottles.forEach((b,i)=>{b.style.transform='';streams[i].style.opacity=0});const tot=amt.reduce((a,b)=>a+b);
     const err=amt.reduce((a,v,i)=>a+Math.abs(v-T[i]),0),sc=Math.max(0,1-err/60)*Math.min(1,tot/100);
     pop($('m'),'Mischung '+Math.round(sc*100)+' % genau');sc>.7?SFX.win():SFX.miss();
     setTimeout(()=>ov.alive&&res(sc),900)}
   (function loop(now){
     if(!ov.alive||done)return;const dt=Math.min(.05,(now-last)/1000);last=now;
     const tot=amt.reduce((a,b)=>a+b);
-    if(act>=0){amt[act]+=Math.min(22*dt,100-tot);if((tick+=dt)>.12){tick=0;tone(300+act*120+tot*3,.05,'sine',.03)}}
-    amt.forEach((v,i)=>{layers[i].style.height=v+'%';$('pv'+i).textContent=Math.round(v)+' / '+Math.round(T[i])});
+    if(act>=0){amt[act]+=Math.min(22*dt,100-tot);if((tick+=dt)>.12){tick=0;tone(300+act*120+tot*3,.05,'sine',.03)}
+      // Strahl vom gekippten Flaschenhals bis zur Oberfläche
+      const r=ang(act)*Math.PI/180,mx=bx[act]+.457*BW*Math.sin(r),my=52+14-.457*BW*Math.cos(r),surf=ib-IH*tot/100;
+      const sEl=streams[act];sEl.style.left=mx+'px';sEl.style.top=my+'px';sEl.style.height=Math.max(0,surf-my)+'px';sEl.style.width='6px';sEl.style.opacity=1}
+    amt.forEach((v,i)=>{layers[i].style.height=(v/100*IH)+'px';$('pv'+i).textContent=Math.round(v)+' / '+Math.round(T[i])});
     const el=(now-t0)/1000;$('tm').style.width=Math.max(0,100-el/D*100)+'%';
     if(amt.reduce((a,b)=>a+b)>=99.9||el>=D){finish();return}
     requestAnimationFrame(loop)})(performance.now());
