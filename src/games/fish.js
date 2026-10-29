@@ -5,11 +5,12 @@ import {S,diff,unl} from '../state.js';
 import {bindX,openOv,xbtn} from '../ui.js';
 import {$,ic,pop} from '../util.js';
 import {A,put} from './scene.js';
+import {dayPhase,wxIs} from '../world.js';
 
 export const FISH=[{g:'hering',w:60,n:4,str:.8},{g:'lachs',w:28,n:2,str:1},{g:'thunfisch',w:10,n:1,str:1.35},{g:'hummer',w:4,n:1,str:1.15,rod:2}];
 export function gFish(){return new Promise(res=>{
   const TRIES=3,catchList={};
-  const ov=openOv(xbtn()+`<h3>Angeln</h3><div class="sub">Warte, bis der Schwimmer abtaucht, und tippe sofort auf die Szene. Dann einholen: gedrückt halten zum Kurbeln – aber wenn die Spannung zu hoch wird, reißt die Schnur!</div><div class="dots" id="dots">${'<i></i>'.repeat(TRIES)}</div><div class="msg" id="m">Auswerfen …</div>
+  const ov=openOv(xbtn()+`<h3>Angeln</h3><div class="sub">Warte, bis der Schwimmer abtaucht, und tippe sofort auf die Szene. Dann einholen: gedrückt halten zum Kurbeln – aber wenn die Spannung zu hoch wird, reißt die Schnur!${dayPhase()==='night'?' 🌙 Nachts beißen seltene Fische öfter.':''}${wxIs('storm')?' ⛈️ Bei Sturm auch.':''}</div><div class="dots" id="dots">${'<i></i>'.repeat(TRIES)}</div><div class="msg" id="m">Auswerfen …</div>
    <div class="stage lake" id="st" style="height:250px"><div class="waves"></div><svg id="ln" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:4"></svg><div class="hint top" id="act">Warten …</div></div>
    <div id="reel" style="display:none"><div class="sub" style="margin:8px 0 0">Spannung</div><div class="track tens"><div class="zone" style="left:30%;width:45%"></div><div class="mark" id="tk"></div></div><div class="sub" style="margin:0">Fortschritt</div><div class="meter" style="height:12px;margin-top:4px"><i id="pg" style="width:30%;background:var(--g1);transition:none"></i></div></div>`);
   bindX();ov.abort=()=>res(null);
@@ -29,7 +30,7 @@ export function gFish(){return new Promise(res=>{
     $('dots').children[tryN].className=ok?'g':'m';pop($('m'),txt);tryN++;hold=false;phase='done';act.textContent='';
     if(ok){catchList[fish.g]=(catchList[fish.g]||0)+fish.n;SFX.splash();SFX.win();vib([30,40,60]);fishEl.classList.add('caught')}else SFX.miss();
     setTimeout(()=>{if(!ov.alive)return;fishEl.classList.remove('caught');if(tryN>=TRIES){res(catchList);return}pop($('m'),'Neuer Wurf …');startWait()},1100)}
-  function pickFish(){const pool=FISH.filter(f=>f.g==='hering'||unl(f.g)),w=pool.map(f=>f.w*(f.g==='hering'?1:1+.35*S.up.rod)+(f.rod?f.rod*S.up.rod:0));let r=Math.random()*w.reduce((a,b)=>a+b);
+  function pickFish(){const pool=FISH.filter(f=>f.g==='hering'||unl(f.g)),rare=(dayPhase()==='night'?1.3:1)*(wxIs('storm')?1.3:1),w=pool.map(f=>f.w*(f.g==='hering'?1:(1+.35*S.up.rod)*rare)+(f.rod?f.rod*S.up.rod:0));let r=Math.random()*w.reduce((a,b)=>a+b);
     for(let i=0;i<pool.length;i++){r-=w[i];if(r<=0)return pool[i]}return pool[0]}
   st.onpointerdown=e=>{e.preventDefault();
     if(phase==='wait'){pop($('m'),'Zu früh – Fisch verscheucht!');SFX.err();startWait(1000)}

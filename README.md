@@ -43,6 +43,15 @@ Neue Spieler folgen 23 Zielen (`src/features/goals.js`). Bereiche öffnen sich n
 
 **Spielstand sichern:** In der Firmen-Übersicht (Tippen aufs Level) erzeugt man einen Sicherungscode (komprimiertes JSON, Base64) und lädt ihn auf einem anderen Gerät wieder.
 
+## Welt und Live-Daten
+
+`src/world.js` liest die echte Uhrzeit des Geräts:
+- **Tageszeit:** Szenen werden abends und nachts dunkler, nachts beißen seltene Fische öfter, bei der LKW-Fahrt leuchten die Scheinwerfer.
+- **Jahreszeit:** Felder wachsen im Frühling 10 % und im Sommer 25 % schneller, im Herbst gibt es 20 % mehr Ernte, im Winter wachsen sie nur mit 60 % Tempo.
+- **Wochenende:** Lebensmittel, Agrarwaren und Fisch sind 15 % mehr wert, Aufträge zahlen 20 % mehr.
+
+**Live-Daten** sind aus, bis man sie in der Firmen-Übersicht einschaltet. Dann holt das Spiel einmal am Tag die EZB-Wechselkurse (api.frankfurter.app, Ersatz api.frankfurter.dev). Exporterlöse ändern sich mit dem Kurs heute gegenüber vor einem Jahr, höchstens um ±15 %. Für Dubai zählt der Dollar, weil der Dirham daran gekoppelt ist. Wer eine Stadt wählt, bekommt alle 30 Minuten das Wetter von Open-Meteo (nicht-kommerziell kostenlos, CC BY 4.0): Regen gießt die Felder, Sonne beschleunigt das Wachstum, Schnee bremst es, und bei Sturm beißen seltene Fische öfter, auf der Straße liegt mehr im Weg. Ausschalten löscht den Zwischenspeicher. Fallen die Dienste aus oder antworten unsinnig, läuft das Spiel ohne diese Effekte weiter. Über den Claude-Link gibt es keine Live-Daten, weil die Plattform fremde Server sperrt. `tests/world.cjs` prüft das alles mit festen Uhrzeiten und nachgestellten Antworten.
+
 ## Barrierefreiheit
 
 - Ist im System „Bewegung reduzieren“ eingestellt, entfallen Wackeln und Dauer-Pulsieren, und es gibt weniger Partikel (`calm()` in `src/util.js`, Media-Query am Ende von `src/style.css`). Spielwichtige Signale bleiben als feste Markierung.

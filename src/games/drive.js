@@ -2,12 +2,13 @@
 import {SFX,motor,vib} from '../fx.js';
 import {OV,closeOv,openOv} from '../ui.js';
 import {$,calm,iconUrl,propUrl} from '../util.js';
+import {dayPhase,weather} from '../world.js';
 
 export function drive(route,units){return new Promise(res=>{
   const ov=openOv(`<h3>Fahrt · ${route.n}</h3><div class="sub">Tippe links/rechts oder wische. Weiche aus, sammle Münzen.</div><canvas id="cv"></canvas><div class="ctrl"><button class="btn ghost" id="L">◀</button><button class="btn ghost" id="R">▶</button></div>`);
   const cv=$('cv'),W=320,H=440,DPR=Math.min(2,window.devicePixelRatio||1);cv.width=W*DPR;cv.height=H*DPR;
   const c=cv.getContext('2d');c.scale(DPR,DPR);
-  const LX=[80,160,240],TY=350;
+  const LX=[80,160,240],TY=350,night=dayPhase()==='night',wx=weather()?.k,drops=Array.from({length:40},()=>({x:Math.random()*320,y:Math.random()*440}));
   const img=u=>{const i=new Image();i.src=u;return i},SP={truck:img(propUrl('truck')),rock:img(propUrl('boulder')),cone:img(propUrl('cone')),barrier:img(propUrl('barrier')),tree:img(propUrl('tree')),coin:img(iconUrl('coin'))};
   const SZ={truck:96,rock:58,cone:46,barrier:86};
   const draw=(k,px,py,sz)=>{const i=SP[k];if(i.complete&&i.naturalWidth)c.drawImage(i,px-sz/2,py-sz/2,sz,sz)};
@@ -31,14 +32,14 @@ export function drive(route,units){return new Promise(res=>{
     draw(o.k,o.x,o.y,SZ[o.k])}
   function drawTruck(){
     if(inv>0&&Math.floor(inv*12)%2)return;
-    const hl=c.createLinearGradient(0,TY-40,0,TY-190);hl.addColorStop(0,'rgba(255,248,200,.35)');hl.addColorStop(1,'rgba(255,248,200,0)');c.fillStyle=hl;c.beginPath();c.moveTo(x-14,TY-40);c.lineTo(x-34,TY-190);c.lineTo(x+34,TY-190);c.lineTo(x+14,TY-40);c.fill();
+    const hl=c.createLinearGradient(0,TY-40,0,TY-190);hl.addColorStop(0,`rgba(255,248,200,${night?.6:.35})`);hl.addColorStop(1,'rgba(255,248,200,0)');c.fillStyle=hl;c.beginPath();c.moveTo(x-14,TY-40);c.lineTo(x-34,TY-190);c.lineTo(x+34,TY-190);c.lineTo(x+14,TY-40);c.fill();
     draw('truck',x,TY,SZ.truck)}
   function frame(now){
     if(!ov.alive){removeEventListener('keydown',key);engStop();return}
     const dt=Math.min(0.05,(now-last)/1000);last=now;
     if(!over){t+=dt;inv=Math.max(0,inv-dt);
       x+=(LX[lane]-x)*Math.min(1,dt*14);off=(off+speed()*dt)%80;
-      spawn-=dt;if(spawn<=0){spawn=Math.max(0.28,(0.85-t*0.012)*(170/speed()+0.4));
+      spawn-=dt;if(spawn<=0){spawn=Math.max(0.28,(0.85-t*0.012)*(170/speed()+0.4))*(wx==='storm'?.85:1);
         const l=Math.floor(Math.random()*3),r=Math.random(),k=r<0.25?'coin':r<0.55?'rock':r<0.85?'cone':'barrier';obs.push({k,x:LX[l],y:-40})}
       obs.forEach(o=>o.y+=speed()*dt);
       obs=obs.filter(o=>{
@@ -62,7 +63,10 @@ export function drive(route,units){return new Promise(res=>{
     c.fillStyle='rgba(255,255,255,.85)';for(let l=1;l<3;l++)for(let y=-80;y<H+40;y+=80){c.fillRect(l*80+40-2,y+off,4,36)}
     if(speed()>210){c.fillStyle='rgba(255,255,255,.07)';for(let i=0;i<8;i++){c.fillRect(40+i*32,(off*3+i*97)%H,2,50)}}
     obs.slice().sort((a,b)=>a.y-b.y).forEach(drawObs);
+    if(night){c.fillStyle='rgba(6,10,32,.5)';c.fillRect(0,0,W,H)} // Nacht: dunkler, Scheinwerfer heller
     drawTruck();
+    if(wx==='rain'||wx==='storm'||wx==='snow'){const sn=wx==='snow';c.fillStyle=sn?'rgba(255,255,255,.8)':'rgba(180,200,255,.45)';
+      drops.forEach(d=>{d.y=(d.y+(sn?60:520)*Math.min(.05,dt))%H;d.x=(d.x+(sn?Math.sin(t*2+d.y)*.6:-1.5)+W)%W;sn?c.fillRect(d.x,d.y,3,3):c.fillRect(d.x,d.y,1.5,14)})}
     parts.forEach(p=>{c.globalAlpha=Math.max(0,p.l/.6);c.fillStyle=p.c;c.beginPath();c.arc(p.x,p.y,3,0,7);c.fill()});c.globalAlpha=1;
     const v=c.createRadialGradient(W/2,H/2,H*.35,W/2,H/2,H*.75);v.addColorStop(0,'rgba(0,0,0,0)');v.addColorStop(1,'rgba(0,0,0,.45)');c.fillStyle=v;c.fillRect(0,0,W,H);
     if(flash>0){c.fillStyle=`rgba(255,40,60,${flash*.45})`;c.fillRect(0,0,W,H)}

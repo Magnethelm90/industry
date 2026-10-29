@@ -4,6 +4,7 @@ import {CATS,G,catOf} from '../data.js';
 import {SFX,fx,toast,vib} from '../fx.js';
 import {GKU,S,buyP,cap,mood,price,sat,sellP,track} from '../state.js';
 import {$,fmt,ic} from '../util.js';
+import {isWeekend} from '../world.js';
 
 export function spark(g){const h=S.hist[g];if(h.length<2)return '';const mn=Math.min(...h),mx=Math.max(...h),r=mx-mn||1;
   const pts=h.map((v,i)=>[(i/(h.length-1)*84),(26-(v-mn)/r*22)]);const line=pts.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ');
@@ -22,7 +23,7 @@ export function mTrade(g,buy,e){
 export let mCat='alle';
 export function renderMarket(){
   const el=$('s-market'),all=GKU();
-  el.innerHTML='<h2>Markt</h2><p class="sub">Direkt handeln: Ankauf 20 % über, Verkauf 25 % unter Marktpreis. Per LKW (Logistik) bekommst du den vollen Preis, am Hafen +30 %.</p>';
+  el.innerHTML='<h2>Markt</h2><p class="sub">Direkt handeln: Ankauf 20 % über, Verkauf 25 % unter Marktpreis. Per LKW (Logistik) bekommst du den vollen Preis, am Hafen +30 %.</p>'+(isWeekend()?'<div class="worldline"><span>🛍️ Wochenendmarkt: Lebensmittel, Agrarwaren und Fisch sind 15 % mehr wert, Aufträge zahlen 20 % mehr.</span></div>':'');
   const cats=document.createElement('div');cats.className='cats';
   CATS.filter(([k])=>k==='alle'||all.some(g=>catOf(g)===k)).forEach(([k,n])=>{const b=document.createElement('button');b.className='chip2'+(k===mCat?' on':'');b.textContent=n;b.onclick=()=>{mCat=k;SFX.tick();render()};cats.appendChild(b)});
   el.appendChild(cats);

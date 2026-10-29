@@ -4,6 +4,7 @@ import {CUSTOMERS,G} from '../data.js';
 import {renderDemand} from './export.js';
 import {renderProjects} from './projects.js';
 import {freeRivals} from './rivals.js';
+import {WEEKEND,isWeekend} from '../world.js';
 import {SFX,burst,fx,toast,vib} from '../fx.js';
 import {GKU,S,cap,lvl,track} from '../state.js';
 import {addSec} from '../ui.js';
@@ -16,7 +17,8 @@ export function genOffer(){
   if(pool.length>2&&Math.random()<.4){let g2;do g2=pick(pool);while(g2===goods[0]);goods.push(g2)}
   const V=(60+L*70)*(.8+Math.random()*.7)*(vip?2:1);let val=0;const items={};
   goods.forEach(g=>{const n=Math.max(1,Math.min(Math.floor(cap()*.6),Math.round(V/goods.length/G[g].base)));items[g]=n;val+=n*G[g].base});
-  return {id:S.oid++,who:pick(CUSTOMERS),items,rush,vip,reward:Math.round(val*(rush?2.1:vip?2.4:1.6)*(1+S.rep/250)),xp:Math.round(val/8)+5,
+  const wk=isWeekend();
+  return {id:S.oid++,who:pick(CUSTOMERS),items,rush,vip,wk,reward:Math.round(val*(rush?2.1:vip?2.4:1.6)*(1+S.rep/250)*(wk?WEEKEND.orders:1)),xp:Math.round(val/8)+5,
     time:((rush?3:vip?8:10)+goods.length*2)*60,exp:Date.now()+(150+Math.random()*120)*1000};
 }
 export const canDeliver=o=>Object.keys(o.items).every(g=>S.stock[g]>=o.items[g]);
@@ -42,7 +44,7 @@ export function renderOrders(){
   el.innerHTML=`<h2>Aufträge</h2><p class="sub">Wer sucht welche Ware? Pünktlich liefern bringt Geld und Ruf, verpasste Fristen kosten Ruf.</p>
    <div class="card" style="--c:#fbbf24"><div class="art">${ic('lvl',40)}</div><div class="i">Ruf: ${repTier()} <span class="chip num">${Math.round(S.rep)} / 100</span><div class="meter"><i style="width:${S.rep}%;background:var(--g2)"></i></div><small>Mehr Ruf = höhere Belohnungen und mehr Ladenkunden${S.rep<50?' · VIP-Aufträge ab 50':''}</small></div></div>`;
   const items=o=>Object.keys(o.items).map(g=>`<span class="oi ${S.stock[g]>=o.items[g]?'up':'dn'}">${ic(g,22)}${o.items[g]}× ${G[g].n} <b class="num">(${Math.floor(S.stock[g])})</b></span>`).join('');
-  const tag=o=>o.vip?' <span class="chip" style="color:#f0abfc">👑 VIP</span>':o.rush?' <span class="chip dn">⚡ Eilig</span>':'';
+  const tag=o=>(o.vip?' <span class="chip" style="color:#f0abfc">👑 VIP</span>':o.rush?' <span class="chip dn">⚡ Eilig</span>':'')+(o.wk?' <span class="chip up">🛍️ Wochenende +20 %</span>':'');
   const col=o=>o.vip?'#e879f9':o.rush?'#fb7185':'#22d3ee';
   addSec(el,'Aktiv · '+S.orders.length+' / 3');
   if(!S.orders.length)el.insertAdjacentHTML('beforeend','<p class="sub">Keine aktiven Aufträge. Nimm unten einen an.</p>');

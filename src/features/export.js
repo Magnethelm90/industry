@@ -5,6 +5,7 @@ import {SFX,burst,fx,toast,vib} from '../fx.js';
 import {GKU,S,isOpen,track} from '../state.js';
 import {addSec,bindX,closeOv,openOv,xbtn} from '../ui.js';
 import {$,fmt,fmtT,ic} from '../util.js';
+import {CUR,fxMult} from '../world.js';
 
 export const airUpCost=()=>airUpBase(S.exp.lvl),maxShips=()=>1+S.exp.lvl;
 export function genDemand(){
@@ -25,7 +26,7 @@ export function exportLoad(cid){
   const c=COUNTRIES.find(x=>x.id===cid);let mode='plane';const load={};
   const draw=()=>{
     const m=MODES[mode],cap=m.cap(S.exp.lvl),used=Object.values(load).reduce((a,b)=>a+b,0);
-    let val=0;for(const g in load)val+=load[g]*G[g].base*expMult(cid,g);val=Math.round(val*(1-m.fee));
+    let val=0;for(const g in load)val+=load[g]*G[g].base*expMult(cid,g);val=Math.round(val*(1-m.fee)*fxMult(cid)); // Wechselkurs (nur mit Live-Daten)
     const goods=GKU().filter(g=>S.stock[g]>=1||load[g]).sort((a,b)=>expMult(cid,b)-expMult(cid,a));
     openOv(xbtn()+`<h3>${c.f} Lieferung nach ${c.n}</h3><div class="sub">Gefragte Waren bringen ein Vielfaches. Flugzeug ist schnell, das Schiff fasst mehr und kostet weniger Gebühr.</div>
       <div class="seg">${Object.keys(MODES).map(k=>`<button data-m="${k}" class="${k===mode?'on':''}">${MODES[k].e} ${MODES[k].n}</button>`).join('')}</div>
@@ -64,6 +65,7 @@ export function renderAirport(el){
       el.appendChild(d)})}
 }
 // Nachfrage der Länder (Bildschirm Aufträge)
+const fxChip=cid=>{const f=fxMult(cid);if(f===1)return '';const p=Math.round((f-1)*100);return ` <span class="chip ${p>=0?'up':'dn'}">💱 ${CUR[cid]} ${p>=0?'+':''}${p} %</span>`};
 export function renderDemand(el){
   if(!isOpen('export'))return;
   const now=Date.now();
@@ -73,6 +75,6 @@ export function renderDemand(el){
     d.querySelector('button').onclick=()=>go('logistics');el.appendChild(d);return}
   addSec(el,'Auslandsnachfrage · neu in '+fmtT(S.exp.demandAt-now));
   COUNTRIES.forEach(c=>{const d=document.createElement('div');d.className='card';d.style.setProperty('--c','#fbbf24');
-    d.innerHTML=`<div class="art"><span style="font-size:32px">${c.f}</span></div><div class="i">${c.n}<small>✈️ ${fmtT(MODES.plane.t*c.d*1000)} · 🚢 ${fmtT(MODES.ship.t*c.d*1000)}</small><div class="ois">${(S.exp.demand[c.id]||[]).map(x=>`<span class="oi">${ic(x.g,22)}${G[x.g].n} <b class="up">×${x.m}</b></span>`).join('')}</div></div><button class="btn b">Beliefern</button>`;
+    d.innerHTML=`<div class="art"><span style="font-size:32px">${c.f}</span></div><div class="i">${c.n}${fxChip(c.id)}<small>✈️ ${fmtT(MODES.plane.t*c.d*1000)} · 🚢 ${fmtT(MODES.ship.t*c.d*1000)}</small><div class="ois">${(S.exp.demand[c.id]||[]).map(x=>`<span class="oi">${ic(x.g,22)}${G[x.g].n} <b class="up">×${x.m}</b></span>`).join('')}</div></div><button class="btn b">Beliefern</button>`;
     d.querySelector('button').onclick=()=>exportLoad(c.id);el.appendChild(d)});
 }

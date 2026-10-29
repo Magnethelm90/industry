@@ -6,17 +6,19 @@ import {gFish} from '../games/fish.js';
 import {S,cap,track,unl} from '../state.js';
 import {addSec,bindX,closeOv,openOv,xbtn} from '../ui.js';
 import {$,fmt,fmtT,ic,pick} from '../util.js';
+import {SEASONS,season,weather,wxIs} from '../world.js';
 
 export const plotCost=()=>Math.ceil(150*Math.pow(1.6,S.farm.plots.length-4));
 export const cellarCost=()=>Math.ceil(800*Math.pow(1.8,S.cellar.n-2));
-export const growMult=()=>1+.1*Math.max(0,S.up.sprinkler-1);
+// Bewässerung, Jahreszeit und (falls eingeschaltet) Wetter
+export const growMult=()=>(1+.1*Math.max(0,S.up.sprinkler-1))*SEASONS[season()].grow*(weather()?.grow||1);
 export const waterPlot=p=>{p.w=CROPS[p.c].grow*.6};
 export const emptyPlot=()=>({c:null,p:0,w:0,pest:0,half:0,ready:0});
 export function tickFarm(dt){
   const now=Date.now();
   S.farm.plots.forEach((p,i)=>{
     if(!p.c||p.ready)return;
-    if(S.up.sprinkler>0&&p.w<=0)waterPlot(p);
+    if((S.up.sprinkler>0||wxIs('rain'))&&p.w<=0)waterPlot(p); // Regen gießt mit
     if(p.w>0){p.p+=dt*growMult()/CROPS[p.c].grow;p.w=Math.max(0,p.w-dt);if(p.p>=1){p.p=1;p.ready=1;p.pest=0}}
     if(p.pest&&now>p.pest){p.pest=0;p.half=1;toast('🐛 Schädlinge haben Feld '+(i+1)+' angefressen – nur halbe Ernte!');SFX.miss()}
   });
@@ -37,7 +39,7 @@ export function pickCrop(i){
 }
 export function harvest(i,e){
   const p=S.farm.plots[i];if(!p.ready)return;
-  let n=Math.round(CROPS[p.c].yield*(p.half?.5:1)*(1+.25*S.up.tractor));n=Math.max(0,Math.min(n,Math.floor(cap()-S.stock[p.c])));
+  let n=Math.round(CROPS[p.c].yield*(p.half?.5:1)*(1+.25*S.up.tractor)*(1+SEASONS[season()].crop));n=Math.max(0,Math.min(n,Math.floor(cap()-S.stock[p.c])));
   S.stock[p.c]+=n;S.xp+=n+2;track('harvest');SFX.good();vib(15);burst(e.clientX,e.clientY,G[p.c].c,14);fx('+'+n+' '+G[p.c].n,G[p.c].c,e.clientX,e.clientY-30);
   Object.assign(p,emptyPlot());render();
 }
@@ -63,7 +65,9 @@ export function cellarTake(it,e){
 export function renderFarm(){
   const el=$('s-farm'),now=Date.now();
   el.innerHTML='<h2>Farm & Meer</h2><p class="sub">Säen, gießen, ernten. Pflanzen wachsen nur mit Wasser – und vertreib die Schädlinge! Am Steg kannst du angeln, im Keller reifen edle Waren.</p>';
-  addSec(el,'Felder · '+S.farm.plots.length+' / 12'+(S.up.sprinkler?' · 💧 Bewässerung aktiv':''));
+  const se=SEASONS[season()],wx=weather();
+  el.insertAdjacentHTML('beforeend',`<div class="worldline"><span>${se.e} ${se.n}: ${se.d}</span>${wx?`<span>${wx.e} ${wx.n} in ${wx.city}: ${wx.d}</span>`:''}</div>`);
+  addSec(el,'Felder · '+S.farm.plots.length+' / 12'+(S.up.sprinkler?' · 💧 Bewässerung aktiv':'')+(wx?.k==='rain'&&!S.up.sprinkler?' · 🌧️ Regen gießt':''));
   const grid=document.createElement('div');grid.className='plots';
   S.farm.plots.forEach((p,i)=>{
     const b=document.createElement('button'),c=p.c&&CROPS[p.c],dry=p.c&&!p.ready&&p.w<=0;

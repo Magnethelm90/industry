@@ -9,6 +9,7 @@ import {offlineFarm,tickFarm} from './features/farm.js';
 import {tickOrders} from './features/orders.js';
 import {freeRivals,tickRivals} from './features/rivals.js';
 import {initMusic,startMusic,stopMusic} from './music.js';
+import {dayPhase,refreshLive} from './world.js';
 import {offlineShop,syncSlots,tickShop} from './features/shop.js';
 import {tickUnder} from './features/under.js';
 import {initGoals,tickGoals} from './features/goals.js';
@@ -57,6 +58,10 @@ if(/[?&]debug/.test(location.search)){
 // Als App installierbar und offline spielbar – nur dort, wo das Manifest mitkommt (nicht in der Einzeldatei-Vorschau)
 if('serviceWorker' in navigator&&document.querySelector('link[rel="manifest"]')&&/^https?:$/.test(location.protocol))
   addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+// Tageszeit fürs Aussehen der Szenen; Live-Daten beim Start und alle 10 Minuten (nur wenn eingeschaltet)
+const setPhase=()=>{const p=dayPhase();if(document.body.dataset.time!==p)document.body.dataset.time=p};
+setPhase();setInterval(setPhase,60000);
+refreshLive().then(()=>render());setInterval(()=>refreshLive().then(()=>{if(!OV)render()}),10*60000);
 startHud();
 render();
 if(S.goal===0&&!S.st.make.erz)toast('Willkommen! Oben steht dein erstes Ziel.');

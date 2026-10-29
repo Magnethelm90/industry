@@ -275,3 +275,11 @@
   .spad.act{box-shadow:0 0 0 6px #ffffff40,0 0 26px #fbbf24}
   #toast,.screw,.bolt,.pc svg{transition:none}
 }
+/* Welt: Hinweiszeile, Auswahlfeld, Tageszeit */
+.worldline{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 6px}
+.worldline span{padding:6px 10px;border-radius:12px;background:var(--glass2);border:1px solid var(--line);font-size:12px;font-weight:700;color:var(--ink)}
+.sel{display:block;width:100%;margin-top:8px;padding:9px 10px;border-radius:12px;border:1px solid var(--line);background:#0b1020;color:var(--ink);font:inherit;font-size:13px}
+body[data-time=dusk] .stage,body[data-time=dawn] .stage{filter:brightness(.9) saturate(1.05) sepia(.12)}
+body[data-time=night] .stage{filter:brightness(.72) saturate(.85)}
+body[data-time=night] .stage.lake{background:linear-gradient(#060b1f,#0f1d3a 52%,#0a2a3d 60%,#05192a);filter:none}
+body[data-time=night] .stage.lake::before{content:"";position:absolute;inset:0 0 45% 0;pointer-events:none;background:radial-gradient(1px 1px at 12% 20%,#fff,transparent),radial-gradient(1px 1px at 35% 8%,#fff,transparent),radial-gradient(1.5px 1.5px at 58% 26%,#fff,transparent),radial-gradient(1px 1px at 80% 12%,#fff,transparent),radial-gradient(1px 1px at 92% 34%,#fff,transparent),radial-gradient(14px 14px at 86% 18%,#f8fafc,#f8fafc00 70%)}
