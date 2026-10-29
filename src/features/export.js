@@ -2,7 +2,7 @@
 import {go,render} from '../app.js';
 import {COUNTRIES,G,MODES,UNL} from '../data.js';
 import {SFX,burst,fx,toast,vib} from '../fx.js';
-import {GKU,S,isOpen} from '../state.js';
+import {GKU,S,isOpen,track} from '../state.js';
 import {addSec,bindX,closeOv,openOv,xbtn} from '../ui.js';
 import {$,fmt,fmtT,ic} from '../util.js';
 
@@ -19,7 +19,7 @@ export function tickExport(){
     const c=COUNTRIES.find(x=>x.id===sh.c),m=MODES[sh.mode];
     if(sh.delayed&&!sh.told&&now>sh.start+(sh.end-sh.start)/2){sh.told=1;toast(m.e+' '+m.ev+' ('+c.n+')');SFX.err()}
     if(now<sh.end)return true;
-    S.money+=sh.value;S.xp+=Math.ceil(sh.value/10);SFX.win();toast(m.e+' Lieferung in '+c.f+' '+c.n+' angekommen: +'+fmt(sh.value)+' Cr');return false});
+    S.money+=sh.value;S.xp+=Math.ceil(sh.value/10);track('exports');SFX.win();toast(m.e+' Lieferung in '+c.f+' '+c.n+' angekommen: +'+fmt(sh.value)+' Cr');return false});
 }
 export function exportLoad(cid){
   const c=COUNTRIES.find(x=>x.id===cid);let mode='plane';const load={};

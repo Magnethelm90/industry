@@ -14,7 +14,7 @@ export async function startDrive(route){
   const r=await drive(route,load);
   let val=0;for(const g in load){for(let i=0;i<load[g];i++){val+=price(g);sat[g]+=1}}
   val*=route.mult;const pay=Math.floor(val*r.integ/100)+r.coins*5;
-  S.money+=pay;S.xp+=Math.ceil(pay/8);track('drives');
+  S.money+=pay;S.xp+=Math.ceil(pay/8);track('drives');if(route.id==='hafen')track('harbour');
   const stars=r.integ>=100?3:r.integ>=60?2:r.integ>0?1:0;
   openOv(`<h3 style="text-align:center;font-size:24px">${r.integ>0?'Lieferung erfolgreich':'Totalschaden'}</h3>
    <div style="text-align:center;font-size:38px;letter-spacing:8px;margin:6px 0">${'★'.repeat(stars)}<span style="opacity:.2">${'★'.repeat(3-stars)}</span></div>

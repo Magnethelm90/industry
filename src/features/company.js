@@ -1,5 +1,5 @@
 /* Firmen-Übersicht: Level, Ruf, Freischaltungen, Rangliste */
-import {UNL} from '../data.js';
+import {UNL,xpFor} from '../data.js';
 import {S,isOpen,lvl} from '../state.js';
 import {bindX,closeOv,openOv,xbtn} from '../ui.js';
 import {$,fmt,ic} from '../util.js';
@@ -7,7 +7,7 @@ import {repTier} from './orders.js';
 import {netWorth} from './rivals.js';
 
 export function openCompany(){
-  const L=lvl(),a=40*(L-1)*(L-1),b=40*L*L;
+  const L=lvl(),a=xpFor(L),b=xpFor(L+1);
   const rank=[...S.rivals.map(r=>({n:r.n,w:r.w})),{n:'Deine Firma',w:netWorth(),me:1}].sort((x,y)=>y.w-x.w);
   const unl=Object.keys(UNL).sort((x,y)=>UNL[x].lv-UNL[y].lv);
   openOv(xbtn()+`<h3>Deine Firma</h3>

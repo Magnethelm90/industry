@@ -1,6 +1,6 @@
 /* Navigation und Bildschirmaufbau */
-import {UNL} from './data.js';
-import {renderBld} from './features/buildings.js';
+import {UNL,xpFor} from './data.js';
+import {branchCustomer,renderBld} from './features/buildings.js';
 import {renderFarm} from './features/farm.js';
 import {applyHl,goalCard} from './features/goals.js';
 import {renderLogistics} from './features/logistics.js';
@@ -21,7 +21,7 @@ const locked=k=>LOCK[k]&&!isOpen(LOCK[k]);
 
 export function badges(){
   const set=(s,on)=>{const b=document.querySelector(`#nav [data-s="${s}"]`);if(b)b.classList.toggle('dot',!!on)};
-  set('trade',custQ.length>0||S.orders.some(canDeliver));
+  set('trade',custQ.length>0||branchCustomer()||S.orders.some(canDeliver));
   set('under',isOpen('under')&&illLager().length>0);
   set('farm',isOpen('farm')&&(S.farm.plots.some(p=>p.pest||p.ready||(p.c&&p.w<=0))||S.cellar.items.some(i=>Date.now()>=i.end)));
   document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('lock',!!locked(b.dataset.s)));
@@ -29,7 +29,7 @@ export function badges(){
 export let cur='work',lastLvl=lvl(),shown=S.money;
 export function render(){
   $('capi').textContent=truckCap();
-  const l=lvl(),a=40*(l-1)*(l-1),b=40*l*l;$('lvl').textContent=l;
+  const l=lvl(),a=xpFor(l),b=xpFor(l+1);$('lvl').textContent=l;
   $('ringc').style.strokeDashoffset=113.1*(1-Math.max(0,Math.min(1,(S.xp-a)/(b-a))));
   if(l>lastLvl){const was=lastLvl;lastLvl=l;SFX.win();fx('LEVEL '+l,'#22d3ee');
     const news=Object.values(UNL).filter(u=>u.lv>was&&u.lv<=l).map(u=>u.n);
@@ -57,7 +57,7 @@ export function tradeTabs(el){
   const d=document.createElement('div');d.className='seg';
   TRADE.forEach(([k,n])=>{const b=document.createElement('button');b.textContent=n;if(k===cur)b.className='on';
     if(locked(k))b.classList.add('lock');
-    else if((k==='shop'&&custQ.length)||(k==='orders'&&S.orders.some(canDeliver)))b.classList.add('dot');
+    else if((k==='shop'&&(custQ.length||branchCustomer()))||(k==='orders'&&S.orders.some(canDeliver)))b.classList.add('dot');
     b.onclick=()=>go(k);d.appendChild(b)});
   el.prepend(d);
 }

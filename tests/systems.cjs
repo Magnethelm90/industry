@@ -11,7 +11,7 @@ const URL='file://'+path.resolve(__dirname,'../dist/index.html')+'?debug';
   const ev=(f,a)=>p.evaluate(f,a);
   let fail=0;const ok=(c,msg)=>{console.log((c?'  ok  ':'  FEHLER ')+msg);if(!c)fail++};
   await p.goto(URL);await ev(()=>localStorage.clear());await p.reload();await p.waitForTimeout(400);
-  await ev(()=>{S.xp=1000;S.money=50000;S.goal=GOALS.length;render()}); // Level 6, alles offen
+  await ev(()=>{S.xp=xpFor(6);S.money=50000;S.goal=GOALS.length;render()}); // Level 6, alles offen
 
   // Aufträge
   await ev(()=>{for(let i=0;i<3;i++){S.nextOffer=0;tickOrders()}go('orders')});await p.waitForTimeout(150);
@@ -47,6 +47,12 @@ const URL='file://'+path.resolve(__dirname,'../dist/index.html')+'?debug';
   await p.locator('#s-shop button',{hasText:'Stopp'}).click({force:true});
   await p.locator('#s-shop button',{hasText:'Deal'}).click();
   ok(await ev(()=>custQ.length)===0,'Dieb gestoppt und Deal gemacht');
+
+  // Filiale im Laden bauen, sie verkauft automatisch
+  await p.locator('#s-shop [data-b="baumarkt"] .btn',{hasText:'Bauen'}).click();
+  ok(await ev(()=>S.b.baumarkt.lvl)===1,'Filiale Baumarkt im Laden gebaut');
+  await ev(()=>{S.stock.lehm=50});m0=await ev(()=>S.money);await ev(()=>tickB(6));
+  ok(await ev(()=>S.money)>m0&&await ev(()=>S.stock.lehm)<50,'Filiale verkauft Lehm aus dem Lager');
 
   // Farm und Keller
   await ev(()=>go('farm'));await p.waitForTimeout(150);

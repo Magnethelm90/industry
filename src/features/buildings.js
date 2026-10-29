@@ -35,7 +35,7 @@ export function tickB(dt){
     }else{
       s.p+=dt;if(s.p>=SHOPT){s.p=0;sellShop(b,s.lvl)}
       if(!s.nc)s.nc=now+20000;
-      if(!s.cust&&now>s.nc){s.cust=now+9000;s.nc=now+25000+Math.random()*30000;SFX.coin();toast('🛎️ Kunde wartet im '+b.n+'!')}
+      if(!s.cust&&now>s.nc){s.cust=now+9000;s.nc=now+25000+Math.random()*30000;SFX.coin();toast('🛎️ Kunde wartet in deiner Filiale '+b.n+' (Laden)!')}
       if(s.cust&&now>s.cust)s.cust=0;
     }
   });
@@ -71,33 +71,42 @@ export function serveCustomer(b,e){
   SFX.coin();vib(20);burst(e.clientX,e.clientY,'#fbbf24',16);fx('+'+bonus+' Trinkgeld','#fbbf24',e.clientX,e.clientY-30);render();
 }
 export function renderBld(){
-  const el=$('s-bld');el.innerHTML='<h2>Betriebe</h2><p class="sub">Baue Minen, Fabriken und Geschäfte aus. Sie arbeiten automatisch – auch wenn du offline bist. Kümmere dich um die Wartung!</p>';
-  [['mine','Rohstoffe'],['fac','Fabriken'],['shop','Geschäfte']].forEach(([kind,title])=>{
-    const h=document.createElement('div');h.className='sec';h.textContent=title;el.appendChild(h);
-    const later=BLD.filter(b=>b.kind===kind&&b.lv>lvl()&&!bst(b).lvl);
-    BLD.filter(b=>b.kind===kind&&!later.includes(b)).forEach(b=>{
-      const s=bst(b),built=s.lvl>0,max=s.lvl>=BMAX,cost=bCost(b),broken=built&&kind!=='shop'&&s.hp<=0;
-      const d=document.createElement('div');d.className='card'+(broken?' broken':'')+(built?'':' idle');d.dataset.b=b.id;d.style.setProperty('--c',bc(b));
-      let line='';
-      if(kind==='mine')line=built?`+${mineRate(b).toFixed(2)}/s ${G[b.out].n}`:`Fördert ${b.rate}/s je Stufe`;
-      if(kind==='fac')line=Object.keys(b.in).map(k=>b.in[k]+'× '+G[k].n).join(' + ')+` → 1× ${G[b.out].n} · ${(built?facTime(b):b.t).toFixed(1)}s`;
-      if(kind==='shop')line=`Verkauft ${built?s.lvl:1} Stk / ${SHOPT}s · Preis +${Math.round(((built?shopPrem(b):1.15)-1)*100)}%<br>${b.goods.map(g=>G[g].n).join(', ')}`;
-      let extra='';
-      if(built&&kind!=='shop'){const hc=s.hp>50?'var(--ok)':s.hp>20?'var(--gold)':'var(--bad)';extra+=`<div class="meter" style="height:6px"><i style="width:${s.hp}%;background:${hc}"></i></div><small>${broken?'⚠️ Ausgefallen – Wartung nötig':'Zustand '+Math.round(s.hp)+'%'}</small>`}
-      if(built&&kind==='fac'){const t=facTime(b);extra+=`<div class="meter" style="height:6px"><i style="width:${s.p>0?Math.min(100,s.p/t*100):0}%;background:${bc(b)};transition:width 1s linear"></i></div>`}
-      d.innerHTML=`<div class="art">${ic(kind==='shop'?'shop':b.out,42)}</div><div class="i">${b.n}${built?' <span class="chip">Lv '+s.lvl+'</span>':''}<small>${line}</small>${extra}<div class="pips">${Array.from({length:BMAX},(_,k)=>`<i class="${k<s.lvl?'on':''}"></i>`).join('')}</div></div><div class="col"></div>`;
-      const col=d.querySelector('.col');
-      const mk=(t,cls,f,dis)=>{const bt=document.createElement('button');bt.className='btn '+cls;bt.innerHTML=t;bt.disabled=!!dis;bt.onclick=f;col.appendChild(bt)};
-      if(s.cust&&s.cust>Date.now())mk('🛎️ Kunde!','a pulse',e=>serveCustomer(b,e));
-      if(!max)mk(built?'⬆ '+fmt(cost):'Bauen '+fmt(cost),built?'b':'',e=>buildOrUpgrade(b,e),S.money<cost);else mk('MAX','ghost',null,true);
-      if(built&&kind!=='shop'&&s.hp<85)mk('🔧 Wartung',broken?'r':'ghost',()=>repairB(b));
-      if(built&&kind==='shop')mk('Vorrat ≥ '+s.keep,'ghost',()=>{s.keep=KEEPS[(KEEPS.indexOf(s.keep)+1)%KEEPS.length];render()});
-      el.appendChild(d);
-    });
-    if(later.length)el.appendChild(lockLine(later.length,Math.min(...later.map(b=>b.lv)),1));
-  });
+  const el=$('s-bld');el.innerHTML='<h2>Betriebe</h2><p class="sub">Minen und Fabriken arbeiten automatisch – auch wenn du offline bist. Kümmere dich um die Wartung!</p>';
+  [['mine','Rohstoffe'],['fac','Fabriken']].forEach(([kind,title])=>{addSec(el,title);bldList(el,kind)});
   renderUpg(el);
 }
+// Filialen: verkaufen automatisch aus dem Lager (Bildschirm Laden)
+export function renderBranches(el){
+  addSec(el,'Filialen · verkaufen automatisch');
+  el.insertAdjacentHTML('beforeend','<p class="sub">Jede Filiale verkauft ihre Waren selbstständig aus deinem Lager, etwas über Marktpreis. Mit „Vorrat" hältst du Ware für Aufträge zurück.</p>');
+  bldList(el,'shop');
+}
+function bldList(el,kind){
+  const later=BLD.filter(b=>b.kind===kind&&b.lv>lvl()&&!bst(b).lvl);
+  BLD.filter(b=>b.kind===kind&&!later.includes(b)).forEach(b=>el.appendChild(bldCard(b)));
+  if(later.length)el.appendChild(lockLine(later.length,Math.min(...later.map(b=>b.lv)),1));
+}
+function bldCard(b){
+  const kind=b.kind,s=bst(b),built=s.lvl>0,max=s.lvl>=BMAX,cost=bCost(b),broken=built&&kind!=='shop'&&s.hp<=0;
+  const d=document.createElement('div');d.className='card'+(broken?' broken':'')+(built?'':' idle');d.dataset.b=b.id;d.style.setProperty('--c',bc(b));
+  let line='';
+  if(kind==='mine')line=built?`+${mineRate(b).toFixed(2)}/s ${G[b.out].n}`:`Fördert ${b.rate}/s je Stufe`;
+  if(kind==='fac')line=Object.keys(b.in).map(k=>b.in[k]+'× '+G[k].n).join(' + ')+` → 1× ${G[b.out].n} · ${(built?facTime(b):b.t).toFixed(1)}s`;
+  if(kind==='shop')line=`Verkauft ${built?s.lvl:1} Stk / ${SHOPT}s · Preis +${Math.round(((built?shopPrem(b):1.15)-1)*100)}%<br>${b.goods.map(g=>G[g].n).join(', ')}`;
+  let extra='';
+  if(built&&kind!=='shop'){const hc=s.hp>50?'var(--ok)':s.hp>20?'var(--gold)':'var(--bad)';extra+=`<div class="meter" style="height:6px"><i style="width:${s.hp}%;background:${hc}"></i></div><small>${broken?'⚠️ Ausgefallen – Wartung nötig':'Zustand '+Math.round(s.hp)+'%'}</small>`}
+  if(built&&kind==='fac'){const t=facTime(b);extra+=`<div class="meter" style="height:6px"><i style="width:${s.p>0?Math.min(100,s.p/t*100):0}%;background:${bc(b)};transition:width 1s linear"></i></div>`}
+  d.innerHTML=`<div class="art">${ic(kind==='shop'?'shop':b.out,42)}</div><div class="i">${b.n}${built?' <span class="chip">Lv '+s.lvl+'</span>':''}<small>${line}</small>${extra}<div class="pips">${Array.from({length:BMAX},(_,k)=>`<i class="${k<s.lvl?'on':''}"></i>`).join('')}</div></div><div class="col"></div>`;
+  const col=d.querySelector('.col');
+  const mk=(t,cls,f,dis)=>{const bt=document.createElement('button');bt.className='btn '+cls;bt.innerHTML=t;bt.disabled=!!dis;bt.onclick=f;col.appendChild(bt)};
+  if(s.cust&&s.cust>Date.now())mk('🛎️ Kunde!','a pulse',e=>serveCustomer(b,e));
+  if(!max)mk(built?'⬆ '+fmt(cost):'Bauen '+fmt(cost),built?'b':'',e=>buildOrUpgrade(b,e),S.money<cost);else mk('MAX','ghost',null,true);
+  if(built&&kind!=='shop'&&s.hp<85)mk('🔧 Wartung',broken?'r':'ghost',()=>repairB(b));
+  if(built&&kind==='shop')mk('Vorrat ≥ '+s.keep,'ghost',()=>{s.keep=KEEPS[(KEEPS.indexOf(s.keep)+1)%KEEPS.length];render()});
+  return d;
+}
+// Wartet in einer Filiale ein Kunde?
+export const branchCustomer=()=>BLD.some(b=>b.kind==='shop'&&bst(b).cust>Date.now());
 export function renderUpg(el){
   addSec(el,'Ausrüstung');
   UP.filter(u=>!u.req||isOpen(u.req)).forEach(u=>{const d=document.createElement('div'),cost=upCost(u);d.className='card';d.style.setProperty('--c',u.c);

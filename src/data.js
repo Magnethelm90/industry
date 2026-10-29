@@ -126,9 +126,19 @@ export const UNL={
   bld:{lv:2,n:'Betriebe',d:'Minen und Fabriken arbeiten für dich – auch offline.'},
   orders:{lv:2,n:'Aufträge',d:'Kunden bestellen Ware mit Frist und zahlen gut.'},
   farm:{lv:3,n:'Farm & Meer',d:'Felder, Angeln und Reifekeller.'},
-  shop:{lv:3,n:'Eigener Laden',d:'Regale füllen, Preise setzen, feilschen.'},
+  shop:{lv:3,n:'Laden & Filialen',d:'Eigene Preise setzen, feilschen, Filialen eröffnen.'},
   lab:{lv:3,n:'Labor',d:'Geheime Rezepte entdecken.'},
   under:{lv:4,n:'Untergrund',d:'Schmuggelware – mit Risiko.'},
   elek:{lv:4,n:'Elektronik',d:'Platinen, Akkus, Displays – und Smartphones.'},
   export:{lv:5,n:'Flughafen & Hafen',d:'Liefern ins Ausland für ein Vielfaches.'}
+};
+
+// Ab wie viel XP ein Level erreicht ist (Index = Level). Danach wächst der Abstand um je 50 %.
+// Grob geschätzt bei aktivem Spiel: Level 3 nach ~15 min, Level 4 nach ~40 min, Level 5 nach ~1,5 h.
+export const LV_XP=[0,0,60,800,2800,7500,16000,30000];
+export const xpFor=l=>{
+  if(l<LV_XP.length)return LV_XP[l];
+  let x=LV_XP[LV_XP.length-1],d=x-LV_XP[LV_XP.length-2];
+  for(let i=LV_XP.length;i<=l;i++){d*=1.5;x+=d}
+  return Math.round(x);
 };

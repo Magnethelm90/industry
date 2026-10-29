@@ -11,6 +11,7 @@ npm run build    # baut dist/index.html (eine einzige Datei)
 npm run lint     # prüft den Code
 npm test         # baut und startet die Browser-Tests in tests/ (braucht Playwright)
 npm run balance  # Tabelle: Credits und XP pro Minute je Station, Betrieb und Verkaufsweg
+node tools/pace.mjs  # Simulation: Spielminuten bis zu jedem Level
 ```
 
 ## Aufbau
@@ -27,4 +28,4 @@ npm run balance  # Tabelle: Credits und XP pro Minute je Station, Betrieb und Ve
 
 ## Freischaltungen
 
-Neue Spieler folgen 13 Zielen (`src/features/goals.js`). Bereiche öffnen sich nach Level (`UNL` in `src/data.js`): Betriebe und Aufträge ab 2, Farm, Laden und Labor ab 3, Untergrund und Elektronik ab 4, Flughafen ab 5. Was schon benutzt wird, bleibt immer offen.
+Neue Spieler folgen 21 Zielen (`src/features/goals.js`). Bereiche öffnen sich nach Level (`UNL` in `src/data.js`): Betriebe und Aufträge ab 2, Farm, Laden mit Filialen und Labor ab 3, Untergrund und Elektronik ab 4, Flughafen ab 5. Was schon benutzt wird, bleibt immer offen. Die XP-Schwellen stehen in `LV_XP` (`src/data.js`); laut `tools/pace.mjs` braucht ein pausenlos spielender Spieler etwa 12 / 34 / 65 Minuten bis Level 3 / 4 / 5.

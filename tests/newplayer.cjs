@@ -53,12 +53,13 @@ const SHOTS=process.argv[2];
   await shot('n4_logistik');
 
   // Level 2: Freischaltungen
-  await ev(()=>{S.xp=45;render()});await p.waitForTimeout(150);
+  await ev(()=>{S.xp=xpFor(2)+5;render()});await p.waitForTimeout(150);
   ok((await p.textContent('#toast')).includes('Neu: Betriebe, Aufträge'),'Level-Hinweis: '+await p.textContent('#toast'));
   ok(await ev(()=>[...document.querySelectorAll('#nav button.lock')].map(b=>b.dataset.s).join(','))==='farm,under','Betriebe offen');
   await p.click('#nav [data-s=bld]');await p.waitForTimeout(150);
   ok(await ev(()=>cur)==='bld','Betriebe öffnen');
   ok(!(await p.textContent('#s-bld')).includes('Traktor'),'Farm-Ausrüstung noch versteckt');
+  ok(!(await p.textContent('#s-bld')).includes('Baumarkt'),'Filialen nicht mehr unter Betriebe');
   await shot('n5_betriebe');
 
   // Firmen-Übersicht
@@ -68,9 +69,9 @@ const SHOTS=process.argv[2];
   await p.click('#done');
 
   // Ziele überspringen bis Flughafen: Kette läuft durch
-  await ev(()=>{S.xp=5000;S.money=1e6;render()});
+  await ev(()=>{S.xp=xpFor(9);S.money=1e6;render()});
   const steps=await ev(()=>GOALS.length);
-  ok(steps===13,'13 Ziele');
+  ok(steps===21,'21 Ziele: '+steps);
 
   // Alter Spielstand ohne Ziel-Feld: Einstieg wird übersprungen (eigener Kontext mit vorbereitetem Speicher)
   const ctx2=await b.newContext({viewport:{width:400,height:860}});
@@ -79,6 +80,7 @@ const SHOTS=process.argv[2];
   const p2=await ctx2.newPage();p2.on('pageerror',e=>errs.push(e.message));
   await p2.goto(URL);await p2.waitForTimeout(400);
   ok(await p2.evaluate(()=>S.goal===GOALS.length&&!document.querySelector('.goal')&&S.money===900),'alter Spielstand: kein Einstieg, Geld erhalten, Ziel='+await p2.evaluate(()=>S.goal));
+  ok(await p2.evaluate(()=>lvl()===4&&S.xp===Math.round(xpFor(4)+(500-360)/(640-360)*(xpFor(5)-xpFor(4)))),'alte 500 XP (Level 4) → neue Kurve, weiter Level 4: '+await p2.evaluate(()=>S.xp+' XP, Level '+lvl()));
   ok(await p2.evaluate(()=>document.querySelectorAll('#nav button.lock').length)===0,'Level 4: alle Reiter offen, gesperrt='+await p2.evaluate(()=>[...document.querySelectorAll('#nav button.lock')].map(b=>b.dataset.s).join(',')));
 
   ok(errs.length===0,'keine JavaScript-Fehler '+JSON.stringify(errs));

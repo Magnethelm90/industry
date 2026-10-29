@@ -5,6 +5,7 @@ import {SFX,burst,fx,toast,vib} from '../fx.js';
 import {GKU,S,price,sat} from '../state.js';
 import {OV,addSec,bindX,closeOv,openOv,xbtn} from '../ui.js';
 import {$,fmt,ic,nameColor,pick} from '../util.js';
+import {renderBranches} from './buildings.js';
 
 export let custQ=[],shopT=0;
 export const shopSlots=()=>Math.min(8,1+S.shop.lvl);
@@ -75,7 +76,7 @@ export function offlineShop(dt){
 }
 export function renderShop(){
   syncSlots();const el=$('s-shop'),cost=shopCost(),max=shopSlots()>=8,now=Date.now();
-  el.innerHTML=`<h2>Dein Laden</h2><p class="sub">Räum Ware in die Regale und setz eigene Preise. Kunden kaufen von allein. Manche wollen feilschen – und pass auf Ladendiebe auf!</p>
+  el.innerHTML=`<h2>Dein Laden</h2><p class="sub">Im Hauptladen setzt du die Preise selbst: Ware einräumen, feilschen, Ladendiebe stoppen. Darunter deine Filialen, die von allein verkaufen.</p>
    <div class="card" style="--c:#e879f9"><div class="art">${ic('shop',42)}</div><div class="i">Laden Stufe ${S.shop.lvl} <span class="chip">${shopSlots()} Regale</span><small>${S.shop.sold} verkauft · Umsatz ${fmt(S.shop.earned)} Cr · ${S.shop.walked}× ohne Kauf gegangen</small></div><button class="btn a" id="shup" ${max||S.money<cost?'disabled':''}>${max?'MAX':'+ Regal<br>'+fmt(cost)}</button></div>`;
   $('shup').onclick=e=>{if(max||S.money<cost)return;S.money-=cost;S.shop.lvl++;syncSlots();SFX.buy();burst(e.clientX,e.clientY,'#e879f9',16);fx('Neues Regal!','#e879f9');render()};
   if(custQ.length){
@@ -97,4 +98,5 @@ export function renderShop(){
       b.innerHTML=`${ic(s.g,40)}<b>${G[s.g].n}</b><small class="num">${s.qty?s.qty+' Stk':'<span class="dn">Ausverkauft</span>'} · ${(price(s.g)*s.pct/100).toFixed(1)} Cr</small><small>${priceLabel(s.pct)} (${s.pct} %)</small>`}
     b.onclick=()=>editSlot(i);grid.appendChild(b)});
   el.appendChild(grid);
+  renderBranches(el);
 }

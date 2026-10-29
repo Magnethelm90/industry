@@ -10,7 +10,7 @@ const URL='file://'+path.resolve(__dirname,'../dist/index.html')+'?debug';
   const errs=[];p.on('pageerror',e=>errs.push(e.message));p.on('console',m=>m.type()==='error'&&errs.push(m.text()));
   await p.goto(URL);await p.waitForTimeout(400);
   const ev=(f,a)=>p.evaluate(f,a);
-  await ev(()=>{S.xp=2000;S.money=1e6;Object.keys(S.stock).forEach(g=>S.stock[g]=50);render()});
+  await ev(()=>{S.xp=xpFor(8);S.money=1e6;Object.keys(S.stock).forEach(g=>S.stock[g]=50);render()});
   let fail=0;const ok=(c,msg)=>{console.log((c?'  ok  ':'  FEHLER ')+msg);if(!c)fail++};
 
   // Jedes Minispiel: starten, 2,5 s wild tippen, abbrechen
