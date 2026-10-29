@@ -35,7 +35,8 @@
   .card .i{flex:1;min-width:0;font-size:15px;font-weight:700}
   .card small{display:block;color:var(--mut);font-weight:500;font-size:12px;margin-top:3px;line-height:1.35}
   .art{width:58px;height:58px;flex:0 0 58px;border-radius:16px;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 35%,color-mix(in srgb,var(--c) 45%,transparent),color-mix(in srgb,var(--c) 8%,transparent) 70%);border:1px solid color-mix(in srgb,var(--c) 40%,transparent)}
-  .art svg{filter:drop-shadow(0 4px 6px #0008)}
+  .art svg,.art .ico{filter:drop-shadow(0 4px 6px #0008)}
+  .ico{display:inline-block;flex:0 0 auto;vertical-align:middle;background:center/contain no-repeat}
   /* buttons */
   .btn{border:0;border-radius:14px;padding:11px 16px;font-weight:800;font-size:14px;color:#07101f;background:var(--g3);box-shadow:0 6px 18px -6px rgba(52,211,153,.7),inset 0 1px 0 #fff6;transition:transform .12s,filter .2s;cursor:pointer}
   .btn:active{transform:scale(.94);filter:brightness(1.15)}
@@ -164,7 +165,7 @@
   .tile:nth-child(3n){background:linear-gradient(160deg,#636a7d,#343a4a)}.tile:nth-child(5n){background:linear-gradient(130deg,#4f5567,#2b303e)}
   .tile.v{background:radial-gradient(circle at 50% 45%,color-mix(in srgb,var(--c) 30%,#3a4152),#2b303e 80%);box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--c) 45%,transparent),inset 0 -3px 0 #0005}
   .tile.rich{background:radial-gradient(circle at 50% 45%,color-mix(in srgb,var(--c) 45%,#3a4152),#2b303e 80%);box-shadow:inset 0 0 14px var(--c),inset 0 2px 0 #ffffff22;animation:glow 1.2s infinite alternate}@keyframes glow{to{box-shadow:inset 0 0 22px var(--c),inset 0 2px 0 #ffffff22}}
-  .tile svg{pointer-events:none;filter:drop-shadow(0 2px 3px #000a)}
+  .tile svg,.tile .ico{pointer-events:none;filter:drop-shadow(0 2px 3px #000a)}
   .tile.done{background:#070a14 !important;box-shadow:inset 0 3px 8px #000;animation:none}
   .tile[data-c="1"]::after,.tile[data-c="2"]::after{content:"";position:absolute;inset:0;pointer-events:none;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M21 1l-4 11 6 6-6 8 3 13M17 12l-10 3M23 18l11-4' stroke='%23000' stroke-width='2.2' fill='none' opacity='.75'/%3E%3C/svg%3E") center/100% no-repeat}
   .tile[data-c="2"]::after{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M21 1l-4 11 6 6-6 8 3 13M17 12l-10 3M23 18l11-4M2 28l9-3 6 4M30 30l8 6M28 4l-3 8' stroke='%23000' stroke-width='2.4' fill='none' opacity='.85'/%3E%3C/svg%3E")}

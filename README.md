@@ -24,8 +24,21 @@ node tools/pace.mjs  # Simulation: Spielminuten bis zu jedem Level
 - `src/features/`: je ein Spielbereich (Werkstatt, Farm, Betriebe, Markt, Laden, Aufträge, Export, Untergrund …)
 - `src/games/`: je ein Minispiel; `games/index.js` ist das Register
 - `src/ui.js`, `src/fx.js`, `src/util.js`: Overlay, Sound/Effekte, Helfer
-- `src/icons.svg`: Icon-Sprite
+- `src/assets/icons/`: in Blender gerenderte Icons (WebP, 192 px)
+- `src/icons.svg`: nur noch Farbverläufe für das Smartphone-Minispiel
 
 ## Freischaltungen
 
 Neue Spieler folgen 21 Zielen (`src/features/goals.js`). Bereiche öffnen sich nach Level (`UNL` in `src/data.js`): Betriebe und Aufträge ab 2, Farm, Laden mit Filialen und Labor ab 3, Untergrund und Elektronik ab 4, Flughafen ab 5. Was schon benutzt wird, bleibt immer offen. Die XP-Schwellen stehen in `LV_XP` (`src/data.js`); laut `tools/pace.mjs` braucht ein pausenlos spielender Spieler etwa 12 / 34 / 65 Minuten bis Level 3 / 4 / 5.
+
+## Icons neu rendern
+
+Die Icons entstehen per Skript in Blender (Cycles, transparenter Hintergrund, gleiches Licht für alle):
+
+```bash
+pip install bpy pillow                                   # Blender als Python-Modul (Python 3.13)
+python tools/icons/render_icons.py src/assets/icons      # alle 59 Icons, ca. 3 Minuten auf 4 Kernen
+python tools/icons/render_icons.py src/assets/icons erz  # nur einzelne
+```
+
+Jedes Icon ist eine kleine Funktion in `tools/icons/render_icons.py`. Ein neues Icon braucht dort eine Funktion mit `@icon('schluessel')`; das Spiel findet die Datei dann automatisch.

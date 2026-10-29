@@ -15,9 +15,11 @@ import {openCompany} from './features/company.js';
 import {SFX,toast} from './fx.js';
 import {GKU,S,mood,price,sat} from './state.js';
 import {OV} from './ui.js';
-import {$,fmt,pick} from './util.js';
+import {$,fmt,ic,initIcons,pick} from './util.js';
 
 document.body.insertAdjacentHTML('afterbegin',sprite);
+initIcons();
+document.querySelectorAll('[data-ic]').forEach(e=>e.outerHTML=ic(e.dataset.ic,+e.dataset.s));
 $('snd').onclick=()=>{S.mute=!S.mute;$('snd').textContent=S.mute?'🔇':'🔊';if(!S.mute)SFX.good()};
 $('snd').textContent=S.mute?'🔇':'🔊';
 if(!S.rivals)S.rivals=RIVALS.map(r=>({...r}));

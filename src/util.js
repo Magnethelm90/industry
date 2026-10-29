@@ -1,5 +1,14 @@
 /* Kleine Helfer: DOM, Formatierung, Zufall */
-export const ic=(k,s=40)=>`<svg width="${s}" height="${s}" viewBox="0 0 64 64"><use href="#i-${k}"/></svg>`;
+// Icons: in Blender gerenderte Bilder (tools/icons/render_icons.py). Jedes Bild steht einmal als CSS-Klasse
+// im Dokument; ic() liefert nur ein kurzes Element, damit häufiges Neuzeichnen billig bleibt.
+const ICON_URLS=import.meta.glob('./assets/icons/*.webp',{eager:true,query:'?url',import:'default'});
+const ICON_KEYS=new Set();
+export function initIcons(){
+  let css='';
+  for(const p in ICON_URLS){const k=p.slice(p.lastIndexOf('/')+1,-5);ICON_KEYS.add(k);css+=`.i-${k}{background-image:url("${ICON_URLS[p]}")}`}
+  const st=document.createElement('style');st.textContent=css;document.head.appendChild(st);
+}
+export const ic=(k,s=40)=>`<i class="ico${ICON_KEYS.has(k)?' i-'+k:''}" style="width:${s}px;height:${s}px"></i>`;
 export const $=id=>document.getElementById(id);
 export const fmt=n=>n>=1e6?(n/1e6).toFixed(2)+'M':n>=1e4?(n/1e3).toFixed(1)+'k':(Math.round(n*10)/10).toString();
 export const sleep=ms=>new Promise(r=>setTimeout(r,ms));
