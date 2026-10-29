@@ -1,5 +1,5 @@
 /* Hintergrundmusik: leise und live erzeugt (Moll-Akkorde, Bass, Arpeggio), 8 Takte in Schleife */
-import {AC,audio,musBus} from './fx.js';
+import {AC,audio,musBus,initAudio} from './fx.js';
 import {S} from './state.js';
 
 const BPM=76,BEAT=60/BPM,BAR=4*BEAT;
@@ -35,6 +35,6 @@ export function stopMusic(){
 }
 // Browser erlauben Ton erst nach der ersten Berührung; im Hintergrund pausieren
 export function initMusic(){
-  addEventListener('pointerdown',()=>{if(!armed)startMusic()},{once:true,capture:true});
+  initAudio(()=>{if(!armed)startMusic()});
   document.addEventListener('visibilitychange',()=>{if(document.hidden)stopMusic();else if(armed)startMusic()});
 }

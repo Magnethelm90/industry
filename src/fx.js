@@ -8,7 +8,13 @@ export function audio(){
   if(!AC){AC=new (window.AudioContext||window.webkitAudioContext)();
     sfxBus=AC.createGain();sfxBus.connect(AC.destination);musBus=AC.createGain();musBus.gain.value=0;musBus.connect(AC.destination);
     const n=AC.sampleRate;noiseBuf=AC.createBuffer(1,n,n);const d=noiseBuf.getChannelData(0);for(let i=0;i<n;i++)d[i]=Math.random()*2-1}
-  if(AC.state==='suspended')AC.resume().catch(()=>{});return AC}
+  if(AC.state!=='running')AC.resume().catch(()=>{});return AC} // auch 'interrupted' (iOS nach Anruf oder Hintergrund)
+// Browser geben Ton erst nach einer echten Geste frei: mit der Maus beim Drücken, mit dem Finger erst beim Loslassen
+// (pointerup/touchend). Die Spiele reagieren schon aufs Aufsetzen (pointerdown) – deshalb hier bei jeder Geste entsperren.
+export function initAudio(onFirst){
+  let first=true;
+  const go=e=>{if(!e.isTrusted||S.mute)return;try{audio()}catch(err){return}if(first){first=false;onFirst&&onFirst()}};
+  for(const t of ['pointerup','touchend','click','keydown'])addEventListener(t,go,{capture:true,passive:true})}
 export function tone(f,d=.1,type='sine',v=.06,slide=0,when=0){
   if(S.mute)return;
   try{audio();const t=AC.currentTime+when,o=AC.createOscillator(),g=AC.createGain();

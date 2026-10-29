@@ -189,6 +189,15 @@ const URL='file://'+path.resolve(__dirname,'../dist/index.html')+'?debug';
   ok(rmOn.calm&&rmOn.a==='none'&&rmOn.n===4,'Bewegung reduzieren: kein Pulsieren, 4 statt 16 Partikel');
   ok(!rmOff.calm&&rmOff.a==='pl'&&rmOff.n===16,'ohne Einstellung: Pulsieren und volle Partikel');
 
+  // Handy: Ein Finger gibt den Ton erst beim Loslassen frei, nicht beim Aufsetzen (pointerdown) – ein Tipp muss reichen
+  const tc=await b.newContext({viewport:{width:400,height:860},hasTouch:true,isMobile:true}),tq=await tc.newPage();tq.on('pageerror',e=>errs.push(e.message));
+  await tq.goto(URL);await tq.evaluate(()=>localStorage.clear());await tq.reload();await tq.waitForTimeout(300);
+  await tq.evaluate(()=>{S.mute=true});await tq.touchscreen.tap(200,600);await tq.waitForTimeout(200);
+  ok(await tq.evaluate(()=>!window.AC||AC.state!=='running'),'Touch, stumm: kein Ton');
+  await tq.evaluate(()=>{S.mute=false});await tq.touchscreen.tap(200,600);await tq.waitForTimeout(300);
+  ok(await tq.evaluate(()=>AC&&AC.state==='running'&&musicPlaying()),'Touch: Ton und Musik laufen nach einem Tipp');
+  await tc.close();
+
   ok(errs.length===0,'keine JavaScript-Fehler '+JSON.stringify(errs));
   await b.close();
   console.log(fail?fail+' Fehler':'Alles bestanden');process.exit(fail?1:0);
