@@ -4,7 +4,7 @@
 // ein Auftrag alle 3 Minuten ab Level 2, keine Farm/Laden/Untergrund/Export, keine Pausen.
 const D=await import('../src/data.js');
 const {G,ST,BLD,UP,xpFor,LV_XP}=D;
-const DUR={timing:10,timingMove:10,mash:8,heat:14,heatMove:14,simon:25,whack:17,wall:18,catch:20,stack:15,bolts:12,mix:17,solder:15,pour:15,forge:12,pipes:20,wires:15,sort:17,phone:30};
+const DUR={timing:10,timingMove:10,mash:8,heat:14,heatMove:14,simon:25,whack:17,wall:18,catch:20,stack:15,bolts:12,mix:17,solder:15,pour:15,forge:12,pipes:20,wires:15,sort:17,phone:30,fish:25};
 const SC=.75;
 let t=0,money=30,xp=0;const stock={},b={},up={};Object.keys(G).forEach(g=>stock[g]=0);BLD.forEach(x=>b[x.id]=0);UP.forEach(u=>up[u.id]=0);
 const lvl=()=>{let l=1;while(xp>=xpFor(l+1))l++;return l};

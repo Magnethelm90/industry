@@ -2,6 +2,8 @@
 import {render} from '../app.js';
 import {CUSTOMERS,G} from '../data.js';
 import {renderDemand} from './export.js';
+import {renderProjects} from './projects.js';
+import {freeRivals} from './rivals.js';
 import {SFX,burst,fx,toast,vib} from '../fx.js';
 import {GKU,S,cap,lvl,track} from '../state.js';
 import {addSec} from '../ui.js';
@@ -31,7 +33,7 @@ export function deliverOrder(o,e){
 }
 export function tickOrders(){
   const now=Date.now();
-  S.offers=S.offers.filter(o=>{if(now<o.exp)return true;if(Math.random()<.4)toast('📉 '+pick(S.rivals).n+' hat sich den Auftrag von '+o.who+' geschnappt!');return false});
+  S.offers=S.offers.filter(o=>{if(now<o.exp)return true;if(Math.random()<.4)toast('📉 '+pick(freeRivals()).n+' hat sich den Auftrag von '+o.who+' geschnappt!');return false});
   S.orders=S.orders.filter(o=>{if(now<o.due)return true;S.rep=Math.max(0,S.rep-8);SFX.crash();vib([80,40,80]);toast('⏰ Auftrag von '+o.who+' verpasst! Ruf −8');return false});
   if(S.offers.length<3&&now>S.nextOffer){S.offers.push(genOffer());S.nextOffer=now+20000+Math.random()*20000}
 }
@@ -53,4 +55,5 @@ export function renderOrders(){
     d.innerHTML=`<div class="i">${o.who}${tag(o)}<div class="ois">${items(o)}</div><small>Frist ${Math.round(o.time/60)} min · <b style="color:var(--gold)">${fmt(o.reward)} Cr</b> · +${o.xp} XP · Anfrage läuft ab in ${fmtT(o.exp-now)}</small></div><div class="col"><button class="btn b">Annehmen</button><button class="btn ghost">Ablehnen</button></div>`;
     const [a,x]=d.querySelectorAll('button');a.onclick=()=>acceptOrder(o);x.onclick=()=>{S.offers=S.offers.filter(y=>y!==o);SFX.tick();render()};el.appendChild(d)});
   renderDemand(el);
+  renderProjects(el);
 }

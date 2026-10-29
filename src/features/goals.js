@@ -4,9 +4,10 @@ import {BLD,xpFor} from '../data.js';
 import {SFX,burst,fx,toast,vib} from '../fx.js';
 import {S,lvl} from '../state.js';
 import {fmt} from '../util.js';
+import {openCompany} from './company.js';
 
 const made=g=>S.st.make[g]||0;
-// go: Bildschirm, hl: Element, das beim Tippen auf „Zeigen" aufleuchtet, r: Belohnung in Credits
+// go: Bildschirm (oder act: Funktion, die etwas öffnet), hl: Element, das beim Tippen auf „Zeigen" aufleuchtet, r: Belohnung in Credits
 export const GOALS=[
   {t:'Eisenerz abbauen',d:'Tippe bei „Eisenerz abbauen" auf Spielen. Jede Station lost eins ihrer Minispiele aus.',go:'work',hl:'[data-st="erz"] .btn',ok:()=>made('erz')>=1,r:20},
   {t:'Kohle abbauen',d:'Für Stahl brauchst du neben Erz auch Kohle.',go:'work',hl:'[data-st="kohle"] .btn',ok:()=>made('kohle')>=1,r:20},
@@ -28,7 +29,9 @@ export const GOALS=[
   {t:'Ein Smartphone bauen',lv:4,d:'Stell Platine, Akku, Display und Gehäuse her und bau alles zusammen.',go:'work',hl:'[data-st="handy"] .btn',ok:()=>made('handy')>=1,r:600},
   {t:'Schmuggelware verstecken',lv:4,d:'Brenn in der Schwarzbrennerei Schnaps und schaff ihn ins Versteck, bevor die Polizei kommt.',go:'under',ok:()=>Object.values(S.ug.stash).some(n=>n>0),r:400},
   {t:'Den Flughafen bauen',lv:5,d:'Unter Logistik. Danach zahlen 5 Länder ein Vielfaches für gefragte Waren.',go:'logistics',hl:'#s-logistics .btn.a',ok:()=>!!S.exp.built,r:1500},
-  {t:'Eine Lieferung ins Ausland',lv:5,d:'Die Länder und ihre Nachfrage stehen auf der Auftragstafel. Flugzeug ist schnell, das Schiff fasst mehr.',go:'orders',ok:()=>S.st.exports>=1,r:2500}
+  {t:'Eine Lieferung ins Ausland',lv:5,d:'Die Länder und ihre Nachfrage stehen auf der Auftragstafel. Flugzeug ist schnell, das Schiff fasst mehr.',go:'orders',ok:()=>S.st.exports>=1,r:2500},
+  {t:'Eine Konkurrenzfirma übernehmen',lv:6,d:'Tippe oben auf dein Level. In der Rangliste kannst du die Konkurrenz kaufen – sie zahlt dir danach jede Stunde einen Gewinnanteil.',act:()=>openCompany(),ok:()=>S.rivals.some(r=>r.own),r:5000},
+  {t:'Ein Großprojekt fertigstellen',lv:7,d:'Ganz unten bei den Aufträgen. Mit dem Güterbahnhof fördern alle Minen 25 % mehr.',go:'orders',hl:'#s-orders .proj .btn',ok:()=>Object.values(S.proj).some(p=>p.done),r:10000}
 ];
 const xpOf=g=>Math.round(g.r/4)+5;
 const ready=g=>(g.lv||1)<=lvl()&&g.ok();
@@ -49,7 +52,7 @@ export function applyHl(scroll){
   e.classList.add('hl');if(scroll)e.scrollIntoView({block:'center',behavior:'smooth'});
 }
 function show(){
-  const g=GOALS[S.goal];if(g.go!==cur)go(g.go);
+  const g=GOALS[S.goal];if(g.act){g.act();return}if(g.go!==cur)go(g.go);
   if(g.hl){hl={sel:g.hl,until:Date.now()+6000};applyHl(true)}
 }
 function claim(e){

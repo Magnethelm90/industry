@@ -106,11 +106,60 @@ const URL='file://'+path.resolve(__dirname,'../dist/index.html')+'?debug';
   const wear=await ev(()=>{const b=BLD.find(x=>x.kind==='mine'),s=S.b[b.id];s.lvl=Math.max(1,s.lvl);s.hp=100;
     for(let i=0;i<900;i++)tickB(1);const a=s.hp;s.hp=100;offlineB(4*3600);const o=s.hp;s.hp=100;render();return [a,o]});
   ok(Math.abs(wear[0]-99)<.01&&Math.abs(wear[1]-84)<.01,'Verschleiß 1 % / 15 min (online '+wear[0].toFixed(2)+' %, 4 h offline '+wear[1].toFixed(2)+' %)');
+  // Leistung unter 50 % Zustand: online Schritt für Schritt = offline in einem Stück
+  const eff=await ev(()=>{const b=BLD.find(x=>x.kind==='mine'),s=S.b[b.id],st0=S.up.store,lv0=BLD.map(x=>S.b[x.id].lvl);BLD.forEach(x=>{if(x!==b)S.b[x.id].lvl=0});S.up.store=1000;S.stock[b.out]=0;s.hp=40;tickB(10);const on40=S.stock[b.out]/(mineRate(b)*10);
+    s.hp=55;S.stock[b.out]=0;for(let i=0;i<20000;i++)tickB(1);const step=S.stock[b.out];
+    s.hp=55;S.stock[b.out]=0;offlineB(20000);const off=S.stock[b.out];s.hp=100;S.stock[b.out]=0;S.up.store=st0;BLD.forEach((x,i)=>S.b[x.id].lvl=lv0[i]);render();return [on40,step,off,mineRate(b)*effTime(55,20000)]});
+  ok(Math.abs(eff[0]-.9)<.01,'40 % Zustand = 90 % Leistung ('+eff[0].toFixed(3)+')');
+  ok(Math.abs(eff[1]-eff[2])/eff[2]<.01&&Math.abs(eff[2]-eff[3])<.01,'Leistungsverlust online wie offline gleich ('+eff[1].toFixed(1)+' / '+eff[2].toFixed(1)+')');
 
   // Offline (1 h): Rivalen wachsen, Laden verkauft
-  await ev(()=>{S.last=Date.now()-3600e3;localStorage.setItem(SAVE,JSON.stringify(S))});
+  await ev(()=>{S.last=Date.now()-3600e3;lockSave();localStorage.setItem(SAVE,JSON.stringify(S))}); // Takt darf nicht dazwischen speichern
   const rw=await ev(()=>S.rivals[0].w);await p.reload();await p.waitForTimeout(600);
   ok(await ev(()=>S.rivals[0].w)>rw,'Offline-Fortschritt der Konkurrenz');
+
+  // Konkurrenz wächst logistisch: auch nach langer Zeit nicht über ihre Grenze, alte ausgeuferte Werte werden gekappt
+  const rv=await ev(()=>{const r=S.rivals[3],w0=r.w;r.w=1e12;tickRivals(1);const clamp=r.w;r.w=w0;const old=S.rivals.map(x=>x.w);
+    for(let i=0;i<30;i++)tickRivals(8*3600);const ok=S.rivals.every((x,i)=>x.w<=RIVALS[i].cap&&x.w>RIVALS[i].cap*.9);S.rivals.forEach((x,i)=>x.w=old[i]);return [clamp<=RIVALS[3].cap,ok]});
+  ok(rv[0]&&rv[1],'Konkurrenz wächst bis zu ihrer Grenze, nicht darüber');
+  // Übernahme (ab Level 6): Kaufpreis, Firmenwert, Gewinnanteil pro Stunde
+  await ev(()=>{S.money=1e6;render()});await p.click('#lvpill');await p.waitForTimeout(150);
+  const price1=await ev(()=>takePrice(S.rivals[1])),nw0=await ev(()=>netWorth());
+  await p.click('#ovbox .tko[data-i="1"]');await p.waitForTimeout(150);
+  const tk=await ev(()=>{const r=S.rivals[1],m=S.money;tickRivals(3600);return {own:!!r.own,m,div:S.money-m,exp:r.paid*TAKE_DIV,w:r.w}});
+  ok(tk.own&&Math.abs(tk.m-(1e6-price1))<1,'Übernahme kostet das 1,5-Fache des Werts ('+price1+' Cr)');
+  ok(Math.abs(tk.div-tk.exp)<1,'Tochterfirma zahlt '+Math.round(tk.div)+' Cr pro Stunde');
+  ok((await p.textContent('#ovbox')).includes('Tochterfirma')&&!(await ev(()=>freeRivals().includes(S.rivals[1]))),'Tochterfirma in der Übersicht, nicht mehr als Konkurrenz');
+  await p.click('#done');
+  // Großprojekte (ab Level 7): anliefern, fertigstellen, Bonus wirkt
+  await ev(()=>{S.xp=xpFor(6);go('orders')});await p.waitForTimeout(150);
+  ok(!(await p.$('#s-orders .proj')),'Großprojekte erst ab Level 7');
+  await ev(()=>{S.xp=xpFor(7);S.stock.ziegel=150;render()});await p.waitForTimeout(150);
+  ok((await p.$$('#s-orders .proj')).length===2&&(await p.textContent('#s-orders')).includes('weitere ab Level 8'),'Level 7: zwei Großprojekte, Rest gesperrt');
+  const mr0=await ev(()=>mineRate(BLD.find(b=>b.kind==='mine'&&S.b[b.id].lvl>0)||(S.b.lehmgrube.lvl=1,BLD[0])));
+  await p.click('#s-orders [data-p="bahnhof"] .btn');await p.waitForTimeout(100);
+  ok(await ev(()=>S.proj.bahnhof.got.ziegel===150&&S.stock.ziegel===0&&!S.proj.bahnhof.done),'Teillieferung wird angerechnet');
+  const m1=await ev(()=>{S.stock.ziegel=500;S.stock.stahl=500;S.stock.maschine=50;render();return S.money});await p.waitForTimeout(100);
+  await p.click('#s-orders [data-p="bahnhof"] .btn');await p.waitForTimeout(100);
+  const pj=await ev(()=>({done:S.proj.bahnhof.done,left:S.stock.ziegel,m:S.money}));
+  ok(pj.done&&pj.left===250&&pj.m-m1>=30000&&pj.m-m1<31000,'Güterbahnhof fertig: nur Bedarf geliefert, 30.000 Cr Belohnung (+'+Math.round(pj.m-m1)+' inkl. laufender Einnahmen)');
+  const mr1=await ev(()=>mineRate(BLD.find(b=>b.kind==='mine'&&S.b[b.id].lvl>0)));
+  ok(Math.abs(mr1/mr0-1.25)<1e-9,'Bonus: Minen fördern 25 % mehr');
+  ok((await p.textContent('#s-orders')).includes('Bonus aktiv'),'fertiges Projekt zeigt aktiven Bonus');
+
+  // Sicherungscode: erzeugen, Stand ändern, Code laden = alter Stand zurück; Unsinn wird abgelehnt
+  await ev(()=>{S.money=12345;render()});
+  await p.click('#lvpill');await p.click('#bkmake');await p.waitForFunction(()=>document.getElementById('bkcode')?.value.length>20);
+  const code=await p.inputValue('#bkcode');ok(/^IA1\./.test(code),'Sicherungscode erzeugt ('+code.length+' Zeichen)');
+  await ev(()=>{S.money=1;S.xp=0});
+  await p.click('#bkopen');await p.fill('#bkin','hallo');await p.click('#bkload');await p.waitForTimeout(100);
+  ok((await p.textContent('#bkmsg')).includes('kein Sicherungscode'),'falscher Code wird abgelehnt');
+  await p.fill('#bkin',code.slice(0,-40));await p.click('#bkload');await p.waitForTimeout(150);
+  ok((await p.textContent('#bkmsg')).includes('⚠️'),'abgeschnittener Code wird abgelehnt');
+  await p.fill('#bkin',code);await p.click('#bkload');await p.waitForTimeout(150);
+  ok((await p.textContent('#bkload')).includes('überschreiben'),'Laden fragt nach');
+  await Promise.all([p.waitForEvent('load'),p.click('#bkload')]);await p.waitForTimeout(500);
+  ok(await ev(()=>S.money>=12345&&lvl()>=6),'Spielstand aus dem Code geladen');
 
   ok(errs.length===0,'keine JavaScript-Fehler '+JSON.stringify(errs));
   await b.close();

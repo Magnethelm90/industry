@@ -108,7 +108,16 @@ export const BLD=[
 export const BMAX=10,WEAR=1/900,SHOPT=5,KEEPS=[0,10,25,50,100];
 export const SAVE='industry-action-v2';
 export const CUSTOMERS=['Bauhof Müller','Werft Hansen','TechStore Berlin','Elektro Kaya','Dachdecker Yilmaz','Startup Nova','Bahnwerk Ost','Möbel Lindqvist','Roboterwerk Iris','Drohnenclub Süd','Hotel Seeblick','Stadtwerke Nord'];
-export const RIVALS=[{n:'Krupp & Söhne',w:800,r:1.3},{n:'NovaTech AG',w:3000,r:1.15},{n:'Ivanov Stahl',w:12000,r:1},{n:'Global Industries',w:60000,r:.85}];
+// cap: Firmenwert, bei dem das Wachstum ausläuft (logistisch statt endlos exponentiell)
+export const RIVALS=[{n:'Krupp & Söhne',w:800,r:1.3,cap:60000},{n:'NovaTech AG',w:3000,r:1.15,cap:250000},{n:'Ivanov Stahl',w:12000,r:1,cap:800000},{n:'Global Industries',w:60000,r:.85,cap:3000000}];
+// Übernahme: Kaufpreis = Firmenwert × TAKE_PREM, danach Gewinnanteil TAKE_DIV des Kaufpreises pro Stunde
+export const TAKE_PREM=1.5,TAKE_DIV=.02;
+// Großprojekte: Waren nach und nach anliefern; fertig = Belohnung und dauerhafter Bonus
+export const PROJECTS=[
+  {id:'bahnhof',n:'Güterbahnhof',lv:7,need:{ziegel:400,stahl:300,maschine:40},r:30000,bonus:'Minen fördern 25 % mehr'},
+  {id:'kraftwerk',n:'Kraftwerk',lv:7,need:{kohle:600,stahl:400,maschine:60,draht:150},r:50000,bonus:'Fabriken arbeiten 25 % schneller'},
+  {id:'ekz',n:'Einkaufszentrum',lv:8,need:{glas:300,stahl:300,platine:60,display:40},r:80000,bonus:'Filialen verkaufen 10 % teurer'},
+  {id:'techpark',n:'Technologiepark',lv:9,need:{platine:120,akku:100,display:100,handy:25},r:150000,bonus:'Werkstatt: 20 % mehr Ertrag pro Minispiel'}];
 export const SHOP_NAMES=['Lena','Mehmet','Jonas','Aylin','Tom','Sofia','Kevin','Mia','Luca','Emma','Noah','Hannah','Ole','Fatma'];
 export const CROPS={weizen:{grow:60,seed:4,yield:6},kartoffel:{grow:90,seed:5,yield:6},trauben:{grow:180,seed:12,yield:5},hopfen:{grow:120,seed:8,yield:5},baumwolle:{grow:120,seed:8,yield:5}};
 export const AGE={wein:{to:'jahrgangswein',t:600},kaese:{to:'bergkaese',t:480}};
@@ -130,7 +139,9 @@ export const UNL={
   lab:{lv:3,n:'Labor',d:'Geheime Rezepte entdecken.'},
   under:{lv:4,n:'Untergrund',d:'Schmuggelware – mit Risiko.'},
   elek:{lv:4,n:'Elektronik',d:'Platinen, Akkus, Displays – und Smartphones.'},
-  export:{lv:5,n:'Flughafen & Hafen',d:'Liefern ins Ausland für ein Vielfaches.'}
+  export:{lv:5,n:'Flughafen & Hafen',d:'Liefern ins Ausland für ein Vielfaches.'},
+  takeover:{lv:6,n:'Übernahmen',d:'Konkurrenzfirmen kaufen – sie zahlen dir danach einen Gewinnanteil.'},
+  projects:{lv:7,n:'Großprojekte',d:'Bahnhof, Kraftwerk & Co. bauen – mit dauerhaftem Bonus.'}
 };
 
 // Ab wie viel XP ein Level erreicht ist (Index = Level). Danach wächst der Abstand um je 50 %.

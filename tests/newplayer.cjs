@@ -71,7 +71,7 @@ const SHOTS=process.argv[2];
   // Ziele überspringen bis Flughafen: Kette läuft durch
   await ev(()=>{S.xp=xpFor(9);S.money=1e6;render()});
   const steps=await ev(()=>GOALS.length);
-  ok(steps===21,'21 Ziele: '+steps);
+  ok(steps===23,'23 Ziele: '+steps);
 
   // Alter Spielstand ohne Ziel-Feld: Einstieg wird übersprungen (eigener Kontext mit vorbereitetem Speicher)
   const ctx2=await b.newContext({viewport:{width:400,height:860}});

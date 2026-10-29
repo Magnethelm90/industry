@@ -267,3 +267,4 @@
   .bobber.gone{opacity:0}
   .fishsw{position:absolute;z-index:2;line-height:0;opacity:.85;filter:drop-shadow(0 0 6px #0008);transition:opacity .3s}
   .fishsw.caught{transform:translateY(-60px) rotate(-20deg);opacity:1;transition:transform .4s ease-out}
+.code{display:block;width:100%;margin-top:8px;padding:10px;border-radius:12px;border:1px solid var(--line);background:#0b1020;color:var(--ink);font:12px/1.4 ui-monospace,Menlo,monospace;word-break:break-all;resize:vertical;user-select:text;-webkit-user-select:text}

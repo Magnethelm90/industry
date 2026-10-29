@@ -7,13 +7,13 @@ import {offlineB,tickB} from './features/buildings.js';
 import {tickExport} from './features/export.js';
 import {offlineFarm,tickFarm} from './features/farm.js';
 import {tickOrders} from './features/orders.js';
-import {tickRivals} from './features/rivals.js';
+import {freeRivals,tickRivals} from './features/rivals.js';
 import {offlineShop,syncSlots,tickShop} from './features/shop.js';
 import {tickUnder} from './features/under.js';
 import {initGoals,tickGoals} from './features/goals.js';
 import {openCompany} from './features/company.js';
 import {SFX,toast} from './fx.js';
-import {GKU,S,mood,price,sat} from './state.js';
+import {GKU,S,mood,price,sat,saveLocked} from './state.js';
 import {OV} from './ui.js';
 import {$,fmt,ic,initIcons,pick} from './util.js';
 
@@ -41,11 +41,11 @@ setInterval(()=>{
   if((histT+=dt)>=4){histT=0;GK.forEach(g=>{S.hist[g].push(price(g));if(S.hist[g].length>30)S.hist[g].shift()})}
   if(Date.now()>nextEv){nextEv=Date.now()+50000+Math.random()*50000;
     const gl=GKU(),g=gl[Math.floor(Math.random()*gl.length)],up=Math.random()<0.6;mood[g]=up?2.2:0.45;setTimeout(()=>mood[g]=1,35000);
-    const rv=pick(S.rivals).n;
+    const rv=pick(freeRivals()).n;
     toast(up?`🔥 ${rv} kauft ${G[g].n} auf – 35 s lang hohe Preise!`:`❄️ ${rv} überschwemmt den Markt mit ${G[g].n} – Preissturz!`);SFX.coin()}
   tickOrders();tickShop(dt);tickRivals(dt);tickFarm(dt);tickExport();tickUnder(dt);tickGoals();
   if(!OV&&!pressing&&cur!=='work')render();else badges();
-  S.last=Date.now();try{localStorage.setItem(SAVE,JSON.stringify(S))}catch(e){}
+  if(!saveLocked()){S.last=Date.now();try{localStorage.setItem(SAVE,JSON.stringify(S))}catch(e){}}
 },1000);
 // Nur für automatische Tests: ?debug macht alle Modul-Exporte im Browser sichtbar
 if(/[?&]debug/.test(location.search)){
