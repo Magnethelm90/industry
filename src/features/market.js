@@ -22,7 +22,7 @@ export function mTrade(g,buy,e){
 export let mCat='alle';
 export function renderMarket(){
   const el=$('s-market'),all=GKU();
-  el.innerHTML='<h2>Markt</h2><p class="sub">Direkt handeln: Ankauf 20 % über, Verkauf 25 % unter Marktpreis. Per LKW bekommst du den vollen Preis, am Hafen +60 %.</p>';
+  el.innerHTML='<h2>Markt</h2><p class="sub">Direkt handeln: Ankauf 20 % über, Verkauf 25 % unter Marktpreis. Per LKW (Logistik) bekommst du den vollen Preis, am Hafen +30 %.</p>';
   const cats=document.createElement('div');cats.className='cats';
   CATS.filter(([k])=>k==='alle'||all.some(g=>catOf(g)===k)).forEach(([k,n])=>{const b=document.createElement('button');b.className='chip2'+(k===mCat?' on':'');b.textContent=n;b.onclick=()=>{mCat=k;SFX.tick();render()};cats.appendChild(b)});
   el.appendChild(cats);

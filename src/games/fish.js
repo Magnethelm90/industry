@@ -20,7 +20,7 @@ export function gFish(){return new Promise(res=>{
     $('dots').children[tryN].className=ok?'g':'m';pop($('m'),txt);tryN++;hold=false;phase='done';
     if(ok){catchList[fish.g]=(catchList[fish.g]||0)+fish.n;SFX.win();vib([30,40,60])}else SFX.miss();
     setTimeout(()=>{if(!ov.alive)return;if(tryN>=TRIES){res(catchList);return}pop($('m'),'Neuer Wurf …');startWait()},1100)}
-  function pickFish(){const pool=FISH.filter(f=>unl(f.g)),w=pool.map(f=>f.w*(f.g==='hering'?1:1+.35*S.up.rod)+(f.rod?f.rod*S.up.rod:0));let r=Math.random()*w.reduce((a,b)=>a+b);
+  function pickFish(){const pool=FISH.filter(f=>f.g==='hering'||unl(f.g)),w=pool.map(f=>f.w*(f.g==='hering'?1:1+.35*S.up.rod)+(f.rod?f.rod*S.up.rod:0));let r=Math.random()*w.reduce((a,b)=>a+b);
     for(let i=0;i<pool.length;i++){r-=w[i];if(r<=0)return pool[i]}return pool[0]}
   act.onpointerdown=e=>{e.preventDefault();
     if(phase==='wait'){pop($('m'),'Zu früh – Fisch verscheucht!');SFX.err();startWait(1000)}

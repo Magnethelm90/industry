@@ -23,7 +23,7 @@ export async function runStation(s,srcEl){
   const cb=Math.min(5,S.combo);if(cb&&out>0)out=Math.round(out*(1+cb*.1));
   S.combo=score>=.85?S.combo+1:0;
   out=Math.min(out,Math.floor(cap()-S.stock[s.out]));
-  S.stock[s.out]+=out;if(out>0)track('make',s.out,out);S.xp+=out*(G[s.out].base>10?4:1)+1;
+  S.stock[s.out]+=out;if(out>0)track('make',s.out,out);S.xp+=out*Math.max(G[s.out].base>=15?4:1,Math.ceil(G[s.out].base/50))+1;
   if(s.heat){S.ug.heat=Math.min(100,S.ug.heat+s.heat);S.ug.active=1}
   if(out>0){SFX.win();vib([30,40,60]);fx('+'+out+' '+G[s.out].n,G[s.out].c);burst(innerWidth/2,innerHeight*.4,G[s.out].c,20)}
   else{SFX.crash();fx('Fehlschlag','#fb7185')}

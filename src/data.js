@@ -5,25 +5,25 @@ export const G={
  sand:{n:'Sand',base:2,c:'#eab308',lv:4},kupfer:{n:'Kupfer',base:6,c:'#f97316',lv:4},oel:{n:'Rohöl',base:5,c:'#a78bfa',lv:4},
  glas:{n:'Glas',base:14,c:'#67e8f9',lv:4},kunststoff:{n:'Kunststoff',base:16,c:'#f472b6',lv:4},draht:{n:'Kupferdraht',base:12,c:'#fb923c',lv:4},
  platine:{n:'Platine',base:60,c:'#22c55e',lv:4},akku:{n:'Akku',base:55,c:'#a3e635',lv:4},display:{n:'Display',base:70,c:'#38bdf8',lv:4},
- gehaeuse:{n:'Gehäuse',base:40,c:'#c084fc',lv:4},handy:{n:'Smartphone',base:480,c:'#e879f9',lv:4},
+ gehaeuse:{n:'Gehäuse',base:40,c:'#c084fc',lv:4},handy:{n:'Smartphone',base:700,c:'#e879f9',lv:4},
  kamin:{n:'Kaminofen',base:70,c:'#f87171',secret:1},dampfmaschine:{n:'Dampfmaschine',base:220,c:'#d4a373',secret:1},
  glasfaser:{n:'Glasfaserkabel',base:70,c:'#22d3ee',lv:4,secret:1},solar:{n:'Solarmodul',base:150,c:'#60a5fa',lv:4,secret:1},
- ebike:{n:'E-Bike',base:260,c:'#4ade80',lv:4,secret:1},smartwatch:{n:'Smartwatch',base:220,c:'#f0abfc',lv:4,secret:1},
- drohne:{n:'Drohne',base:300,c:'#fde047',lv:4,secret:1},roboter:{n:'Roboter',base:600,c:'#94a3b8',lv:4,secret:1}
+ ebike:{n:'E-Bike',base:180,c:'#4ade80',lv:4,secret:1},smartwatch:{n:'Smartwatch',base:220,c:'#f0abfc',lv:4,secret:1},
+ drohne:{n:'Drohne',base:220,c:'#fde047',lv:4,secret:1},roboter:{n:'Roboter',base:420,c:'#94a3b8',lv:4,secret:1}
 };
 Object.assign(G,{
  weizen:{n:'Weizen',base:3,c:'#facc15',cat:'agrar'},kartoffel:{n:'Kartoffeln',base:3,c:'#d6a35c',cat:'agrar'},
  trauben:{n:'Trauben',base:6,c:'#a855f7',cat:'agrar',lv:3},hopfen:{n:'Hopfen',base:5,c:'#84cc16',cat:'agrar',lv:3},
- baumwolle:{n:'Baumwolle',base:5,c:'#e2e8f0',cat:'agrar',lv:3},milch:{n:'Milch',base:4,c:'#e0f2fe',cat:'agrar'},eier:{n:'Eier',base:3,c:'#fde68a',cat:'agrar'},
+ baumwolle:{n:'Baumwolle',base:5,c:'#e2e8f0',cat:'agrar',lv:3},milch:{n:'Milch',base:7,c:'#e0f2fe',cat:'agrar'},eier:{n:'Eier',base:6,c:'#fde68a',cat:'agrar'},
  hering:{n:'Hering',base:6,c:'#93c5fd',cat:'fisch'},lachs:{n:'Lachs',base:16,c:'#fb7185',cat:'fisch'},
- thunfisch:{n:'Thunfisch',base:40,c:'#3b82f6',cat:'fisch',lv:3},hummer:{n:'Hummer',base:70,c:'#ef4444',cat:'fisch'},
+ thunfisch:{n:'Thunfisch',base:40,c:'#3b82f6',cat:'fisch',lv:4},hummer:{n:'Hummer',base:70,c:'#ef4444',cat:'fisch'},
  mehl:{n:'Mehl',base:9,c:'#fef3c7',cat:'food'},brot:{n:'Brot',base:30,c:'#d97706',cat:'food'},kaese:{n:'Käse',base:24,c:'#fcd34d',cat:'food'},
  chips:{n:'Chips',base:16,c:'#fbbf24',cat:'food'},raeucherlachs:{n:'Räucherlachs',base:50,c:'#f97316',cat:'food'},
  wein:{n:'Wein',base:40,c:'#9333ea',cat:'food',lv:3},bier:{n:'Bier',base:24,c:'#f59e0b',cat:'food',lv:3},
  stoff:{n:'Stoff',base:22,c:'#c4b5fd',cat:'bau',lv:3},kleidung:{n:'Kleidung',base:90,c:'#ec4899',cat:'lux',lv:4},
  jahrgangswein:{n:'Jahrgangswein',base:180,c:'#7e22ce',cat:'lux',lv:3},bergkaese:{n:'Bergkäse',base:100,c:'#ca8a04',cat:'lux'},
  schnaps:{n:'Schwarzgebrannter',base:55,c:'#a3e635',cat:'ill',illegal:1,lv:4},replika:{n:'Replika-Uhr',base:150,c:'#fbbf24',cat:'ill',illegal:1,lv:4},
- raubkopie:{n:'Raubkopie',base:45,c:'#94a3b8',cat:'ill',illegal:1,lv:4}
+ raubkopie:{n:'Raubkopie',base:90,c:'#94a3b8',cat:'ill',illegal:1,lv:4}
 });
 export const CAT={erz:'roh',kohle:'roh',lehm:'roh',sand:'roh',kupfer:'roh',oel:'roh',ziegel:'bau',stahl:'bau',maschine:'bau',glas:'bau',kunststoff:'bau',
  draht:'elek',platine:'elek',akku:'elek',display:'elek',gehaeuse:'elek',handy:'elek'};
@@ -44,7 +44,7 @@ export const ST=[
  {id:'erz',n:'Eisenerz abbauen',games:['wall','whack','catch','timing'],in:{},out:'erz',max:8,mult:'pick'},
  {id:'kohle',n:'Kohle abbauen',games:['wall','whack','timingMove','catch'],in:{},out:'kohle',max:8,mult:'pick'},
  {id:'lehm',n:'Lehm graben',games:['catch','wall','timing','whack','sort'],in:{},out:'lehm',max:8,mult:'pick'},
- {id:'ziegel',n:'Ziegelei',games:['stack','mash'],in:{lehm:4},out:'ziegel',max:3,mult:'bench'},
+ {id:'ziegel',n:'Ziegelei',games:['stack','mash'],in:{lehm:3},out:'ziegel',max:4,mult:'bench'},
  {id:'stahl',n:'Schmelzofen',games:['heat','heatMove','pour','forge'],in:{erz:4,kohle:2},out:'stahl',max:3,mult:'bench'},
  {id:'maschine',n:'Montage',games:['simon','bolts','pipes','forge'],in:{stahl:3,ziegel:2},out:'maschine',max:2,mult:'bench'},
  {id:'sand',n:'Sand schaufeln',games:['catch','whack','timing','sort'],in:{},out:'sand',max:8,mult:'pick',lv:4},
@@ -58,7 +58,7 @@ export const ST=[
  {id:'display',n:'Display fertigen',games:['solder','bolts','wires'],in:{glas:2,draht:1},out:'display',max:2,mult:'bench',lv:4},
  {id:'gehaeuse',n:'Gehäuse gießen',games:['mix','timing','pour'],in:{kunststoff:2,stahl:1},out:'gehaeuse',max:2,mult:'bench',lv:4},
  {id:'handy',n:'Smartphone montieren',games:['phone'],in:{platine:1,akku:1,display:1,gehaeuse:1},out:'handy',max:1,mult:'bench',lv:4},
- {id:'muehle',n:'Mühle',grp:'food',games:['mash','sort'],in:{weizen:3},out:'mehl',max:3,mult:'bench'},
+ {id:'muehle',n:'Mühle',grp:'food',games:['mash','sort'],in:{weizen:3},out:'mehl',max:4,mult:'bench'},
  {id:'baeckerei',n:'Bäckerei',grp:'food',games:['heat','heatMove'],in:{mehl:2,eier:1},out:'brot',max:3,mult:'bench'},
  {id:'kaeserei',n:'Käserei',grp:'food',games:['mix','pour'],in:{milch:3},out:'kaese',max:2,mult:'bench'},
  {id:'chipsfabrik',n:'Chips frittieren',grp:'food',games:['sort','heat'],in:{kartoffel:3},out:'chips',max:3,mult:'bench'},
@@ -75,7 +75,7 @@ ST.push(
 REC.forEach(r=>ST.push({id:'r_'+r.out,n:G[r.out].n+' bauen',games:r.games,in:Object.fromEntries(r.in.map(k=>[k,2])),out:r.out,max:3,mult:'bench',lv:G[r.out].lv,secret:true}));
 export const ROUTES=[
  {id:'stadt',n:'Stadtmarkt',icon:'stadt',T:20,speed:170,mult:1.0,desc:'Kurze, sichere Strecke',c:'#22d3ee'},
- {id:'hafen',n:'Hafenmarkt',icon:'hafen',T:35,speed:230,mult:1.6,desc:'Weit & schnell · +60% Preis',c:'#7c5cff'}
+ {id:'hafen',n:'Hafenmarkt',icon:'hafen',T:35,speed:230,mult:1.3,desc:'Weit & schnell · +30% Preis',c:'#7c5cff'}
 ];
 export const UP=[
  {id:'pick',n:'Spitzhacke',d:'+30% Ertrag beim Abbauen',base:60,i:'erz',c:'#f59e0b'},
