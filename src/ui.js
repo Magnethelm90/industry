@@ -10,3 +10,8 @@ export const xbtn=()=>`<button class="x" id="ovx">✕</button>`;
 export function bindX(){const x=$('ovx');if(x)x.onclick=closeOv}
 export function shakeBox(){const b=$('ovbox');b.classList.remove('shake');void b.offsetWidth;b.classList.add('shake')}
 export function canvasFor(W,H){const cv=$('cv'),DPR=Math.min(2,window.devicePixelRatio||1);cv.width=W*DPR;cv.height=H*DPR;const c=cv.getContext('2d');c.scale(DPR,DPR);return [cv,c]}
+// Kompakter Hinweis statt vieler gesperrter Karten
+export function lockLine(n,lv,others){
+  const d=document.createElement('div');d.className='lockline';
+  d.textContent=`🔒 ${others?n+' weitere':n+(n>1?' Stationen':' Station')} ab Level ${lv}`;return d;
+}

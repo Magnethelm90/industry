@@ -1,9 +1,9 @@
 /* Aufträge und Ruf */
 import {render} from '../app.js';
 import {CUSTOMERS,G} from '../data.js';
-import {netWorth} from './rivals.js';
+import {renderDemand} from './export.js';
 import {SFX,burst,fx,toast,vib} from '../fx.js';
-import {GKU,S,cap,lvl} from '../state.js';
+import {GKU,S,cap,lvl,track} from '../state.js';
 import {addSec} from '../ui.js';
 import {$,fmt,fmtT,ic,pick} from '../util.js';
 
@@ -25,7 +25,7 @@ export function acceptOrder(o){
 export function deliverOrder(o,e){
   if(!canDeliver(o)){SFX.err();return}
   for(const g in o.items)S.stock[g]-=o.items[g];
-  const rp=o.vip?8:o.rush?6:4;S.orders=S.orders.filter(x=>x!==o);S.money+=o.reward;S.xp+=o.xp;S.rep=Math.min(100,S.rep+rp);
+  const rp=o.vip?8:o.rush?6:4;S.orders=S.orders.filter(x=>x!==o);S.money+=o.reward;track('orders');S.xp+=o.xp;S.rep=Math.min(100,S.rep+rp);
   SFX.win();vib([30,40,80]);burst(e.clientX,e.clientY,'#fbbf24',24);fx('+'+fmt(o.reward)+' Cr','#fbbf24',e.clientX,e.clientY-40);
   toast(o.who+' ist zufrieden! Ruf +'+rp);render();
 }
@@ -37,7 +37,7 @@ export function tickOrders(){
 }
 export function renderOrders(){
   const el=$('s-orders'),now=Date.now();
-  el.innerHTML=`<h2>Aufträge</h2><p class="sub">Kunden bestellen Ware mit Frist. Pünktlich liefern bringt viel Geld und Ruf, verpasste Fristen kosten Ruf. Die Fristen laufen in Echtzeit.</p>
+  el.innerHTML=`<h2>Aufträge</h2><p class="sub">Wer sucht welche Ware? Pünktlich liefern bringt Geld und Ruf, verpasste Fristen kosten Ruf.</p>
    <div class="card" style="--c:#fbbf24"><div class="art">${ic('lvl',40)}</div><div class="i">Ruf: ${repTier()} <span class="chip num">${Math.round(S.rep)} / 100</span><div class="meter"><i style="width:${S.rep}%;background:var(--g2)"></i></div><small>Mehr Ruf = höhere Belohnungen und mehr Ladenkunden${S.rep<50?' · VIP-Aufträge ab 50':''}</small></div></div>`;
   const items=o=>Object.keys(o.items).map(g=>`<span class="oi ${S.stock[g]>=o.items[g]?'up':'dn'}">${ic(g,22)}${o.items[g]}× ${G[g].n} <b class="num">(${Math.floor(S.stock[g])})</b></span>`).join('');
   const tag=o=>o.vip?' <span class="chip" style="color:#f0abfc">👑 VIP</span>':o.rush?' <span class="chip dn">⚡ Eilig</span>':'';
@@ -52,7 +52,5 @@ export function renderOrders(){
   S.offers.forEach(o=>{const d=document.createElement('div');d.className='card';d.style.setProperty('--c',col(o));
     d.innerHTML=`<div class="i">${o.who}${tag(o)}<div class="ois">${items(o)}</div><small>Frist ${Math.round(o.time/60)} min · <b style="color:var(--gold)">${fmt(o.reward)} Cr</b> · +${o.xp} XP · Anfrage läuft ab in ${fmtT(o.exp-now)}</small></div><div class="col"><button class="btn b">Annehmen</button><button class="btn ghost">Ablehnen</button></div>`;
     const [a,x]=d.querySelectorAll('button');a.onclick=()=>acceptOrder(o);x.onclick=()=>{S.offers=S.offers.filter(y=>y!==o);SFX.tick();render()};el.appendChild(d)});
-  addSec(el,'Rangliste · Firmenwert');
-  const list=[...S.rivals.map(r=>({n:r.n,w:r.w})),{n:'Deine Firma',w:netWorth(),me:1}].sort((a,b)=>b.w-a.w);
-  list.forEach((r,i)=>el.insertAdjacentHTML('beforeend',`<div class="rank ${r.me?'me':''}"><b>${i+1}</b><span>${r.n}</span><span class="num">${fmt(Math.round(r.w))} Cr</span></div>`));
+  renderDemand(el);
 }

@@ -4,8 +4,8 @@ import {BLD,BMAX,G,GK,KEEPS,SHOPT,UP,WEAR} from '../data.js';
 import {SFX,burst,fx,toast,vib} from '../fx.js';
 import {gBolts} from '../games/bolts.js';
 import {gTiming} from '../games/timing.js';
-import {S,cap,lvl,price,sat,upCost} from '../state.js';
-import {addSec,closeOv} from '../ui.js';
+import {S,cap,isOpen,lvl,price,sat,upCost} from '../state.js';
+import {addSec,closeOv,lockLine} from '../ui.js';
 import {$,fmt,ic} from '../util.js';
 
 export const bst=b=>S.b[b.id];
@@ -74,9 +74,10 @@ export function renderBld(){
   const el=$('s-bld');el.innerHTML='<h2>Betriebe</h2><p class="sub">Baue Minen, Fabriken und Geschäfte aus. Sie arbeiten automatisch – auch wenn du offline bist. Kümmere dich um die Wartung!</p>';
   [['mine','Rohstoffe'],['fac','Fabriken'],['shop','Geschäfte']].forEach(([kind,title])=>{
     const h=document.createElement('div');h.className='sec';h.textContent=title;el.appendChild(h);
-    BLD.filter(b=>b.kind===kind).forEach(b=>{
+    const later=BLD.filter(b=>b.kind===kind&&b.lv>lvl()&&!bst(b).lvl);
+    BLD.filter(b=>b.kind===kind&&!later.includes(b)).forEach(b=>{
       const s=bst(b),built=s.lvl>0,max=s.lvl>=BMAX,cost=bCost(b),broken=built&&kind!=='shop'&&s.hp<=0;
-      const d=document.createElement('div');d.className='card'+(broken?' broken':'')+(built?'':' idle');d.style.setProperty('--c',bc(b));
+      const d=document.createElement('div');d.className='card'+(broken?' broken':'')+(built?'':' idle');d.dataset.b=b.id;d.style.setProperty('--c',bc(b));
       let line='';
       if(kind==='mine')line=built?`+${mineRate(b).toFixed(2)}/s ${G[b.out].n}`:`Fördert ${b.rate}/s je Stufe`;
       if(kind==='fac')line=Object.keys(b.in).map(k=>b.in[k]+'× '+G[k].n).join(' + ')+` → 1× ${G[b.out].n} · ${(built?facTime(b):b.t).toFixed(1)}s`;
@@ -88,18 +89,18 @@ export function renderBld(){
       const col=d.querySelector('.col');
       const mk=(t,cls,f,dis)=>{const bt=document.createElement('button');bt.className='btn '+cls;bt.innerHTML=t;bt.disabled=!!dis;bt.onclick=f;col.appendChild(bt)};
       if(s.cust&&s.cust>Date.now())mk('🛎️ Kunde!','a pulse',e=>serveCustomer(b,e));
-      if(b.lv&&b.lv>lvl())mk('🔒 Lv '+b.lv,'ghost',null,true);
-      else if(!max)mk(built?'⬆ '+fmt(cost):'Bauen '+fmt(cost),built?'b':'',e=>buildOrUpgrade(b,e),S.money<cost);else mk('MAX','ghost',null,true);
+      if(!max)mk(built?'⬆ '+fmt(cost):'Bauen '+fmt(cost),built?'b':'',e=>buildOrUpgrade(b,e),S.money<cost);else mk('MAX','ghost',null,true);
       if(built&&kind!=='shop'&&s.hp<85)mk('🔧 Wartung',broken?'r':'ghost',()=>repairB(b));
       if(built&&kind==='shop')mk('Vorrat ≥ '+s.keep,'ghost',()=>{s.keep=KEEPS[(KEEPS.indexOf(s.keep)+1)%KEEPS.length];render()});
       el.appendChild(d);
     });
+    if(later.length)el.appendChild(lockLine(later.length,Math.min(...later.map(b=>b.lv)),1));
   });
   renderUpg(el);
 }
 export function renderUpg(el){
   addSec(el,'Ausrüstung');
-  UP.forEach(u=>{const d=document.createElement('div'),cost=upCost(u);d.className='card';d.style.setProperty('--c',u.c);
+  UP.filter(u=>!u.req||isOpen(u.req)).forEach(u=>{const d=document.createElement('div'),cost=upCost(u);d.className='card';d.style.setProperty('--c',u.c);
     d.innerHTML=`<div class="art">${ic(u.i,42)}</div><div class="i">${u.n}<small>${u.d}</small><div class="pips">${Array.from({length:10},(_,k)=>`<i class="${k<S.up[u.id]?'on':''}"></i>`).join('')}</div></div><button class="btn a" ${S.money<cost?'disabled':''}>${fmt(cost)}</button>`;
     d.querySelector('button').onclick=e=>{if(S.money>=cost){S.money-=cost;S.up[u.id]++;S.xp+=5;SFX.buy();vib(20);burst(e.clientX,e.clientY,'#fbbf24',14);render()}};el.appendChild(d)});
 }

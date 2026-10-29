@@ -1,8 +1,8 @@
 /* Export per Flugzeug und Containerschiff */
-import {render} from '../app.js';
-import {COUNTRIES,G,MODES} from '../data.js';
+import {go,render} from '../app.js';
+import {COUNTRIES,G,MODES,UNL} from '../data.js';
 import {SFX,burst,fx,toast,vib} from '../fx.js';
-import {GKU,S,lvl} from '../state.js';
+import {GKU,S,isOpen} from '../state.js';
 import {addSec,bindX,closeOv,openOv,xbtn} from '../ui.js';
 import {$,fmt,fmtT,ic} from '../util.js';
 
@@ -46,12 +46,12 @@ export function exportLoad(cid){
   };
   draw();
 }
-export function renderExport(){
-  const el=$('s-export'),now=Date.now();
-  el.innerHTML='<h2>Export</h2><p class="sub">Verkaufe ins Ausland: Jedes Land sucht andere Waren und zahlt dafür ein Vielfaches. Lieferungen sind unterwegs, auch wenn die App zu ist.</p>';
+// Flughafen bauen/ausbauen und Lieferungen unterwegs (Bildschirm Logistik)
+export function renderAirport(el){
+  const now=Date.now();
   if(!S.exp.built){
-    const lk=lvl()<4,d=document.createElement('div');d.className='card';d.style.setProperty('--c','#22d3ee');
-    d.innerHTML=`<div class="art">${ic('plane',44)}</div><div class="i">Flughafen & Containerhafen<small>${lk?'🔒 ab Level 4':'Öffnet den Weltmarkt: 5 Länder mit wechselnder Nachfrage.'}</small></div><button class="btn a" ${lk||S.money<AIRPORT_COST?'disabled':''}>Bauen<br>${fmt(AIRPORT_COST)}</button>`;
+    const lk=!isOpen('export'),d=document.createElement('div');d.className='card';d.style.setProperty('--c','#22d3ee');
+    d.innerHTML=`<div class="art">${ic('plane',44)}</div><div class="i">Flughafen & Containerhafen<small>${lk?'🔒 ab Level '+UNL.export.lv+' · '+UNL.export.d:'Öffnet den Weltmarkt: 5 Länder mit wechselnder Nachfrage. Die Länder findest du dann unter Aufträge.'}</small></div><button class="btn a" ${lk||S.money<AIRPORT_COST?'disabled':''}>Bauen<br>${fmt(AIRPORT_COST)}</button>`;
     d.querySelector('button').onclick=e=>{if(lk||S.money<AIRPORT_COST)return;S.money-=AIRPORT_COST;S.exp.built=1;genDemand();SFX.win();burst(e.clientX,e.clientY,'#22d3ee',24);fx('Flughafen eröffnet!','#22d3ee');render()};
     el.appendChild(d);return}
   const up=airUpCost(),mx=S.exp.lvl>=5,h=document.createElement('div');h.className='card';h.style.setProperty('--c','#22d3ee');
@@ -62,7 +62,16 @@ export function renderExport(){
     S.exp.ships.forEach(sh=>{const c=COUNTRIES.find(x=>x.id===sh.c),m=MODES[sh.mode],f=Math.min(1,(now-sh.start)/(sh.end-sh.start)),d=document.createElement('div');d.className='card';d.style.setProperty('--c','#7c5cff');
       d.innerHTML=`<div class="i">${m.e} ${c.f} ${c.n}${sh.delayed&&sh.told?' <span class="chip dn">verspätet</span>':''}<div class="flight"><i style="width:${f*100}%"></i><span style="left:${f*100}%">${m.e}</span></div><small>${Object.keys(sh.load).map(g=>sh.load[g]+'× '+G[g].n).join(', ')} · Ankunft in ${fmtT(sh.end-now)}</small></div><b class="num" style="color:var(--gold)">${fmt(sh.value)}</b>`;
       el.appendChild(d)})}
-  addSec(el,'Länder · neue Nachfrage in '+fmtT(S.exp.demandAt-now));
+}
+// Nachfrage der Länder (Bildschirm Aufträge)
+export function renderDemand(el){
+  if(!isOpen('export'))return;
+  const now=Date.now();
+  if(!S.exp.built){addSec(el,'Auslandsnachfrage');
+    const d=document.createElement('div');d.className='card idle';d.style.setProperty('--c','#22d3ee');
+    d.innerHTML=`<div class="art">${ic('plane',40)}</div><div class="i">Weltmarkt noch geschlossen<small>Baue den Flughafen unter Logistik, dann zahlen 5 Länder ein Vielfaches für gefragte Waren.</small></div><button class="btn b">Logistik</button>`;
+    d.querySelector('button').onclick=()=>go('logistics');el.appendChild(d);return}
+  addSec(el,'Auslandsnachfrage · neu in '+fmtT(S.exp.demandAt-now));
   COUNTRIES.forEach(c=>{const d=document.createElement('div');d.className='card';d.style.setProperty('--c','#fbbf24');
     d.innerHTML=`<div class="art"><span style="font-size:32px">${c.f}</span></div><div class="i">${c.n}<small>✈️ ${fmtT(MODES.plane.t*c.d*1000)} · 🚢 ${fmtT(MODES.ship.t*c.d*1000)}</small><div class="ois">${(S.exp.demand[c.id]||[]).map(x=>`<span class="oi">${ic(x.g,22)}${G[x.g].n} <b class="up">×${x.m}</b></span>`).join('')}</div></div><button class="btn b">Beliefern</button>`;
     d.querySelector('button').onclick=()=>exportLoad(c.id);el.appendChild(d)});

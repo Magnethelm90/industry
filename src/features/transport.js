@@ -3,7 +3,7 @@ import {render} from '../app.js';
 import {G,GK,ROUTES} from '../data.js';
 import {SFX,burst,toast} from '../fx.js';
 import {drive} from '../games/drive.js';
-import {GKU,S,price,sat,truckCap} from '../state.js';
+import {GKU,S,price,sat,track,truckCap} from '../state.js';
 import {closeOv,openOv} from '../ui.js';
 import {$,fmt,ic} from '../util.js';
 
@@ -14,7 +14,7 @@ export async function startDrive(route){
   const r=await drive(route,load);
   let val=0;for(const g in load){for(let i=0;i<load[g];i++){val+=price(g);sat[g]+=1}}
   val*=route.mult;const pay=Math.floor(val*r.integ/100)+r.coins*5;
-  S.money+=pay;S.xp+=Math.ceil(pay/8);
+  S.money+=pay;S.xp+=Math.ceil(pay/8);track('drives');
   const stars=r.integ>=100?3:r.integ>=60?2:r.integ>0?1:0;
   openOv(`<h3 style="text-align:center;font-size:24px">${r.integ>0?'Lieferung erfolgreich':'Totalschaden'}</h3>
    <div style="text-align:center;font-size:38px;letter-spacing:8px;margin:6px 0">${'★'.repeat(stars)}<span style="opacity:.2">${'★'.repeat(3-stars)}</span></div>
@@ -24,11 +24,10 @@ export async function startDrive(route){
   if(pay>0){SFX.win();burst(innerWidth/2,innerHeight*.35,'#fbbf24',24)}
   $('ok').onclick=()=>{closeOv();render()};
 }
-export function renderShip(){
-  const el=$('s-ship');const used=Object.values(cargo).reduce((a,b)=>a+b,0);
+export function renderTruck(el){
+  const used=Object.values(cargo).reduce((a,b)=>a+b,0);
   let est=0;for(const g in cargo)est+=price(g)*cargo[g];
-  el.innerHTML=`<h2>Transport</h2><p class="sub">Belade den LKW und bring die Ware zum Markt.</p>
-   <div class="card" style="--c:#22d3ee"><div class="art">${ic('truck',44)}</div><div class="i">Ladefläche <span class="chip num">${used} / ${truckCap()}</span><div class="meter"><i style="width:${used/truckCap()*100}%"></i></div><small>Geschätzter Warenwert: ${fmt(est)} Credits</small></div></div>`;
+  el.insertAdjacentHTML('beforeend',`<div class="card truck" style="--c:#22d3ee"><div class="art">${ic('truck',44)}</div><div class="i">Ladefläche <span class="chip num">${used} / ${truckCap()}</span><div class="meter"><i style="width:${used/truckCap()*100}%"></i></div><small>Geschätzter Warenwert: ${fmt(est)} Credits</small></div></div>`);
   const list=GKU().filter(g=>S.stock[g]>=1||cargo[g]);
   if(!list.length)el.insertAdjacentHTML('beforeend','<p class="sub">Dein Lager ist leer – stell zuerst etwas her.</p>');
   list.forEach(g=>{const have=Math.floor(S.stock[g]),c=cargo[g]||0;

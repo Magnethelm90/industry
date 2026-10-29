@@ -1,10 +1,10 @@
 /* Untergrund: Schwarzproduktion, Polizei, Versteck, Hehler, Gang */
 import {render} from '../app.js';
-import {FENCES,G,GK,ST} from '../data.js';
+import {FENCES,G,GK,ST,UNL} from '../data.js';
 import {runStation} from './workshop.js';
 import {SFX,fx,toast,tone,vib} from '../fx.js';
 import {gTiming} from '../games/timing.js';
-import {S,cap,lvl,unl} from '../state.js';
+import {S,cap,isOpen,lvl,unl} from '../state.js';
 import {OV,addSec,closeOv,openOv} from '../ui.js';
 import {$,fmt,fmtT,ic,nameColor,pick} from '../util.js';
 
@@ -72,7 +72,7 @@ export async function gangAttack(){
 }
 export function tickUnder(dt){
   const u=S.ug,now=Date.now();u.heat=Math.max(0,u.heat-.04*dt);
-  if(lvl()<3)return;
+  if(!isOpen('under'))return;
   if(!u.fences||now>u.fenceAt)genFences();
   if(OV)return;
   const exposed=illLager().length>0;
@@ -83,7 +83,7 @@ export function tickUnder(dt){
 export function renderUnder(){
   const el=$('s-under'),u=S.ug;
   el.innerHTML='<h2>Untergrund</h2><p class="sub">Schmuggelware bringt das große Geld – aber die Polizei und die Kobras schauen zu. Lagere heiße Ware im Versteck, nicht im normalen Lager!</p>';
-  if(lvl()<3){el.insertAdjacentHTML('beforeend',`<div class="card idle" style="--c:#fb7185"><div class="art"><span style="font-size:30px">🔒</span></div><div class="i">Noch zu unbekannt<small>Ab Level 3 nimmt dich die Unterwelt ernst.</small></div></div>`);return}
+  if(!isOpen('under')){el.insertAdjacentHTML('beforeend',`<div class="card idle" style="--c:#fb7185"><div class="art"><span style="font-size:30px">🔒</span></div><div class="i">Noch zu unbekannt<small>Ab Level ${UNL.under.lv} nimmt dich die Unterwelt ernst.</small></div></div>`);return}
   const hc=u.heat>=75?'var(--g4)':u.heat>=50?'linear-gradient(90deg,#f97316,#fb7185)':u.heat>=25?'var(--g2)':'var(--g3)';
   const h=document.createElement('div');h.className='card';h.style.setProperty('--c','#fb7185');
   h.innerHTML=`<div class="art"><span style="font-size:30px">🚔</span></div><div class="i">Polizei-Verdacht: ${heatTier()} <span class="chip num">${Math.round(u.heat)} %</span><div class="meter"><i style="width:${u.heat}%;background:${hc}"></i></div><small>Steigt durch Herstellen und Verkaufen. Sinkt langsam von selbst.</small></div><button class="btn ghost" ${S.money<bribeCost()||u.heat<5?'disabled':''}>Bestechen<br>${fmt(bribeCost())}</button>`;

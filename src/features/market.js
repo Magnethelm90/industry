@@ -2,7 +2,7 @@
 import {render} from '../app.js';
 import {CATS,G,catOf} from '../data.js';
 import {SFX,fx,toast,vib} from '../fx.js';
-import {GKU,S,buyP,cap,mood,price,sat,sellP} from '../state.js';
+import {GKU,S,buyP,cap,mood,price,sat,sellP,track} from '../state.js';
 import {$,fmt,ic} from '../util.js';
 
 export function spark(g){const h=S.hist[g];if(h.length<2)return '';const mn=Math.min(...h),mx=Math.max(...h),r=mx-mn||1;
@@ -16,7 +16,7 @@ export function mTrade(g,buy,e){
     S.money-=sum;S.stock[g]+=k;SFX.buy();fx('+'+k+' '+G[g].n,G[g].c,e.clientX,e.clientY-30)}
   else{n=Math.min(n,Math.floor(S.stock[g]));while(k<n){sum+=sellP(g);sat[g]+=1;k++}
     if(!k){SFX.err();return}
-    S.stock[g]-=k;S.money+=sum;S.xp+=Math.ceil(sum/12);SFX.coin();fx('+'+fmt(sum)+' Cr','#fbbf24',e.clientX,e.clientY-30)}
+    S.stock[g]-=k;S.money+=sum;S.xp+=Math.ceil(sum/12);track('sold',null,k);SFX.coin();fx('+'+fmt(sum)+' Cr','#fbbf24',e.clientX,e.clientY-30)}
   vib(12);render();
 }
 export let mCat='alle';

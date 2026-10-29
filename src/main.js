@@ -10,6 +10,8 @@ import {tickOrders} from './features/orders.js';
 import {tickRivals} from './features/rivals.js';
 import {offlineShop,syncSlots,tickShop} from './features/shop.js';
 import {tickUnder} from './features/under.js';
+import {initGoals,tickGoals} from './features/goals.js';
+import {openCompany} from './features/company.js';
 import {SFX,toast} from './fx.js';
 import {GKU,S,mood,price,sat} from './state.js';
 import {OV} from './ui.js';
@@ -20,6 +22,8 @@ $('snd').onclick=()=>{S.mute=!S.mute;$('snd').textContent=S.mute?'🔇':'🔊';i
 $('snd').textContent=S.mute?'🔇':'🔊';
 if(!S.rivals)S.rivals=RIVALS.map(r=>({...r}));
 syncSlots();
+initGoals();
+$('lvpill').onclick=openCompany;
 (function(){const dt=Math.min((Date.now()-S.last)/1000,8*3600);if(dt<30)return;
   offlineB(dt);tickRivals(dt);offlineFarm(dt);S.ug.heat=Math.max(0,S.ug.heat-.04*dt);const s=offlineShop(dt);
   if(s>0)setTimeout(()=>toast('Dein Laden hat in deiner Abwesenheit für '+fmt(s)+' Credits verkauft.'),4200)})();
@@ -37,8 +41,8 @@ setInterval(()=>{
     const gl=GKU(),g=gl[Math.floor(Math.random()*gl.length)],up=Math.random()<0.6;mood[g]=up?2.2:0.45;setTimeout(()=>mood[g]=1,35000);
     const rv=pick(S.rivals).n;
     toast(up?`🔥 ${rv} kauft ${G[g].n} auf – 35 s lang hohe Preise!`:`❄️ ${rv} überschwemmt den Markt mit ${G[g].n} – Preissturz!`);SFX.coin()}
-  tickOrders();tickShop(dt);tickRivals(dt);tickFarm(dt);tickExport();tickUnder(dt);
-  if(!OV&&!pressing&&cur!=='ship'&&cur!=='work')render();else badges();
+  tickOrders();tickShop(dt);tickRivals(dt);tickFarm(dt);tickExport();tickUnder(dt);tickGoals();
+  if(!OV&&!pressing&&cur!=='work')render();else badges();
   S.last=Date.now();try{localStorage.setItem(SAVE,JSON.stringify(S))}catch(e){}
 },1000);
 // Nur für automatische Tests: ?debug macht alle Modul-Exporte im Browser sichtbar
@@ -48,4 +52,4 @@ if(/[?&]debug/.test(location.search)){
 }
 startHud();
 render();
-toast('Starte in der Werkstatt: baue Eisenerz ab!');
+if(S.goal===0&&!S.st.make.erz)toast('Willkommen! Oben steht dein erstes Ziel.');

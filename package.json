@@ -8,7 +8,7 @@
     "build": "vite build",
     "preview": "vite preview --host",
     "lint": "eslint src",
-    "test": "vite build && node tests/smoke.cjs"
+    "test": "vite build && node tests/smoke.cjs && node tests/newplayer.cjs"
   },
   "devDependencies": {
     "acorn": "^8.19.0",

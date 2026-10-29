@@ -3,7 +3,7 @@ import {render} from '../app.js';
 import {AGE,CROPS,G} from '../data.js';
 import {SFX,burst,fx,toast,tone,vib} from '../fx.js';
 import {gFish} from '../games/fish.js';
-import {S,cap,unl} from '../state.js';
+import {S,cap,track,unl} from '../state.js';
 import {addSec,bindX,closeOv,openOv,xbtn} from '../ui.js';
 import {$,fmt,fmtT,ic,pick} from '../util.js';
 
@@ -38,13 +38,13 @@ export function pickCrop(i){
 export function harvest(i,e){
   const p=S.farm.plots[i];if(!p.ready)return;
   let n=Math.round(CROPS[p.c].yield*(p.half?.5:1)*(1+.25*S.up.tractor));n=Math.max(0,Math.min(n,Math.floor(cap()-S.stock[p.c])));
-  S.stock[p.c]+=n;S.xp+=n+2;SFX.good();vib(15);burst(e.clientX,e.clientY,G[p.c].c,14);fx('+'+n+' '+G[p.c].n,G[p.c].c,e.clientX,e.clientY-30);
+  S.stock[p.c]+=n;S.xp+=n+2;track('harvest');SFX.good();vib(15);burst(e.clientX,e.clientY,G[p.c].c,14);fx('+'+n+' '+G[p.c].n,G[p.c].c,e.clientX,e.clientY-30);
   Object.assign(p,emptyPlot());render();
 }
 export async function goFish(){
   const r=await gFish();if(!r)return;closeOv();
   const ks=Object.keys(r);if(!ks.length){toast('Heute beißt nichts … versuch es nochmal!');return}
-  ks.forEach(g=>{S.stock[g]=Math.min(cap(),S.stock[g]+r[g]);S.xp+=r[g]*2});
+  ks.forEach(g=>{S.stock[g]=Math.min(cap(),S.stock[g]+r[g]);S.xp+=r[g]*2});track('fish');
   fx(ks.map(g=>'+'+r[g]+' '+G[g].n).join(' · '),'#93c5fd');toast('Fang: '+ks.map(g=>r[g]+'× '+G[g].n).join(', '));render();
 }
 export function cellarPut(){

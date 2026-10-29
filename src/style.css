@@ -228,3 +228,17 @@
   .shake{animation:shk .25s}@keyframes shk{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
   .smoke{animation:sm 4s infinite linear}@keyframes sm{from{transform:translateY(0) scale(1);opacity:.55}to{transform:translateY(-22px) scale(1.8);opacity:0}}
   .win{animation:tw 3s infinite alternate}@keyframes tw{50%{opacity:.35}}
+  /* Ziele, Sperren, Hervorhebung */
+  .goal{display:flex;align-items:center;gap:12px;padding:11px 12px;margin:8px 0 10px;border-radius:var(--r);background:linear-gradient(135deg,rgba(124,92,255,.22),rgba(34,211,238,.12));border:1px solid rgba(124,92,255,.55);font-weight:800;font-size:15px}
+  .goal .i{flex:1;min-width:0}.goal small{display:block;color:var(--mut);font-weight:500;font-size:12px;margin-top:2px;line-height:1.35}
+  .goal .i>small:first-child{margin:0 0 2px;color:#c4b5fd;font-weight:800;font-size:11px;letter-spacing:.5px;text-transform:uppercase}
+  .goal .gi{font-size:26px;flex:0 0 auto}
+  .goal.done{background:linear-gradient(135deg,rgba(52,211,153,.25),rgba(34,211,238,.1));border-color:var(--ok)}
+  .goal.done .i>small:first-child{color:var(--ok)}
+  .goal.wait{background:var(--glass);border-color:var(--line)}
+  .hl{outline:3px solid var(--gold);outline-offset:3px;border-radius:14px;animation:hlp .8s infinite alternate}
+  @keyframes hlp{to{outline-color:rgba(251,191,36,.25)}}
+  .lockline{margin:8px 2px;padding:10px 14px;border-radius:14px;border:1px dashed var(--line);color:var(--mut);font-size:13px;font-weight:700}
+  nav button.lock{opacity:.4}
+  nav button.lock::after{content:"🔒";position:absolute;top:2px;right:calc(50% - 22px);font-size:10px}
+  .seg button.lock{opacity:.45}

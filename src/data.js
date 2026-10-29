@@ -22,7 +22,7 @@ Object.assign(G,{
  wein:{n:'Wein',base:40,c:'#9333ea',cat:'food',lv:3},bier:{n:'Bier',base:24,c:'#f59e0b',cat:'food',lv:3},
  stoff:{n:'Stoff',base:22,c:'#c4b5fd',cat:'bau',lv:3},kleidung:{n:'Kleidung',base:90,c:'#ec4899',cat:'lux',lv:4},
  jahrgangswein:{n:'Jahrgangswein',base:180,c:'#7e22ce',cat:'lux',lv:3},bergkaese:{n:'Bergkäse',base:100,c:'#ca8a04',cat:'lux'},
- schnaps:{n:'Schwarzgebrannter',base:55,c:'#a3e635',cat:'ill',illegal:1,lv:3},replika:{n:'Replika-Uhr',base:150,c:'#fbbf24',cat:'ill',illegal:1,lv:4},
+ schnaps:{n:'Schwarzgebrannter',base:55,c:'#a3e635',cat:'ill',illegal:1,lv:4},replika:{n:'Replika-Uhr',base:150,c:'#fbbf24',cat:'ill',illegal:1,lv:4},
  raubkopie:{n:'Raubkopie',base:45,c:'#94a3b8',cat:'ill',illegal:1,lv:4}
 });
 export const CAT={erz:'roh',kohle:'roh',lehm:'roh',sand:'roh',kupfer:'roh',oel:'roh',ziegel:'bau',stahl:'bau',maschine:'bau',glas:'bau',kunststoff:'bau',
@@ -69,7 +69,7 @@ export const ST=[
  {id:'schneiderei',n:'Schneiderei',grp:'food',games:['wires','simon'],in:{stoff:2,draht:1},out:'kleidung',max:1,mult:'bench',lv:4}
 ];
 ST.push(
- {id:'brennerei',n:'Schwarzbrennerei',grp:'ill',games:['mix','pipes'],in:{weizen:4},out:'schnaps',max:3,mult:'bench',lv:3,heat:5},
+ {id:'brennerei',n:'Schwarzbrennerei',grp:'ill',games:['mix','pipes'],in:{weizen:4},out:'schnaps',max:3,mult:'bench',lv:4,heat:5},
  {id:'faelscher',n:'Fälscherwerkstatt',grp:'ill',games:['solder','wires'],in:{stahl:1,display:1,kunststoff:1},out:'replika',max:2,mult:'bench',lv:4,heat:7},
  {id:'kopierer',n:'Raubkopierer',grp:'ill',games:['wires','sort'],in:{platine:1,kunststoff:2},out:'raubkopie',max:3,mult:'bench',lv:4,heat:6});
 REC.forEach(r=>ST.push({id:'r_'+r.out,n:G[r.out].n+' bauen',games:r.games,in:Object.fromEntries(r.in.map(k=>[k,2])),out:r.out,max:3,mult:'bench',lv:G[r.out].lv,secret:true}));
@@ -82,9 +82,9 @@ export const UP=[
  {id:'bench',n:'Werkbank',d:'+30% Ertrag bei Presse, Ofen & Montage',base:120,i:'maschine',c:'#fbbf24'},
  {id:'truck',n:'LKW-Ladefläche',d:'+10 Plätze pro Fahrt',base:80,i:'truck',c:'#22d3ee'},
  {id:'store',n:'Lagerhalle',d:'+100 Lagerplatz pro Ware',base:50,i:'ziegel',c:'#ef4444'},
- {id:'tractor',n:'Traktor',d:'+25% Ernte auf der Farm',base:400,i:'weizen',c:'#facc15'},
- {id:'sprinkler',n:'Bewässerung',d:'Stufe 1: Felder gießen sich selbst · jede weitere Stufe +10% Wachstum',base:1500,i:'milch',c:'#38bdf8'},
- {id:'rod',n:'Angelrute',d:'Seltene Fische beißen häufiger an',base:300,i:'lachs',c:'#fb7185'}
+ {id:'tractor',req:'farm',n:'Traktor',d:'+25% Ernte auf der Farm',base:400,i:'weizen',c:'#facc15'},
+ {id:'sprinkler',req:'farm',n:'Bewässerung',d:'Stufe 1: Felder gießen sich selbst · jede weitere Stufe +10% Wachstum',base:1500,i:'milch',c:'#38bdf8'},
+ {id:'rod',req:'farm',n:'Angelrute',d:'Seltene Fische beißen häufiger an',base:300,i:'lachs',c:'#fb7185'}
 ];
 export const BLD=[
  {id:'lehmgrube',kind:'mine',n:'Lehmgrube',out:'lehm',rate:0.3,base:100},
@@ -100,10 +100,10 @@ export const BLD=[
  {id:'kupfermine',kind:'mine',n:'Kupfermine',out:'kupfer',rate:0.2,base:900,lv:4},
  {id:'oelpumpe',kind:'mine',n:'Ölpumpe',out:'oel',rate:0.2,base:900,lv:4},
  {id:'elektronikmarkt',kind:'shop',n:'Elektronikmarkt',goods:['handy','display','akku','platine'],base:8000,c:'#e879f9',lv:4},
- {id:'kutter',kind:'mine',n:'Fischkutter',out:'hering',rate:0.12,base:1500},
- {id:'kuhstall',kind:'fac',n:'Kuhstall',in:{weizen:1},out:'milch',t:8,base:700},
- {id:'huehnerstall',kind:'fac',n:'Hühnerstall',in:{weizen:1},out:'eier',t:6,base:450},
- {id:'feinkost',kind:'shop',n:'Feinkostladen',goods:['brot','kaese','raeucherlachs','wein','bier'],base:3000,c:'#f59e0b'}
+ {id:'kutter',kind:'mine',n:'Fischkutter',out:'hering',rate:0.12,base:1500,lv:3},
+ {id:'kuhstall',kind:'fac',n:'Kuhstall',in:{weizen:1},out:'milch',t:8,base:700,lv:3},
+ {id:'huehnerstall',kind:'fac',n:'Hühnerstall',in:{weizen:1},out:'eier',t:6,base:450,lv:3},
+ {id:'feinkost',kind:'shop',n:'Feinkostladen',goods:['brot','kaese','raeucherlachs','wein','bier'],base:3000,c:'#f59e0b',lv:3}
 ];
 export const BMAX=10,WEAR=100/480,SHOPT=5,KEEPS=[0,10,25,50,100];
 export const SAVE='industry-action-v2';
@@ -116,3 +116,19 @@ export const COUNTRIES=[{id:'no',n:'Norwegen',f:'🇳🇴',d:.5},{id:'ae',n:'Dub
 export const MODES={plane:{n:'Flugzeug',e:'✈️',t:180,fee:.08,cap:l=>15+10*(l-1),risk:.1,slow:1.4,ev:'Unwetter – Flug verspätet'},
              ship:{n:'Containerschiff',e:'🚢',t:600,fee:.02,cap:l=>80+20*(l-1),risk:.2,slow:1.6,ev:'Sturm auf See – Schiff verspätet'}};
 export const FENCES=['Der Pole','Lady Viper','Onkel Sam','Kralle','Doc Schwarz','Mamba','Fuchs'];
+
+// Farm-Waren und ihre Veredelung kommen erst mit der Farm (Level 3)
+GK.forEach(g=>{if(['agrar','fisch','food'].includes(G[g].cat)&&!G[g].lv)G[g].lv=3});
+ST.forEach(s=>{if(s.grp==='food'&&!s.lv)s.lv=G[s.out].lv});
+
+// Bereiche, die nach und nach freigeschaltet werden
+export const UNL={
+  bld:{lv:2,n:'Betriebe',d:'Minen und Fabriken arbeiten für dich – auch offline.'},
+  orders:{lv:2,n:'Aufträge',d:'Kunden bestellen Ware mit Frist und zahlen gut.'},
+  farm:{lv:3,n:'Farm & Meer',d:'Felder, Angeln und Reifekeller.'},
+  shop:{lv:3,n:'Eigener Laden',d:'Regale füllen, Preise setzen, feilschen.'},
+  lab:{lv:3,n:'Labor',d:'Geheime Rezepte entdecken.'},
+  under:{lv:4,n:'Untergrund',d:'Schmuggelware – mit Risiko.'},
+  elek:{lv:4,n:'Elektronik',d:'Platinen, Akkus, Displays – und Smartphones.'},
+  export:{lv:5,n:'Flughafen & Hafen',d:'Liefern ins Ausland für ein Vielfaches.'}
+};
