@@ -262,6 +262,230 @@ def _bc():
     return _bottle('#ec4899')
 
 
+# ---------------------------------------------------------------- Requisiten für die übrigen Minispiele
+
+@prop('plate', size=360, elev=78)
+def _plate():
+    steel = grad('#aeb8c6', '#7b8696', -1.4, 1.4, axis=1, metal=1, rough=0.35)
+    box(3.2, 2.6, 0.14, (0, 0, 0.07), steel, 0.05)
+    edge = mat('#5b6472', metal=1, rough=0.4)
+    for x, y in ((-1.45, -1.15), (1.45, -1.15), (-1.45, 1.15), (1.45, 1.15)):
+        cyl(0.09, 0.08, (x, y, 0.16), edge, b=0.02)
+    for y in (-0.4, 0.45):
+        box(3.0, 0.02, 0.01, (0, y, 0.145), mat('#6b7482', metal=1, rough=0.5), 0)
+    return {'tl': (-1.6, 1.3, 0.14), 'br': (1.6, -1.3, 0.14)}
+
+
+@prop('bolt', size=120, elev=72, shadow=False)
+def _bolt():
+    m = mat('#c7ced8', metal=1, rough=0.28)
+    cyl(0.62, 0.06, (0, 0, 0.03), mat('#9aa3b2', metal=1, rough=0.3), b=0.01)
+    cyl(0.48, 0.28, (0, 0, 0.2), m, v=6, b=0.04)
+    box(0.5, 0.08, 0.04, (0, 0, 0.35), mat('#4b5563', metal=1, rough=0.4), 0.01)
+    return {'c': (0, 0, 0.35)}
+
+
+@prop('wrench', size=200, elev=72, shadow=False)
+def _wrench():
+    chrome = mat('#dfe5ec', metal=1, rough=0.18)
+    box(2.6, 0.32, 0.1, (1.3, 0, 0), chrome, 0.04)
+    jaw = [(math.cos(a) * 0.48, math.sin(a) * 0.48) for a in [math.radians(d) for d in range(40, 330, 15)]]
+    jaw = [(0.12, 0.2)] + jaw + [(0.12, -0.2), (0.0, -0.17), (0.0, 0.17)]
+    shape(jaw, 0.1, (0, 0, 0), chrome, 0.02, rot=(0, 0, math.pi))
+    cyl(0.28, 0.12, (2.65, 0, 0), chrome, b=0.03)
+    return {'head': (-0.2, 0, 0.05), 'grip': (2.4, 0, 0.05)}
+
+
+@prop('console', size=360, elev=40)
+def _console():
+    box(3.4, 1.6, 0.5, (0, 0, 0.25), mat('#2b3240', metal=0.4, rough=0.45), 0.08)
+    box(3.2, 1.4, 0.04, (0, 0, 0.51), mat('#3b4454', metal=0.4, rough=0.4), 0.02)
+    for i in range(10):
+        box(0.34, 0.12, 0.02, (-1.53 + i * 0.34, -0.74, 0.5), mat('#facc15' if i % 2 == 0 else '#111827', rough=0.5), 0)
+    return {'a': (-1.2, 0, 0.55), 'd': (1.2, 0, 0.55)}
+
+
+def _pushbtn(col):
+    cyl(0.62, 0.3, (0, 0, 0.15), mat('#1f2430', metal=0.6, rough=0.35), b=0.05)
+    cyl(0.68, 0.06, (0, 0, 0.03), mat('#9aa3b2', metal=1, rough=0.3), b=0.02)
+    o = ball(0.5, (0, 0, 0.3), mat(col, rough=0.12, coat=1, sss=0.2), sc=(1, 1, 0.55))
+    return {'c': (0, 0, 0.55)}
+
+
+@prop('pbtn_r', size=150, elev=40, shadow=False)
+def _pr():
+    return _pushbtn('#ef4444')
+
+
+@prop('pbtn_g', size=150, elev=40, shadow=False)
+def _pg():
+    return _pushbtn('#22c55e')
+
+
+@prop('pbtn_b', size=150, elev=40, shadow=False)
+def _pb():
+    return _pushbtn('#3b82f6')
+
+
+@prop('pbtn_y', size=150, elev=40, shadow=False)
+def _py():
+    return _pushbtn('#eab308')
+
+
+@prop('jbox', size=340, elev=6)
+def _jbox():
+    gray = mat('#9aa3ad', metal=0.3, rough=0.4)
+    box(3.0, 0.3, 2.6, (0, 0.6, 1.3), gray, 0.06)
+    for x in (-1.45, 1.45):
+        box(0.12, 1.2, 2.6, (x, 0, 1.3), gray, 0.03)
+    for z in (0.06, 2.54):
+        box(3.0, 1.2, 0.12, (0, 0, z), gray, 0.03)
+    box(2.6, 0.06, 2.2, (0, 0.42, 1.3), mat('#d97706', rough=0.6), 0.02)
+    for x in (-1.0, 1.0):
+        box(0.35, 0.1, 2.0, (x, 0.35, 1.3), mat('#374151', metal=0.5, rough=0.4), 0.02)
+    shape([(0, 0.25), (0.14, 0.05), (0.04, 0.05), (0.1, -0.25), (-0.06, -0.02), (0.04, -0.02)], 0.03, (0, 0.3, 2.2), mat('#facc15', rough=0.4), 0.0, sc=0.9)
+    return {'l': (-1.0, -0.6, 1.3), 'r': (1.0, -0.6, 1.3), 'top': (0, -0.6, 2.3), 'bot': (0, -0.6, 0.3)}
+
+
+@prop('conveyor', size=360, elev=14)
+def _conveyor():
+    belt = mat('#1f2430', rough=0.7)
+    steel = mat('#8a94a3', metal=1, rough=0.35)
+    for x in (-1.75, 1.75):
+        cyl(0.22, 0.95, (x, 0, 0.95), steel, rot=(math.pi / 2, 0, 0))
+    box(3.5, 0.9, 0.44, (0, 0, 0.95), belt, 0.2)
+    box(3.9, 0.1, 0.22, (0, -0.5, 0.95), mat('#f59e0b', metal=0.3, rough=0.4), 0.03)
+    for x in (-1.4, 0, 1.4):
+        rod((x, -0.4, 0.75), (x, -0.4, 0.0), 0.07, steel)
+        rod((x, 0.4, 0.75), (x, 0.4, 0.0), 0.07, steel)
+    return {'l': (-1.75, -0.45, 1.17), 'r': (1.75, -0.45, 1.17)}
+
+
+@prop('crate', size=150, elev=16)
+def _crate():
+    wood = mat('#a8743f', rough=0.65)
+    dark = mat('#7c5229', rough=0.7)
+    box(1.6, 1.3, 0.1, (0, 0, 0.05), wood, 0.02)
+    for x in (-0.8, 0.8):
+        box(0.1, 1.3, 1.1, (x, 0, 0.6), wood, 0.02)
+    for y in (-0.65, 0.65):
+        for z in (0.25, 0.6, 0.95):
+            box(1.6, 0.08, 0.28, (0, y, z), wood if z != 0.6 else dark, 0.02)
+    return {'mouth': (0, -0.2, 1.1)}
+
+
+@prop('minecart', size=170, elev=12)
+def _minecart():
+    body = mat('#7a4b2a', rough=0.6)
+    iron = mat('#4b5563', metal=0.8, rough=0.35)
+    pts = [(-1.0, 0), (1.0, 0), (1.25, 0.9), (-1.25, 0.9)]
+    shape(pts, 1.1, (0, 0, 0.35), body, 0.04)
+    for z in (0.5, 1.15):
+        box(2.4 if z > 1 else 2.05, 1.15, 0.08, (0, 0, z), iron, 0.02)
+    for x in (-0.65, 0.65):
+        cyl(0.28, 0.14, (x, -0.58, 0.3), iron, rot=(math.pi / 2, 0, 0), b=0.03)
+        cyl(0.1, 0.16, (x, -0.6, 0.3), mat('#9aa3b2', metal=1, rough=0.3), rot=(math.pi / 2, 0, 0), b=0.01)
+    return {'rim': (0, -0.55, 1.25), 'rim_l': (-1.2, -0.55, 1.25), 'rim_r': (1.2, -0.55, 1.25)}
+
+
+@prop('hole', size=150, elev=6)
+def _hole():
+    import random as rnd
+    rr = rnd.Random(7)
+    face = box(2.0, 0.6, 1.8, (0, 0.35, 0.9), mat('#5c5552', rough=0.9), 0)
+    R.apply_mods(R.subsurf(face, 2))
+    for v in face.data.vertices:
+        v.co += Vector((rr.uniform(-.06, .06), rr.uniform(-.05, .05), rr.uniform(-.06, .06)))
+    for p in face.data.polygons:
+        p.use_smooth = False
+    box(1.1, 0.1, 1.0, (0, 0.02, 0.75), mat('#0a0807', rough=1), 0.05)
+    wood = mat('#8b5a2b', rough=0.7)
+    for x in (-0.62, 0.62):
+        box(0.16, 0.18, 1.25, (x, -0.08, 0.7), wood, 0.03)
+    box(1.5, 0.2, 0.18, (0, -0.08, 1.38), wood, 0.03)
+    return {'op_l': (-0.52, -0.1, 0.26), 'op_r': (0.52, -0.1, 0.26), 'op_t': (0, -0.1, 1.27)}
+
+
+@prop('stone', size=110, elev=10, shadow=False, pad=1.0)
+def _stone():
+    o = box(1.0, 0.6, 1.0, (0, 0, 0.5), mat('#6b6772', rough=0.85), 0.12)
+    import random as rnd
+    rr = rnd.Random(3)
+    R.apply_mods(o)
+    for v in o.data.vertices:
+        v.co += Vector((rr.uniform(-.04, .04), rr.uniform(-.03, .03), rr.uniform(-.04, .04)))
+    for p in o.data.polygons:
+        p.use_smooth = False
+    return {}
+
+
+@prop('hook', size=130, elev=6, shadow=False)
+def _hook():
+    steel = mat('#4b5563', metal=0.8, rough=0.35)
+    box(0.7, 0.4, 0.55, (0, 0, 1.1), mat('#f5b82e', rough=0.35, coat=0.6), 0.08)
+    cyl(0.18, 0.45, (0, 0, 1.1), steel, rot=(math.pi / 2, 0, 0))
+    rod((0, 0, 0.82), (0, 0, 0.45), 0.06, steel)
+    torus(0.24, 0.07, (0.0, 0, 0.25), steel, rot=(math.pi / 2, 0, 0))
+    return {'top': (0, 0, 1.4), 'tip': (0, 0, 0.0)}
+
+
+@prop('iron', size=200, elev=8, shadow=False)
+def _iron():
+    rod((0, 0, 0), (1.3, 0, 0), 0.16, mat('#1f2937', rough=0.5))
+    rod((1.3, 0, 0), (1.5, 0, 0), 0.1, mat('#dc2626', rough=0.4))
+    rod((1.5, 0, 0), (2.4, 0, 0), 0.05, mat('#c0c8d4', metal=1, rough=0.25))
+    cyl(0.05, 0.25, (2.52, 0, 0), mat('#b45309', metal=1, rough=0.3), rot=(0, math.pi / 2, 0), r2=0.01, b=0)
+    rod((-0.1, 0, 0), (-0.6, 0, 0.1), 0.04, mat('#111827', rough=0.6))
+    return {'tip': (2.65, 0, 0), 'grip': (0.5, 0, 0)}
+
+
+@prop('tank', size=150, elev=8)
+def _tank():
+    lathe([(0, 0), (0.7, 0), (0.75, 0.1), (0.75, 1.5), (0.6, 1.75), (0, 1.8)], m=mat('#3b82f6', metal=0.4, rough=0.3, coat=0.6))
+    for z in (0.4, 1.2):
+        torus(0.76, 0.04, (0, 0, z), mat('#1e3a8a', metal=0.6, rough=0.3))
+    cyl(0.14, 0.6, (0.95, 0, 0.45), mat('#9aa3b2', metal=1, rough=0.3), rot=(0, math.pi / 2, 0))
+    cyl(0.18, 0.1, (1.25, 0, 0.45), mat('#6b7280', metal=1, rough=0.3), rot=(0, math.pi / 2, 0))
+    torus(0.18, 0.04, (0.95, 0, 0.75), mat('#ef4444', rough=0.4), rot=(0, 0, 0))
+    rod((0.95, 0, 0.5), (0.95, 0, 0.75), 0.03, mat('#9aa3b2', metal=1))
+    return {'outlet': (1.3, -0.2, 0.45)}
+
+
+@prop('pier', size=320, elev=10)
+def _pier():
+    wood = mat('#9a6a3c', rough=0.7)
+    for i in range(7):
+        box(0.38, 1.4, 0.1, (-1.3 + i * 0.42, 0, 1.0), wood, 0.02)
+    for x in (-1.3, 0.0, 1.25):
+        for y in (-0.6, 0.6):
+            cyl(0.1, 1.2, (x, y, 0.45), mat('#6b4426', rough=0.8))
+    box(3.0, 0.08, 0.15, (0, -0.72, 0.9), mat('#7c5229', rough=0.7), 0.02)
+    return {'end': (1.3, -0.7, 1.05), 'water': (0, -0.7, 0.3)}
+
+
+@prop('rod', size=280, elev=6, shadow=False)
+def _rod():
+    cyl(0.06, 3.2, (1.6, 0, 0), mat('#1f2937', rough=0.4, coat=0.5), rot=(0, math.pi / 2, 0), r2=0.02, b=0)
+    rod((0, 0, 0), (0.9, 0, 0), 0.08, mat('#7c4a24', rough=0.6))
+    cyl(0.18, 0.14, (0.75, -0.05, -0.18), mat('#9aa3b2', metal=1, rough=0.3), rot=(math.pi / 2, 0, 0), b=0.02)
+    return {'grip': (0.2, 0, 0), 'tip': (3.2, 0, 0)}
+
+
+@prop('bobber', size=64, elev=10, shadow=False)
+def _bobber():
+    ball(0.3, (0, 0, 0.3), mat('#ffffff', rough=0.3, coat=1))
+    lathe([(0, 0.3), (0.302, 0.3), (0.25, 0.48), (0.12, 0.58), (0, 0.6)], m=mat('#ef4444', rough=0.3, coat=1))
+    rod((0, 0, 0.58), (0, 0, 0.85), 0.03, mat('#111827'))
+    return {'top': (0, 0, 0.85)}
+
+
+@prop('screwdriver', size=150, elev=8, shadow=False)
+def _screwdriver():
+    lathe([(0, 0), (0.16, 0.05), (0.2, 0.4), (0.18, 0.9), (0.1, 1.0), (0, 1.0)], (0, 0, 1.0), mat('#ef4444', rough=0.3, coat=1))
+    rod((0, 0, 1.0), (0, 0, 0.05), 0.04, mat('#c0c8d4', metal=1, rough=0.25))
+    return {'tip': (0, 0, 0.0), 'top': (0, 0, 2.0)}
+
+
 def main():
     argv = sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else sys.argv[1:]
     out = os.path.abspath(argv[0] if argv else 'props')

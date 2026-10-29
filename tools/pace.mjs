@@ -14,8 +14,8 @@ const goalXp={1:[20,20,40,30,60],2:[80,100,120,120,200,250],3:[100,150,200,100,2
 const reached={};const log=[];
 function passive(dt){
   BLD.forEach(x=>{const L=b[x.id];if(!L)return;
-    if(x.kind==='mine')stock[x.out]=Math.min(cap(),stock[x.out]+x.rate*L*dt*.85); // ~15 % Ausfall durch Wartung
-    if(x.kind==='fac'){let n=Math.floor(dt/(x.t/(1+.4*(L-1)))*.85);for(const k in x.in)n=Math.min(n,Math.floor(stock[k]/x.in[k]));
+    if(x.kind==='mine')stock[x.out]=Math.min(cap(),stock[x.out]+x.rate*L*dt); // Verschleiß 1 % / 15 min: kein nennenswerter Ausfall
+    if(x.kind==='fac'){let n=Math.floor(dt/(x.t/(1+.4*(L-1))));for(const k in x.in)n=Math.min(n,Math.floor(stock[k]/x.in[k]));
       for(const k in x.in)stock[k]-=x.in[k]*n;stock[x.out]+=n;xp+=n}});
 }
 function run(s){

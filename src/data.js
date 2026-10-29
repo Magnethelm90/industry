@@ -105,7 +105,7 @@ export const BLD=[
  {id:'huehnerstall',kind:'fac',n:'Hühnerstall',in:{weizen:1},out:'eier',t:6,base:450,lv:3},
  {id:'feinkost',kind:'shop',n:'Feinkostladen',goods:['brot','kaese','raeucherlachs','wein','bier'],base:3000,c:'#f59e0b',lv:3}
 ];
-export const BMAX=10,WEAR=100/480,SHOPT=5,KEEPS=[0,10,25,50,100];
+export const BMAX=10,WEAR=1/900,SHOPT=5,KEEPS=[0,10,25,50,100];
 export const SAVE='industry-action-v2';
 export const CUSTOMERS=['Bauhof Müller','Werft Hansen','TechStore Berlin','Elektro Kaya','Dachdecker Yilmaz','Startup Nova','Bahnwerk Ost','Möbel Lindqvist','Roboterwerk Iris','Drohnenclub Süd','Hotel Seeblick','Stadtwerke Nord'];
 export const RIVALS=[{n:'Krupp & Söhne',w:800,r:1.3},{n:'NovaTech AG',w:3000,r:1.15},{n:'Ivanov Stahl',w:12000,r:1},{n:'Global Industries',w:60000,r:.85}];

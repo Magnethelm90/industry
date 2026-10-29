@@ -4,6 +4,9 @@ import {SFX,vib} from '../fx.js';
 import {bindX,openOv,xbtn} from '../ui.js';
 import {$,pop} from '../util.js';
 
+// Rohr: dunkler Rand, Metallrohr, Glanzlinie; Wasser (nur wenn verbunden) läuft als animierte Strichlinie
+const pipeSvg=t=>{const d=t==='I'?'M0 50H100':'M50 0V50H100';
+  return `<path class="p0" d="${d}"/><path class="p1" d="${d}"/><path class="p2" d="${d}"/><path class="pw" d="${d}"/>`};
 export function gPipes(s){return new Promise(res=>{
   const C=5,R=4,T=30,BASE={I:10,L:3};
   const rot=(b,r)=>((b<<r)|(b>>(4-r)))&15;
@@ -15,7 +18,7 @@ export function gPipes(s){return new Promise(res=>{
   const dirTo=(a,b)=>b[0]>a[0]?DIR.E:b[0]<a[0]?DIR.W:b[1]>a[1]?DIR.S:DIR.N;
   path.forEach((p,i)=>{const inn=i===0?DIR.W:OPP[dirTo(path[i-1],p)],out=i===path.length-1?DIR.E:dirTo(p,path[i+1]),m=inn|out;
     const t=(m===10||m===5)?'I':'L';let rr=0;while(rot(BASE[t],rr)!==m)rr++;const c=cells[p[1]*C+p[0]];c.t=t;c.sol=rr;c.r=(rr+1+Math.floor(Math.random()*3))%4});
-  const ov=openOv(xbtn()+`<h3>Rohrleitung · ${G[s.out].n}</h3><div class="sub">Tippe Rohrstücke an, um sie zu drehen. Verbinde den Zulauf links mit dem Ablauf rechts.</div><div class="msg" id="m">Leitung verlegen …</div><div class="pipewrap"><div class="pipes" id="pp"></div><i class="src" style="top:${(r0+.5)/R*100}%"></i><i class="drn" style="top:${(r1+.5)/R*100}%"></i></div><div class="timer"><i id="tm" style="width:100%"></i></div>`);
+  const ov=openOv(xbtn()+`<h3>Rohrleitung · ${G[s.out].n}</h3><div class="sub">Tippe Rohrstücke an, um sie zu drehen. Verbinde den Zulauf links mit dem Ablauf rechts.</div><div class="msg" id="m">Leitung verlegen …</div><div class="pipewrap"><div class="pipes" id="pp"></div><i class="src" style="top:${(r0+.5)/R*100}%"></i><i class="drn" style="top:${(r1+.5)/R*100}%"></i><div class="prop p-tank ptank l" style="top:${(r0+.5)/R*100}%"></div><div class="prop p-tank ptank r" style="top:${(r1+.5)/R*100}%"></div></div><div class="timer"><i id="tm" style="width:100%"></i></div>`);
   bindX();ov.abort=()=>res(null);
   const conn=i=>rot(BASE[cells[i].t],cells[i].r);
   let done=false;const t0=performance.now();
@@ -26,12 +29,13 @@ export function gPipes(s){return new Promise(res=>{
   function draw(){
     const on=flow(),pp=$('pp');pp.innerHTML='';
     cells.forEach((c,i)=>{const b=document.createElement('button');b.className='pc'+(on.has(i)?' on':'');
-      b.innerHTML=`<svg viewBox="0 0 100 100" style="transform:rotate(${c.r*90}deg)"><path d="${c.t==='I'?'M0 50H100':'M50 0V50H100'}"/></svg>`;
+      b.innerHTML=`<svg viewBox="0 0 100 100" style="transform:rotate(${c.r*90}deg)">${pipeSvg(c.t)}</svg>`;
       b.onpointerdown=()=>{if(done)return;c.r=(c.r+1)%4;SFX.tick();vib(5);draw()};pp.appendChild(b)});
     const end=r1*C+C-1;
     if(on.has(end)&&(conn(end)&DIR.E)&&!done){done=true;const el=(performance.now()-t0)/1000;SFX.win();vib([30,40,60]);pop($('m'),'Es fließt! 💧');
       setTimeout(()=>ov.alive&&res(Math.max(.4,Math.min(1,1-(el-8)/40))),800)}}
   draw();
+  $('pp').__cells=cells; // nur für automatische Tests (Lösung steht in cell.sol)
   (function loop(){if(!ov.alive||done)return;const el=(performance.now()-t0)/1000;$('tm').style.width=Math.max(0,100-el/T*100)+'%';
     if(el>=T){done=true;SFX.miss();pop($('m'),'Zeit um – undicht!');setTimeout(()=>ov.alive&&res(Math.min(.3,flow().size/(C*2)*.3)),800);return}
     requestAnimationFrame(loop)})();

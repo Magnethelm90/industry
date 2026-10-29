@@ -1,26 +1,48 @@
-/* Minispiel: Kabel verbinden */
+/* Minispiel: Kabel – im Schaltkasten Kabel von links zur gleichfarbigen Klemme rechts ziehen (oder links und rechts antippen) */
 import {G} from '../data.js';
-import {SFX,burst,vib} from '../fx.js';
-import {bindX,openOv,shakeBox,xbtn} from '../ui.js';
-import {$,center,pop} from '../util.js';
+import {SFX,vib} from '../fx.js';
+import {bindX,openOv,xbtn} from '../ui.js';
+import {$,pop} from '../util.js';
+import {at,put,shakeStage,sparks} from './scene.js';
 
 export function gWires(s){return new Promise(res=>{
   const COL=['#ef4444','#3b82f6','#facc15','#22c55e','#e879f9'],N=5,T=14;
   const right=[...Array(N).keys()].sort(()=>Math.random()-.5);
-  const ov=openOv(xbtn()+`<h3>Kabel · ${G[s.out].n}</h3><div class="sub">Tippe links ein Kabel an und dann rechts den Anschluss mit derselben Farbe. Falsche Verbindung = Kurzschluss!</div><div class="msg" id="m">Verkabeln …</div><div class="wires" id="wr"><svg viewBox="0 0 100 100" preserveAspectRatio="none" id="wsv"></svg></div><div class="timer"><i id="tm" style="width:100%"></i></div>`);
+  const ov=openOv(xbtn()+`<h3>Kabel · ${G[s.out].n}</h3><div class="sub">Zieh ein Kabel von links zur Klemme mit derselben Farbe rechts (oder tippe links und dann rechts). Falsche Verbindung = Kurzschluss!</div><div class="msg" id="m">Verkabeln …</div>
+    <div class="stage factory" id="st" style="height:300px"><svg id="cab" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:4"></svg></div>
+    <div class="timer"><i id="tm" style="width:100%"></i></div>`);
   bindX();ov.abort=()=>res(null);
-  let sel=null,done=new Set(),mist=0,fin=false;const t0=performance.now(),Y=i=>(i+.5)/N*100;
-  const wr=$('wr');
-  const node=(side,i,c)=>{const b=document.createElement('button');b.className='wn';b.style.cssText=`left:${side?88:12}%;top:${Y(i)}%;background:${COL[c]}`;wr.appendChild(b);return b};
-  const L=[...Array(N).keys()].map(i=>node(0,i,i)),Rn=right.map((c,i)=>{const b=node(1,i,c);b.dataset.c=c;return b});
+  const st=$('st'),W=st.clientWidth,JB=Math.min(W*.97,300);
+  const jb=put(st,'jbox',JB,null,W/2,150);
+  const [lx]=at(jb,'jbox','l'),[rx]=at(jb,'jbox','r'),[,ty]=at(jb,'jbox','top'),[,by]=at(jb,'jbox','bot');
+  const Y=i=>ty+18+(by-ty-36)*i/(N-1);
+  const term=(x,y,c)=>{const e=document.createElement('div');e.className='term';e.style.cssText=`left:${x}px;top:${y}px;--tc:${COL[c]}`;st.appendChild(e);return e};
+  const L=[...Array(N).keys()].map(i=>term(lx,Y(i),i)),Rn=right.map((c,j)=>{const e=term(rx,Y(j),c);e.dataset.c=c;return e});
+  const cab=$('cab');
+  const path=(x1,y1,x2,y2,c,tmp)=>{const d=`M${x1} ${y1} C${(x1+x2)/2} ${y1},${(x1+x2)/2} ${y2},${x2} ${y2}`;
+    return `<g${tmp?' id="tmpc"':''}><path d="${d}" stroke="#0009" stroke-width="10" fill="none" stroke-linecap="round"/><path d="${d}" stroke="${COL[c]}" stroke-width="6.5" fill="none" stroke-linecap="round"/><path d="${d}" stroke="#ffffff66" stroke-width="2" fill="none" stroke-linecap="round" transform="translate(0,-1.5)"/></g>`};
+  let sel=null,drag=null,done=new Set(),mist=0,fin=false;const t0=performance.now();
+  const local=e=>{const r=st.getBoundingClientRect();return [e.clientX-r.left,e.clientY-r.top]};
   function end(){fin=true;const sc=done.size/N*Math.max(0,1-mist*.18);setTimeout(()=>ov.alive&&res(sc),700)}
-  L.forEach((b,i)=>b.onpointerdown=()=>{if(fin||done.has(i))return;sel=i;L.forEach(x=>x.classList.remove('sel'));b.classList.add('sel');SFX.tick()});
-  Rn.forEach((b,j)=>b.onpointerdown=()=>{
-    if(fin||sel==null)return;const c=+b.dataset.c;
-    if(c===sel){done.add(sel);$('wsv').insertAdjacentHTML('beforeend',`<path d="M12 ${Y(sel)} C50 ${Y(sel)},50 ${Y(j)},88 ${Y(j)}" stroke="${COL[c]}" stroke-width="3" fill="none" vector-effect="non-scaling-stroke" style="stroke-width:6px"/>`);
-      L[sel].classList.remove('sel');L[sel].classList.add('ok');b.classList.add('ok');SFX.good();vib(10);sel=null;
+  function attempt(i,j){
+    const c=+Rn[j].dataset.c;
+    if(c===i){done.add(i);cab.insertAdjacentHTML('beforeend',path(lx+10,Y(i),rx-10,Y(j),c));
+      L[i].classList.add('ok');Rn[j].classList.add('ok');SFX.good();vib(10);sparks(st,rx-10,Y(j),6,COL[c]);
       if(done.size>=N){pop($('m'),'Alles verbunden ⚡');SFX.win();end()}}
-    else{mist++;SFX.crash();vib([50,30,50]);const [x,y]=center(b);burst(x,y,'#fde047',14);shakeBox();pop($('m'),'Kurzschluss! ⚡');L[sel].classList.remove('sel');sel=null}});
+    else{mist++;SFX.crash();vib([50,30,50]);sparks(st,rx-10,Y(j),16,'#fde047');shakeStage(st);pop($('m'),'Kurzschluss! ⚡')}
+    L.forEach(x=>x.classList.remove('sel'));sel=null}
+  const hitRight=([x,y])=>Rn.findIndex((e,j)=>Math.hypot(x-rx,y-Y(j))<30&&!e.classList.contains('ok'));
+  L.forEach((e,i)=>{e.onpointerdown=ev=>{
+    ev.preventDefault();if(fin||done.has(i))return;
+    drag={i,start:local(ev),moved:false};try{st.setPointerCapture(ev.pointerId)}catch(_){}
+    L.forEach(x=>x.classList.remove('sel'));e.classList.add('sel');SFX.tick()}});
+  Rn.forEach((e,j)=>{e.onpointerdown=ev=>{ev.preventDefault();if(fin||sel==null||e.classList.contains('ok'))return;attempt(sel,j)}});
+  st.onpointermove=ev=>{if(!drag)return;const [x,y]=local(ev);
+    if(Math.hypot(x-drag.start[0],y-drag.start[1])>10)drag.moved=true;
+    const t=$('tmpc');if(t)t.remove();if(drag.moved)cab.insertAdjacentHTML('beforeend',path(lx+10,Y(drag.i),x,y,drag.i,true))};
+  st.onpointerup=st.onpointercancel=ev=>{if(!drag)return;const t=$('tmpc');if(t)t.remove();const d=drag;drag=null;
+    if(!d.moved){sel=d.i;return}
+    const j=hitRight(local(ev));if(j>=0)attempt(d.i,j);else{L[d.i].classList.remove('sel');sel=null}};
   (function loop(){if(!ov.alive||fin)return;const el=(performance.now()-t0)/1000;$('tm').style.width=Math.max(0,100-el/T*100)+'%';
     if(el>=T){pop($('m'),'Zeit um!');SFX.miss();end();return}requestAnimationFrame(loop)})();
 })}

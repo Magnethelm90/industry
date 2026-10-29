@@ -3,6 +3,7 @@ import {G} from '../data.js';
 import {SFX,burst,vib} from '../fx.js';
 import {bindX,openOv,shakeBox,xbtn} from '../ui.js';
 import {$,ic,pop} from '../util.js';
+import {fly} from './scene.js';
 
 export function phoneSVG(has,next,powered){
   const SL={gehaeuse:[10,6,140,288,26],platine:[26,26,108,112,8],akku:[30,150,100,118,10],display:[16,14,128,272,20]};
@@ -35,6 +36,7 @@ export function gPhone(s){return new Promise(res=>{
     if(c&&c.screws){let left=4;pop($('m'),'Platine festschrauben!');
       SC.forEach(([x,y])=>{const b=document.createElement('button');b.className='screw';b.style.left=x+'%';b.style.top=y+'%';
         b.onpointerdown=()=>{if(b.classList.contains('ok')||done)return;b.classList.add('ok');SFX.tick();vib(10);
+          fly($('ph'),b.offsetLeft,b.offsetTop-34,'<div class="prop p-screwdriver" style="position:relative;width:64px;height:64px"></div>',{dx:0,dy:6,rot:200,dur:380});
           if(--left<=0){SFX.good();ph++;setTimeout(()=>ov.alive&&draw(),300)}};$('ph').appendChild(b)})}
     if(c&&c.power){pop($('m'),'Fertig montiert – einschalten!');$('pw').innerHTML='<button class="btn big b" id="pon">⏻ Einschalten</button>';
       $('pon').onclick=()=>{if(done)return;powered=true;ph++;$('pw').innerHTML='';draw();SFX.win();vib([30,40,80]);

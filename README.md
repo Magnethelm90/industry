@@ -10,6 +10,7 @@ npm run dev      # Entwicklungsserver mit Live-Neuladen
 npm run build    # baut dist/index.html (eine einzige Datei)
 npm run lint     # prüft den Code
 npm test         # baut und startet die Browser-Tests in tests/ (braucht Playwright)
+ONLY=fish REP=5 node tests/minigames.cjs   # ein Minispiel mehrfach vom Bot spielen lassen (nach npm run build)
 npm run balance  # Tabelle: Credits und XP pro Minute je Station, Betrieb und Verkaufsweg
 node tools/pace.mjs  # Simulation: Spielminuten bis zu jedem Level
 ```
@@ -29,7 +30,7 @@ node tools/pace.mjs  # Simulation: Spielminuten bis zu jedem Level
 
 ## Freischaltungen
 
-Neue Spieler folgen 21 Zielen (`src/features/goals.js`). Bereiche öffnen sich nach Level (`UNL` in `src/data.js`): Betriebe und Aufträge ab 2, Farm, Laden mit Filialen und Labor ab 3, Untergrund und Elektronik ab 4, Flughafen ab 5. Was schon benutzt wird, bleibt immer offen. Die XP-Schwellen stehen in `LV_XP` (`src/data.js`); laut `tools/pace.mjs` braucht ein pausenlos spielender Spieler etwa 12 / 34 / 65 Minuten bis Level 3 / 4 / 5.
+Neue Spieler folgen 21 Zielen (`src/features/goals.js`). Bereiche öffnen sich nach Level (`UNL` in `src/data.js`): Betriebe und Aufträge ab 2, Farm, Laden mit Filialen und Labor ab 3, Untergrund und Elektronik ab 4, Flughafen ab 5. Was schon benutzt wird, bleibt immer offen. Betriebe (außer Läden) verlieren 1 % Zustand pro 15 Minuten (`WEAR` in `src/data.js`) und fallen bei 0 % aus; ab unter 85 % kann man warten. Die XP-Schwellen stehen in `LV_XP` (`src/data.js`); laut `tools/pace.mjs` braucht ein pausenlos spielender Spieler etwa 12 / 35 / 66 Minuten bis Level 3 / 4 / 5.
 
 ## Icons neu rendern
 
@@ -42,6 +43,6 @@ python tools/icons/render_icons.py src/assets/icons erz  # nur einzelne
 python tools/icons/render_props.py src/assets/props      # Requisiten der Minispiel-Szenen
 ```
 
-Für die Szenen der Minispiele (Amboss, Ofen, Presse, Gießpfanne, Becherglas …) rendert `tools/icons/render_props.py` die Requisiten in Frontansicht nach `src/assets/props/` und schreibt in `anchors.json`, wo z. B. die Ofentür oder der Ausguss im Bild liegt. `src/games/scene.js` setzt die Requisiten danach auf die Bühne.
+Für die Szenen der Minispiele (Amboss, Ofen, Presse, Gießpfanne, Becherglas …) rendert `tools/icons/render_props.py` die Requisiten in Frontansicht nach `src/assets/props/` und schreibt in `anchors.json`, wo z. B. die Ofentür oder der Ausguss im Bild liegt. `src/games/scene.js` setzt die Requisiten danach auf die Bühne. Alle Minispiele spielen so in einer gerenderten Szene (Schaltkasten, Förderband, Grubenlore, Stollen, Kranhaken, Steg mit Angelrute …). Wo ein Test-Bot den Spielzustand nicht sicher aus dem Bild lesen kann, gibt das Spiel ihn über eine kleine Test-Schnittstelle heraus (`__state` an der Bühne bzw. am Canvas, `__cells` beim Rohrspiel).
 
 Jedes Icon ist eine kleine Funktion in `tools/icons/render_icons.py`. Ein neues Icon braucht dort eine Funktion mit `@icon('schluessel')`; das Spiel findet die Datei dann automatisch.

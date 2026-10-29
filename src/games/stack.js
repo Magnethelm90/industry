@@ -2,13 +2,15 @@
 import {G} from '../data.js';
 import {SFX,vib} from '../fx.js';
 import {OV,bindX,canvasFor,openOv,xbtn} from '../ui.js';
-import {$} from '../util.js';
+import {$,propUrl} from '../util.js';
+import {A} from './scene.js';
 
 export function gStack(s){return new Promise(res=>{
   const N=10,W=320,H=440,BH=26;
   const ov=openOv(xbtn()+`<h3>Stapeln · ${G[s.out].n}</h3><div class="sub">Tippe, um den Ziegel abzulegen. Was übersteht, wird abgeschnitten. Ziel: ${N} Lagen.</div><canvas id="cv" style="aspect-ratio:320/440"></canvas><button class="btn big a" id="drop" style="margin-top:8px">ABLEGEN</button>`);
   bindX();ov.abort=()=>res(null);
   const [cv,c]=canvasFor(W,H);
+  const HOOK=new Image();HOOK.src=propUrl('hook');const HS=74,[,htip]=A.hook.tip,[,htop]=A.hook.top;
   let stack=[{x:80,w:160}],cur={x:0,w:160,dir:1},speed=150,cam=0,camT=0,placed=0,perfect=0,done=false,falls=[],msg='',msgT=0,last=performance.now();
   const yOf=i=>H-30-BH*(i+1)+cam;
   function brick(x,y,w,row){
@@ -29,6 +31,8 @@ export function gStack(s){return new Promise(res=>{
     camT=Math.max(0,stack.length-9)*BH;
   }
   $('drop').onpointerdown=drop;cv.onpointerdown=drop;
+  // Nur für automatische Tests
+  cv.__state=()=>({x:cur.x,top:stack[stack.length-1].x,done});
   const key=e=>{if(!OV||!OV.alive)return removeEventListener('keydown',key);if(e.key===' '||e.key==='Enter'){e.preventDefault();drop()}};
   addEventListener('keydown',key);
   function frame(now){
@@ -40,8 +44,13 @@ export function gStack(s){return new Promise(res=>{
     let g=c.createLinearGradient(0,0,0,H);g.addColorStop(0,'#24305e');g.addColorStop(1,'#0c1020');c.fillStyle=g;c.fillRect(0,0,W,H);
     c.fillStyle='rgba(255,255,255,.05)';for(let i=0;i<N;i++){const y=yOf(i);c.fillRect(0,y+BH-1,W,1)}
     c.fillStyle='#3a3f4c';c.fillRect(0,H-30+cam,W,30);
+    c.fillStyle='#f5b82e';c.fillRect(0,8,W,10);c.strokeStyle='#b7791f';c.lineWidth=2;for(let x=0;x<W;x+=18){c.beginPath();c.moveTo(x,8);c.lineTo(x+9,18);c.lineTo(x+18,8);c.stroke()}
     stack.forEach((b,i)=>brick(b.x,yOf(i),b.w,i));
-    if(!done)brick(cur.x,yOf(stack.length),cur.w,stack.length);
+    if(!done){
+      const cx=cur.x+cur.w/2,by=yOf(stack.length),hy=by-htip*HS+6;
+      c.strokeStyle='#cbd5e1';c.lineWidth=2;c.beginPath();c.moveTo(cx,18);c.lineTo(cx,hy+htop*HS);c.stroke();
+      if(HOOK.complete&&HOOK.naturalWidth)c.drawImage(HOOK,cx-HS/2,hy,HS,HS);
+      brick(cur.x,by,cur.w,stack.length)}
     falls.forEach(f=>{c.globalAlpha=.85;brick(f.x,f.y,f.w,f.row);c.globalAlpha=1});
     c.fillStyle='rgba(8,12,24,.65)';c.beginPath();c.roundRect(10,10,W-20,28,14);c.fill();
     c.fillStyle='#fff';c.font='800 13px system-ui,sans-serif';c.textAlign='left';c.fillText('Lage '+placed+' / '+N+(perfect?' · '+perfect+'× perfekt':''),22,29);

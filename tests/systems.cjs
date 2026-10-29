@@ -102,6 +102,11 @@ const URL='file://'+path.resolve(__dirname,'../dist/index.html')+'?debug';
   ok(await ev(()=>document.querySelectorAll('#ovbox .rank.me').length)>=1&&(await p.textContent('#ovbox')).includes('Deine Firma'),'Rangliste in der Firmen-Übersicht');
   await p.click('#done');
 
+  // Verschleiß: 1 % Zustand pro 15 Minuten, online wie offline
+  const wear=await ev(()=>{const b=BLD.find(x=>x.kind==='mine'),s=S.b[b.id];s.lvl=Math.max(1,s.lvl);s.hp=100;
+    for(let i=0;i<900;i++)tickB(1);const a=s.hp;s.hp=100;offlineB(4*3600);const o=s.hp;s.hp=100;render();return [a,o]});
+  ok(Math.abs(wear[0]-99)<.01&&Math.abs(wear[1]-84)<.01,'Verschleiß 1 % / 15 min (online '+wear[0].toFixed(2)+' %, 4 h offline '+wear[1].toFixed(2)+' %)');
+
   // Offline (1 h): Rivalen wachsen, Laden verkauft
   await ev(()=>{S.last=Date.now()-3600e3;localStorage.setItem(SAVE,JSON.stringify(S))});
   const rw=await ev(()=>S.rivals[0].w);await p.reload();await p.waitForTimeout(600);
