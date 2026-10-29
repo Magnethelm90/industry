@@ -48,6 +48,12 @@ Neue Spieler folgen 23 Zielen (`src/features/goals.js`). Bereiche öffnen sich n
 - Ist im System „Bewegung reduzieren“ eingestellt, entfallen Wackeln und Dauer-Pulsieren, und es gibt weniger Partikel (`calm()` in `src/util.js`, Media-Query am Ende von `src/style.css`). Spielwichtige Signale bleiben als feste Markierung.
 - Im Kabel-Minispiel trägt jede Farbe zusätzlich ein Zeichen (Kreis, Dreieck, Quadrat, Raute, Stern) – lösbar auch bei Rot-Grün-Schwäche.
 
+## Sicherheit
+
+- Das Spiel lädt nichts von fremden Servern und sendet nichts dorthin. In der gehosteten Version erzwingt das eine Content-Security-Policy (`index.html`).
+- Sicherungscodes sind die einzige Eingabe von außen. `readCode` (`src/features/backup.js`) lehnt Codes ab, die HTML- oder Skript-Zeichen enthalten, zu lang sind oder beim Entpacken zu groß würden (Zip-Bombe). Tests dafür stehen in `tests/systems.cjs`.
+- Der Workflow nutzt auf Commits gepinnte Actions und pro Job nur die nötigen Rechte.
+
 ## Icons neu rendern
 
 Die Icons entstehen per Skript in Blender (Cycles, transparenter Hintergrund, gleiches Licht für alle):

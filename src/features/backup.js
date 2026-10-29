@@ -7,6 +7,22 @@ const B64=u=>{let s='';for(let i=0;i<u.length;i+=0x8000)s+=String.fromCharCode(.
 const UN64=t=>{const s=atob(t.replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from(s,c=>c.charCodeAt(0))};
 const pipe=async(u,stream)=>new Uint8Array(await new Response(new Blob([u]).stream().pipeThrough(stream)).arrayBuffer());
 const ZIP=typeof CompressionStream==='function'&&typeof DecompressionStream==='function';
+// Grenzen gegen manipulierte Codes: Länge des Codes und Größe nach dem Entpacken (sonst „Zip-Bombe“)
+const MAX_CODE=400000,MAX_JSON=2e6;
+async function inflate(u){
+  const r=new Blob([u]).stream().pipeThrough(new DecompressionStream('deflate-raw')).getReader(),parts=[];let n=0;
+  for(;;){const {done,value}=await r.read();if(done)break;n+=value.length;if(n>MAX_JSON){r.cancel().catch(()=>{});throw new RangeError()}parts.push(value)}
+  const out=new Uint8Array(n);let o=0;for(const p of parts){out.set(p,o);o+=p.length}return out}
+// Ein Spielstand enthält nur Zahlen, Wahrheitswerte und kurze, harmlose Texte. Alles, was als HTML oder Skript
+// wirken könnte (spitze Klammern, Anführungszeichen, Backslash), wird abgelehnt – das Spiel setzt Namen per innerHTML ein.
+const BAD=/[<>"'`\\]/;
+function safe(v,d=0){
+  if(d>12)return false;
+  if(typeof v==='string')return v.length<=120&&!BAD.test(v);
+  if(typeof v==='number')return Number.isFinite(v);
+  if(v===null||typeof v==='boolean')return true;
+  if(typeof v!=='object')return false;
+  return Object.keys(v).every(k=>k.length<=64&&!BAD.test(k)&&safe(v[k],d+1))}
 
 // IA1 = komprimiert, IA0 = unkomprimiert (falls der Browser kein CompressionStream kennt)
 export async function makeCode(){
@@ -16,13 +32,16 @@ export async function makeCode(){
 
 // Liefert den Spielstand als Objekt oder wirft einen Fehler mit verständlichem Text
 export async function readCode(code){
-  const m=/^IA([01])\.([A-Za-z0-9_-]+)$/.exec(String(code).replace(/\s+/g,''));
+  const t=String(code).replace(/\s+/g,'');if(t.length>MAX_CODE)throw new Error('Der Code ist zu lang.');
+  const m=/^IA([01])\.([A-Za-z0-9_-]+)$/.exec(t);
   if(!m)throw new Error('Das ist kein Sicherungscode.');
   let u;try{u=UN64(m[2])}catch(e){throw new Error('Der Code ist beschädigt.')}
   if(m[1]==='1'){if(!ZIP)throw new Error('Dieser Browser kann den Code nicht entpacken.');
-    try{u=await pipe(u,new DecompressionStream('deflate-raw'))}catch(e){throw new Error('Der Code ist unvollständig oder beschädigt.')}}
+    try{u=await inflate(u)}catch(e){throw new Error(e instanceof RangeError?'Der Code ist zu groß.':'Der Code ist unvollständig oder beschädigt.')}}
+  else if(u.length>MAX_JSON)throw new Error('Der Code ist zu groß.');
   let o;try{o=JSON.parse(new TextDecoder().decode(u),(k,v)=>k==='__proto__'||k==='constructor'||k==='prototype'?undefined:v)}catch(e){throw new Error('Der Code ist beschädigt.')}
-  if(!o||typeof o!=='object'||typeof o.money!=='number'||typeof o.xp!=='number'||!o.stock||typeof o.stock!=='object')throw new Error('Der Code enthält keinen Spielstand.');
+  if(!o||typeof o!=='object'||Array.isArray(o)||typeof o.money!=='number'||typeof o.xp!=='number'||!o.stock||typeof o.stock!=='object')throw new Error('Der Code enthält keinen Spielstand.');
+  if(!safe(o))throw new Error('Der Code enthält ungültige Zeichen und wird nicht geladen.');
   return o}
 
 export function backupHtml(){

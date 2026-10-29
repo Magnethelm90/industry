@@ -21,6 +21,10 @@ const srv=http.createServer((q,r)=>{let f=decodeURIComponent(q.url.split('?')[0]
   await p.reload();await p.waitForTimeout(300);
   ok(await p.evaluate(()=>!!navigator.serviceWorker.controller),'Seite wird vom Service Worker gesteuert');
   await p.evaluate(()=>caches.keys()).then(k=>ok(k.length>0,'Cache angelegt: '+k));
+  // Sicherheitsrichtlinie (CSP): Verbindungen und Bilder von fremden Servern werden blockiert
+  const csp=await p.evaluate(async()=>{const v=[];document.addEventListener('securitypolicyviolation',e=>v.push(e.violatedDirective));
+    try{await fetch('https://example.org/x')}catch(e){}const i=new Image();i.src='https://example.org/x.png';await new Promise(r=>setTimeout(r,300));return v});
+  ok(csp.some(d=>d.startsWith('connect-src'))&&csp.some(d=>d.startsWith('img-src')),'CSP blockiert fremde Server: '+csp.join(', '));
   await ctx.setOffline(true);
   await p.reload();await p.waitForTimeout(600);
   ok((await p.textContent('#money'))!==null&&(await p.$$('#s-work .card')).length>0,'ohne Netz: Spiel startet aus dem Cache');

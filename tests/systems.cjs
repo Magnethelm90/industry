@@ -161,6 +161,16 @@ const URL='file://'+path.resolve(__dirname,'../dist/index.html')+'?debug';
   ok((await p.textContent('#bkload')).includes('überschreiben'),'Laden fragt nach');
   await Promise.all([p.waitForEvent('load'),p.click('#bkload')]);await p.waitForTimeout(500);
   ok(await ev(()=>S.money>=12345&&lvl()>=6),'Spielstand aus dem Code geladen');
+  // Sicherheit: manipulierte Codes (HTML im Namen, Ausbruch aus Attributen, Zip-Bombe) werden abgelehnt, ohne etwas auszuführen
+  const atk=await ev(async()=>{
+    const zip=async t=>{const u=new TextEncoder().encode(t);const c=new Uint8Array(await new Response(new Blob([u]).stream().pipeThrough(new CompressionStream('deflate-raw'))).arrayBuffer());
+      let s='';for(const x of c)s+=String.fromCharCode(x);return 'IA1.'+btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')};
+    const base={money:1,xp:1,stock:{}},res=[];
+    for(const o of [{...base,rivals:[{n:'<img src=x onerror="window.__pwned=1">',w:1,r:1}]},{...base,stock:{'x" onmouseover="window.__pwned=1':5}},{...base,money:'1e9'}])
+      try{await readCode(await zip(JSON.stringify(o)));res.push('angenommen')}catch(e){res.push(e.message)}
+    try{await readCode(await zip('{"money":1,"xp":1,"stock":{}'+' '.repeat(3e6)+'}'));res.push('angenommen')}catch(e){res.push(e.message)}
+    return {res,pwned:!!window.__pwned}});
+  ok(atk.res.slice(0,2).every(m=>m.includes('ungültige Zeichen'))&&atk.res[2].includes('keinen Spielstand')&&atk.res[3].includes('zu groß')&&!atk.pwned,'manipulierte Codes abgelehnt: '+atk.res.join(' | '));
 
   // Ton: Musik startet nach der ersten Berührung, Stumm und Musik-Schalter beenden sie; alle Geräusche laufen fehlerfrei
   await ev(()=>{S.mute=false;S.music=true;closeOv()});await p.mouse.click(200,600);await p.waitForTimeout(300);
