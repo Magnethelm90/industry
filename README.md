@@ -2,6 +2,10 @@
 
 Mobiles Wirtschaftsspiel: Waren in Minispielen herstellen, Betriebe aufbauen, handeln, exportieren.
 
+## Online spielen
+
+Nach jedem Push baut `.github/workflows/pages.yml` das Spiel und veröffentlicht es auf GitHub Pages: https://magnethelm90.github.io/industry/ – dort lässt es sich auch als App installieren (Teilen → „Zum Home-Bildschirm“ bzw. Browser-Menü → „App installieren“). Voraussetzung: öffentliches Repo (oder ein bezahlter GitHub-Plan) und unter Settings → Pages die Quelle „GitHub Actions“.
+
 ## Entwickeln
 
 ```bash
