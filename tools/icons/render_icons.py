@@ -41,7 +41,7 @@ def reset():
     s.render.film_transparent = True
     s.render.image_settings.file_format = 'WEBP'
     s.render.image_settings.color_mode = 'RGBA'
-    s.render.image_settings.quality = 90
+    s.render.image_settings.quality = 78  # sichtbar gleich, ca. 25 % kleiner
     # Standard statt AgX: Farben kommen so kräftig wie definiert (Spiel-Look statt Fotolook)
     s.view_settings.view_transform = 'Standard'
     w = bpy.data.worlds.new('w')
@@ -133,7 +133,7 @@ def soften_shadow(path, strength=0.7, border=14):
     fade = np.clip(edge / border, 0, 1)
     shadow = (im[..., :3].max(axis=2) < 24) & (im[..., 3] < 200)
     im[..., 3] = np.where(shadow, im[..., 3] * strength * fade, im[..., 3])
-    Image.fromarray(im.clip(0, 255).astype(np.uint8), 'RGBA').save(path, 'WEBP', quality=90, method=6)
+    Image.fromarray(im.clip(0, 255).astype(np.uint8), 'RGBA').save(path, 'WEBP', quality=78, alpha_quality=85, method=6)
 
 # ---------------------------------------------------------------- Materialien
 

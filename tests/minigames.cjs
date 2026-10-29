@@ -96,6 +96,11 @@ const STRAT={
           if(want&&!down){await p.mouse.down();down=true}else if(!want&&down){await p.mouse.up();down=false}await p.waitForTimeout(10)}
         if(down)await p.mouse.up()}
       await p.waitForTimeout(10)}},
+  // LKW: Spur ohne Hindernis in Reichweite wählen (Zustand über cv.__state), per Pfeiltasten wechseln
+  async drive(p){for(let k=0;k<2000;k++){const s=await p.evaluate(()=>{const c=document.getElementById('cv');return c&&c.__state?c.__state():null});if(!s||s.over)break;
+      const danger=l=>Math.max(0,...s.obs.filter(o=>o.k!=='coin'&&o.x===s.LX[l]&&o.y>s.TY-230&&o.y<s.TY+45).map(o=>o.y));
+      if(danger(s.lane)){const opts=[s.lane-1,s.lane+1].filter(l=>l>=0&&l<3).sort((a,b)=>danger(a)-danger(b));if(danger(opts[0])<danger(s.lane)||!danger(opts[0]))await p.keyboard.press(opts[0]<s.lane?'ArrowLeft':'ArrowRight')}
+      await p.waitForTimeout(25)}},
   // Jede Flasche halten, bis ihr Anteil das Ziel erreicht
   async mix(p){for(let i=0;i<3;i++){const b=(await p.$$('#st .prop.p-bottle_a, #st .prop.p-bottle_b, #st .prop.p-bottle_c'))[i],bb=await b.boundingBox();
       await p.mouse.move(bb.x+bb.width/2,bb.y+bb.height/2);await p.mouse.down();
@@ -106,7 +111,7 @@ const STRAT={
 // Mindestwerte bewusst unter dem, was die Bots erreichen (Zufall, Reaktionszeit des Testbrowsers)
 const RUNS=[['timing','erz',.8],['timingMove','kohle',.6],['timing','ziegel',.8],['heat','stahl',.6],['heatMove','glas',.5],['mash','ziegel',.9],['forge','stahl',.35],['pour','stahl',.3],['mix','kunststoff',.85],
   ['bolts','maschine',.9],['simon','maschine',.8],['wires','platine',.9],['sort','lehm',.7],['catch','erz',.6],['whack','erz',.6],['wall','kohle',.7],
-  ['stack','ziegel',.8],['solder','platine',.8],['pipes','kunststoff',.4],['phone','handy',.8],['fish','-',1]];
+  ['stack','ziegel',.8],['solder','platine',.8],['pipes','kunststoff',.4],['phone','handy',.8],['fish','-',1],['drive','-',60]];
 
 (async()=>{
   const b=await chromium.launch();let fail=0;
@@ -114,10 +119,10 @@ const RUNS=[['timing','erz',.8],['timingMove','kohle',.6],['timing','ziegel',.8]
   for(const [g,id,min] of RUNS.filter(r=>!only||r[0]===only).flatMap(r=>Array(rep).fill(r))){
     const p=await b.newPage({viewport:{width:390,height:844}});const errs=[];p.on('pageerror',e=>errs.push(e.message));
     await p.goto(URL);await p.evaluate(()=>{S.xp=xpFor(5);S.goal=GOALS.length});
-    await p.evaluate(([g,id])=>{window.__r='offen';(g==='fish'?gFish():GAMES[g](ST.find(s=>s.id===id))).then(v=>window.__r=v)},[g,id]);await p.waitForTimeout(400);
+    await p.evaluate(([g,id])=>{window.__r='offen';(g==='fish'?gFish():g==='drive'?drive(ROUTES[1],{}):GAMES[g](ST.find(s=>s.id===id))).then(v=>window.__r=v)},[g,id]);await p.waitForTimeout(400);
     let note='';try{await STRAT[g.replace('Move','')](p)}catch(e){note=e.message}
     for(let i=0;i<100&&await p.evaluate(()=>window.__r)==='offen';i++)await p.waitForTimeout(100);
-    let r=await p.evaluate(()=>window.__r);if(r&&typeof r==='object')r=Object.keys(r).length; // Angeln: Zahl der gefangenen Fischarten
+    let r=await p.evaluate(()=>window.__r);if(r&&typeof r==='object')r=g==='drive'?r.integ:Object.keys(r).length; // LKW: Zustand der Ladung, Angeln: Zahl der Fischarten
     const ok=typeof r==='number'&&r>=min&&!errs.length&&!note;
     console.log((ok?'  ok  ':'  FEHLER ')+g+' ('+id+') Score '+(typeof r==='number'?r.toFixed(2):r)+' (min '+min+')'+(note?' '+note:'')+(errs.length?' '+errs:''));
     if(!ok)fail++;await p.close()}

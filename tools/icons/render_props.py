@@ -486,6 +486,68 @@ def _screwdriver():
     return {'tip': (0, 0, 0.0), 'top': (0, 0, 2.0)}
 
 
+
+# ---------------------------------------------------------------- LKW-Fahrt
+# Verfolgerperspektive schräg von oben (elev 55): Fahrtrichtung ist +Y, im Bild nach oben.
+
+@prop('truck', size=200, elev=55)
+def _truck():
+    red, tire = mat('#e11d48', rough=0.35, coat=0.8), mat('#111827', rough=0.8)
+    box(1.3, 2.3, 1.3, (0, -0.55, 0.95), mat('#e5e9f0', rough=0.5), 0.06)
+    for i in range(6):
+        box(1.32, 0.05, 1.32, (0, -1.55 + i * 0.4, 0.95), mat('#b8c0cc', rough=0.5), 0.01)
+    box(0.34, 2.1, 0.02, (0, -0.55, 1.61), mat('#7c5cff', rough=0.4), 0.01)
+    box(1.2, 0.03, 1.15, (0, -1.71, 0.95), mat('#cfd5df', rough=0.5), 0.02)
+    box(0.03, 0.03, 1.1, (0, -1.73, 0.95), mat('#64748b'), 0)
+    box(1.3, 1.0, 1.25, (0, 1.25, 0.82), red, 0.14)
+    box(1.2, 0.5, 0.25, (0, 1.0, 1.55), red, 0.1)
+    box(1.1, 0.12, 0.5, (0, 1.76, 1.05), mat('#38bdf8', rough=0.1, coat=1), 0.04)
+    box(1.36, 0.25, 0.12, (0, 1.73, 0.35), mat('#9aa3b2', metal=1, rough=0.3), 0.03)
+    for x in (-0.72, 0.72):
+        box(0.1, 0.18, 0.26, (x, 1.62, 1.15), mat('#1f2937'), 0.02)
+    for x in (-0.66, 0.66):
+        for y in (1.2, -0.25, -1.2):
+            cyl(0.32, 0.26, (x, y, 0.32), tire, rot=(0, math.pi / 2, 0), b=0.05)
+    for x in (-0.45, 0.45):
+        box(0.22, 0.06, 0.12, (x, -1.74, 0.5), mat('#ef4444', emit=3.0), 0.02)
+    return {'center': (0, 0, 0.8)}
+
+
+@prop('cone', size=110, elev=55)
+def _cone():
+    box(0.72, 0.72, 0.1, (0, 0, 0.05), mat('#1f2937', rough=0.8), 0.04)
+    lathe([(0, 0.1), (0.3, 0.1), (0.06, 1.2), (0, 1.22)], m=mat('#f97316', rough=0.4, coat=0.6))
+    lathe([(0.255, 0.38), (0.262, 0.38), (0.215, 0.62), (0.208, 0.62)], m=mat('#ffffff', rough=0.3))
+    return {'center': (0, 0, 0.5)}
+
+
+@prop('barrier', size=180, elev=55)
+def _barrier():
+    for i in range(6):
+        box(0.4, 0.2, 0.42, (-1.0 + i * 0.4, 0, 0.75), mat('#e11d48' if i % 2 else '#f8fafc', rough=0.4, coat=0.5), 0.02)
+    for x in (-0.95, 0.95):
+        box(0.14, 0.5, 0.55, (x, 0, 0.27), mat('#475569', rough=0.6), 0.03)
+        ball(0.09, (x, 0.0, 1.05), mat('#fbbf24', emit=3.0))
+    return {'center': (0, 0, 0.6)}
+
+
+@prop('boulder', size=130, elev=55)
+def _boulder():
+    stone = mat('#7a7883', rough=0.85)
+    rock(0.8, (0, 0, 0.5), stone, seed=31, rough=0.14, sc=(1.25, 1, 0.75), sub=3, smooth=True)
+    rock(0.35, (0.75, -0.35, 0.22), stone, seed=32, rough=0.16, sub=2)
+    return {'center': (0, 0, 0.5)}
+
+
+@prop('tree', size=130, elev=55)
+def _tree():
+    cyl(0.12, 0.6, (0, 0, 0.3), mat('#5b3a1e', rough=0.8))
+    leaf = [mat('#2f8f4e', rough=0.7), mat('#3fa45e', rough=0.7), mat('#25753f', rough=0.7)]
+    for i, (x, y, z, r) in enumerate([(0, 0, 1.1, 0.75), (0.45, 0.2, 0.9, 0.5), (-0.45, 0.15, 0.95, 0.5), (0.1, -0.4, 0.85, 0.5), (0, 0.35, 1.45, 0.45)]):
+        rock(r, (x, y, z), leaf[i % 3], seed=40 + i, rough=0.1, sub=3, smooth=True)
+    return {'center': (0, 0, 0.9)}
+
+
 def main():
     argv = sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else sys.argv[1:]
     out = os.path.abspath(argv[0] if argv else 'props')

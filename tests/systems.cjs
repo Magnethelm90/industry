@@ -124,10 +124,11 @@ const URL='file://'+path.resolve(__dirname,'../dist/index.html')+'?debug';
   ok(rv[0]&&rv[1],'Konkurrenz wächst bis zu ihrer Grenze, nicht darüber');
   // Übernahme (ab Level 6): Kaufpreis, Firmenwert, Gewinnanteil pro Stunde
   await ev(()=>{S.money=1e6;render()});await p.click('#lvpill');await p.waitForTimeout(150);
-  const price1=await ev(()=>takePrice(S.rivals[1])),nw0=await ev(()=>netWorth());
+  const price1=await ev(()=>takePrice(S.rivals[1]));
   await p.click('#ovbox .tko[data-i="1"]');await p.waitForTimeout(150);
-  const tk=await ev(()=>{const r=S.rivals[1],m=S.money;tickRivals(3600);return {own:!!r.own,m,div:S.money-m,exp:r.paid*TAKE_DIV,w:r.w}});
-  ok(tk.own&&Math.abs(tk.m-(1e6-price1))<1,'Übernahme kostet das 1,5-Fache des Werts ('+price1+' Cr)');
+  const tk=await ev(()=>{const r=S.rivals[1],m=S.money;tickRivals(3600);return {own:!!r.own,m,div:S.money-m,exp:r.paid*TAKE_DIV,paid:r.paid,w:r.w}});
+  // Der Wert kann zwischen Anzeige und Tippen noch eine Sekunde wachsen: geprüft wird der tatsächlich gezahlte Preis (Wert friert beim Kauf ein)
+  ok(tk.own&&tk.paid===Math.ceil(tk.w*1.5)&&Math.abs(tk.paid-price1)/price1<.01&&1e6-tk.m>=tk.paid-1&&1e6-tk.m<tk.paid+2000,'Übernahme kostet das 1,5-Fache des Werts ('+tk.paid+' Cr)');
   ok(Math.abs(tk.div-tk.exp)<1,'Tochterfirma zahlt '+Math.round(tk.div)+' Cr pro Stunde');
   ok((await p.textContent('#ovbox')).includes('Tochterfirma')&&!(await ev(()=>freeRivals().includes(S.rivals[1]))),'Tochterfirma in der Übersicht, nicht mehr als Konkurrenz');
   await p.click('#done');

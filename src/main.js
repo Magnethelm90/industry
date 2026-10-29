@@ -52,6 +52,9 @@ if(/[?&]debug/.test(location.search)){
   const mods=import.meta.glob(['./**/*.js','!./main.js'],{eager:true});
   for(const m of Object.values(mods))for(const k in m)try{Object.defineProperty(window,k,{get:()=>m[k],configurable:true})}catch(e){}
 }
+// Als App installierbar und offline spielbar – nur dort, wo das Manifest mitkommt (nicht in der Einzeldatei-Vorschau)
+if('serviceWorker' in navigator&&document.querySelector('link[rel="manifest"]')&&/^https?:$/.test(location.protocol))
+  addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
 startHud();
 render();
 if(S.goal===0&&!S.st.make.erz)toast('Willkommen! Oben steht dein erstes Ziel.');
