@@ -29,6 +29,7 @@ export function gPour(s){return new Promise(res=>{
   st.onpointerdown=e=>{e.preventDefault();if(phase==='pour')y0=e.clientY};
   st.onpointermove=e=>{if(y0!=null&&phase==='pour')tilt=Math.max(0,Math.min(1,(e.clientY-y0)/100))};
   st.onpointerup=st.onpointercancel=st.onpointerleave=()=>{y0=null;tilt=0};
+  let sz=0;
   (function loop(now){
     if(!ov.alive)return;const dt=Math.min(.05,(now-last)/1000);last=now;
     const want=phase==='pour'?tilt*50*diff():0;
@@ -38,6 +39,7 @@ export function gPour(s){return new Promise(res=>{
     ang+=((phase==='pour'?tilt:0)*62-ang)*Math.min(1,dt*14);la.style.transform=`rotate(${ang}deg)`;
     const h=IH*fill/100;fillEl.style.height=h+'px';fillEl.style.top=(ib-h)+'px';
     const [sx,sy]=lip(ang);
+    if(flow>8&&(sz+=dt)>.5){sz=0;SFX.sizzle()}
     if(flow>.3){stream.style.left=sx+'px';stream.style.top=sy+'px';stream.style.height=Math.max(0,ib-h-sy)+'px';stream.style.width=(3+flow/50*9)+'px';stream.style.opacity=1;
       if((spl+=dt)>.15&&flow>8){spl=0;sparks(st,sx,ib-h,3,'#ffb020')}}
     else stream.style.opacity=0;

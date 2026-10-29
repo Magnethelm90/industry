@@ -32,7 +32,7 @@ export function gBolts(s,title){return new Promise(res=>{
     if(i===need){need++;correct++;
       wr.style.left=(cx-hx*WR)+'px';wr.style.top=(cy-hy*WR)+'px';
       setTimeout(()=>{if(!ov.alive)return;wr.animate([{transform:'rotate(-35deg)'},{transform:'rotate(40deg)'}],{duration:220,easing:'ease-in-out'});
-        b.classList.add('ok');SFX.tick();vib(8);sparks(st,cx,cy,5,'#e2e8f0')},150);
+        b.classList.add('ok');SFX.ratchet();vib(8);sparks(st,cx,cy,5,'#e2e8f0')},150);
       if(need>=ROUNDS[r]){SFX.good();r++;if(r>=ROUNDS.length){pop($('m'),'Alles fest! 🔩');end()}else setTimeout(()=>ov.alive&&!dead&&layout(ROUNDS[r]),550)}}
     else{SFX.miss();vib([40,30,40]);shakeStage(st);b.animate([{transform:'rotate(0)'},{transform:'rotate(12deg)'},{transform:'rotate(-12deg)'},{transform:'rotate(0)'}],{duration:220});
       t0-=1500;pop($('m'),'Falsche Schraube! −1,5 s')}}

@@ -26,7 +26,7 @@ export function gWhack(s){return new Promise(res=>{
   function swing(h){fly(st,h.cx+18,h.cy-20,'<div class="prop p-pickaxe" style="position:relative;width:64px;height:64px;transform:scaleX(-1)"></div>',{dx:-10,dy:10,rot:-70,dur:260})}
   function hit(h){
     if(!h.k||!ov.alive)return;swing(h);
-    if(h.k==='ore'){hits++;SFX.good();vib(10);chunks(st,h.cx,h.cy,s.out,3)}
+    if(h.k==='ore'){hits++;SFX.thud();SFX.good();vib(10);chunks(st,h.cx,h.cy,s.out,3)}
     else{bombs++;SFX.crash();vib([60,30,60]);sparks(st,h.cx,h.cy,20,'#fb923c');shakeStage(st)}
     clear(h)}
   function spawn(el){

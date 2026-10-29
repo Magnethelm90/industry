@@ -1,7 +1,7 @@
 /* Bühne für Minispiele: Requisiten aus Blender an ihren Ankerpunkten platzieren, Teile fliegen lassen, Funken */
 import A from '../assets/props/anchors.json';
 import IB from '../assets/icons/bounds.json';
-import {ic} from '../util.js';
+import {calm,ic} from '../util.js';
 
 // IB[icon] = [oben, unten, links, rechts] des sichtbaren Gegenstands im Icon (Bildanteile)
 export {A,IB};
@@ -30,14 +30,14 @@ export function fly(stage,x,y,html,{dx=0,dy=-60,rot=0,dur=700,size=1}={}){
     {transform:`translate(calc(-50% + ${dx}px),calc(-50% + ${dy*.2+40}px)) rotate(${rot}deg) scale(${size*.8})`,opacity:0}
   ],{duration:dur,easing:'cubic-bezier(.2,.7,.4,1)'}).onfinish=()=>e.remove();
 }
-export function chunks(stage,x,y,good,n){
+export function chunks(stage,x,y,good,n){if(calm())n=Math.min(n,1);
   for(let i=0;i<n;i++)fly(stage,x,y,ic(good,36),{dx:(Math.random()-.5)*170,dy:-50-Math.random()*70,rot:(Math.random()-.5)*540,dur:650+Math.random()*350});
 }
-export function sparks(stage,x,y,n=12,col='#fde047'){
+export function sparks(stage,x,y,n=12,col='#fde047'){if(calm())n=Math.ceil(n/4);
   for(let i=0;i<n;i++){const a=Math.random()*Math.PI*2,r=30+Math.random()*60;
     fly(stage,x,y,`<i class="spark" style="background:${col};box-shadow:0 0 6px ${col}"></i>`,{dx:Math.cos(a)*r,dy:Math.sin(a)*r-20,dur:350+Math.random()*250})}
 }
-export function shakeStage(stage){stage.animate([{transform:'translate(0,0)'},{transform:'translate(-5px,3px)'},{transform:'translate(4px,-2px)'},{transform:'translate(0,0)'}],{duration:180})}
+export function shakeStage(stage){if(calm())return;stage.animate([{transform:'translate(0,0)'},{transform:'translate(-5px,3px)'},{transform:'translate(4px,-2px)'},{transform:'translate(0,0)'}],{duration:180})}
 // Rundinstrument (Halbkreis): Anteil 0..1 → Winkel −70°..70°
 export const gaugeAngle=v=>-70+140*Math.max(0,Math.min(1,v));
 export function arcPath(cx,cy,r,a0,a1){

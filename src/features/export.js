@@ -1,12 +1,12 @@
 /* Export per Flugzeug und Containerschiff */
 import {go,render} from '../app.js';
-import {COUNTRIES,G,MODES,UNL} from '../data.js';
+import {AIRPORT_COST,COUNTRIES,G,MODES,UNL,airUpBase} from '../data.js';
 import {SFX,burst,fx,toast,vib} from '../fx.js';
 import {GKU,S,isOpen,track} from '../state.js';
 import {addSec,bindX,closeOv,openOv,xbtn} from '../ui.js';
 import {$,fmt,fmtT,ic} from '../util.js';
 
-export const AIRPORT_COST=5000,airUpCost=()=>Math.ceil(3000*Math.pow(1.8,S.exp.lvl-1)),maxShips=()=>1+S.exp.lvl;
+export const airUpCost=()=>airUpBase(S.exp.lvl),maxShips=()=>1+S.exp.lvl;
 export function genDemand(){
   const pool=GKU();COUNTRIES.forEach(c=>{const gs=[...pool].sort(()=>Math.random()-.5).slice(0,3);S.exp.demand[c.id]=gs.map(g=>({g,m:+(1.6+Math.random()*1.2).toFixed(1)}))});
   S.exp.demandAt=Date.now()+15*60000;

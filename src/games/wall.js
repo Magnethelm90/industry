@@ -29,9 +29,9 @@ export function gWall(s){return new Promise(res=>{
     if(gas){penalty+=2;got=Math.max(0,got-2);SFX.crash();vib([90,40,90]);burst(x,y,'#fb923c',22);shakeBox();pop($('m'),'💥 Explosion! −2 und −2 s');return}
     if(k==='rock'){penalty+=0.6;SFX.miss();vib(30);sparks(wl,lx,ly,5,'#9ca3af');return}
     const hp=+b.dataset.hp-1;b.dataset.hp=hp;
-    if(hp>0){b.dataset.c=+b.dataset.c+1;SFX.tick();vib(8);burst(x,y,'#9aa0ad',5);return}
+    if(hp>0){b.dataset.c=+b.dataset.c+1;SFX.thud();vib(8);burst(x,y,'#9aa0ad',5);return}
     const gain=k==='rich'?3:1;got+=gain;b.dataset.k='done';b.dataset.c=0;b.className='tile done';b.innerHTML='';
-    if(gain>1){SFX.perfect();vib(25)}else{SFX.good();vib(12)}
+    SFX.thud();if(gain>1){SFX.perfect();vib(25)}else{SFX.good();vib(12)}
     chunks(wl,lx,ly,s.out,gain>1?5:2);burst(x,y,G[s.out].c,gain>1?16:9);pop($('m'),got+' / '+TARGET+(gain>1?'  +3!':''));
     if(![...document.querySelectorAll('.tile')].some(t=>t.dataset.k==='v'||t.dataset.k==='rich')){
       walls++;if(walls<=2){penalty-=2;fx('Neue Wand! +2s','#22d3ee')}else fx('Neue Wand!','#22d3ee');

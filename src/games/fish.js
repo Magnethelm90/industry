@@ -27,7 +27,7 @@ export function gFish(){return new Promise(res=>{
   const startWait=(extra=0)=>{phase='wait';until=performance.now()+1500+Math.random()*3000+extra;bob.className='prop p-bobber bobber';bob.style.left=(W*.76-15)+'px';act.textContent='Warten …';$('reel').style.display='none';fishEl.innerHTML=''};
   function result(ok,txt){
     $('dots').children[tryN].className=ok?'g':'m';pop($('m'),txt);tryN++;hold=false;phase='done';act.textContent='';
-    if(ok){catchList[fish.g]=(catchList[fish.g]||0)+fish.n;SFX.win();vib([30,40,60]);fishEl.classList.add('caught')}else SFX.miss();
+    if(ok){catchList[fish.g]=(catchList[fish.g]||0)+fish.n;SFX.splash();SFX.win();vib([30,40,60]);fishEl.classList.add('caught')}else SFX.miss();
     setTimeout(()=>{if(!ov.alive)return;fishEl.classList.remove('caught');if(tryN>=TRIES){res(catchList);return}pop($('m'),'Neuer Wurf …');startWait()},1100)}
   function pickFish(){const pool=FISH.filter(f=>f.g==='hering'||unl(f.g)),w=pool.map(f=>f.w*(f.g==='hering'?1:1+.35*S.up.rod)+(f.rod?f.rod*S.up.rod:0));let r=Math.random()*w.reduce((a,b)=>a+b);
     for(let i=0;i<pool.length;i++){r-=w[i];if(r<=0)return pool[i]}return pool[0]}
@@ -40,7 +40,7 @@ export function gFish(){return new Promise(res=>{
   startWait();
   (function loop(now){
     if(!ov.alive)return;const dt=Math.min(.05,(now-last)/1000);last=now;
-    if(phase==='wait'&&now>until){phase='bite';until=now+850/diff();bob.className='prop p-bobber bobber dip';pop($('m'),'BISS! JETZT!');tone(880,.12,'square',.06);vib(40);act.textContent='❗ JETZT TIPPEN'}
+    if(phase==='wait'&&now>until){phase='bite';until=now+850/diff();bob.className='prop p-bobber bobber dip';pop($('m'),'BISS! JETZT!');tone(880,.12,'square',.06);SFX.splash();vib(40);act.textContent='❗ JETZT TIPPEN'}
     else if(phase==='bite'&&now>until){result(false,'Zu langsam – weg ist er!')}
     else if(phase==='reel'){
       T+=(hold?55*fish.str:-42)*dt;tug-=dt;if(tug<=0){tug=.6+Math.random()*.8;T+=(8+Math.random()*16)*fish.str}

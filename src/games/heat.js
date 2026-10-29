@@ -27,6 +27,7 @@ export function gHeat(moving=false,s){return new Promise(res=>{
   const setZone=()=>{$('hz').style.bottom=zl+'%';$('hz').style.height=zw+'%'};setZone();
   const on=e=>{e.preventDefault();hold=true;bel.style.transform='scaleX(-1) scaleY(.72)'},off=()=>{hold=false;bel.style.transform='scaleX(-1)'};
   st.onpointerdown=on;st.onpointerup=off;st.onpointerleave=off;st.onpointercancel=off;
+  let wsn=0;
   function tick(t){if(!ov.alive)return;const dt=Math.min(0.05,(t-last)/1000);last=t;
     temp+=(hold?34:-20)*dt+(Math.random()-0.5)*14*dt;temp=Math.max(0,Math.min(100,temp));
     tt+=dt;
@@ -37,7 +38,7 @@ export function gHeat(moving=false,s){return new Promise(res=>{
     glow.style.background=`radial-gradient(circle at 50% 90%,rgba(255,${Math.round(120+120*h)},${Math.round(40+160*h*h)},${.25+.75*h}),rgba(255,80,0,${.15+.5*h}) 60%,rgba(120,20,0,${.2*h}))`;
     glow.style.boxShadow=`0 0 ${10+50*h}px rgba(255,120,30,${.2+.6*h})`;
     flames.forEach((f,i)=>{f.style.height=(18+75*h*(i===1?1:.8))+'%'});
-    if(hold&&(puff+=dt)>.12){puff=0;fly(st,nozzle[0],nozzle[1],'<i class="spark" style="width:12px;height:12px;background:#ffffff55"></i>',{dx:40,dy:-6,dur:420})}
+    if(hold&&(puff+=dt)>.12){puff=0;if(!(wsn++%3))SFX.whoosh();fly(st,nozzle[0],nozzle[1],'<i class="spark" style="width:12px;height:12px;background:#ffffff55"></i>',{dx:40,dy:-6,dur:420})}
     if(h>.7&&(smoke+=dt)>.25){smoke=0;fly(st,cx,cy,'<i class="spark" style="width:16px;height:16px;background:#64748b88;filter:blur(2px)"></i>',{dx:(Math.random()-.3)*30,dy:-50,dur:900})}
     $('tm').style.width=(100-tt/D*100)+'%';
     const msg=temp>zl+zw?'Zu heiß! 🥵':temp<zl?'Zu kalt! 🥶':'Perfekt! 👍';if(msg!==prev){pop($('m'),msg);prev=msg;if(z)SFX.good();else SFX.tick()}

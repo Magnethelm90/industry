@@ -247,7 +247,7 @@
   .pbtn{cursor:pointer;transition:transform .06s,filter .06s;z-index:3}
   .pbtn.down{transform:translateY(4px) scale(.96);filter:brightness(1.35)}
   .term{position:absolute;width:34px;height:24px;margin:-12px 0 0 -17px;border-radius:7px;background:linear-gradient(#ffffff55,#0000 45%),var(--tc);border:2px solid #1f2430;box-shadow:0 3px 6px #0008;z-index:5;cursor:pointer;touch-action:none}
-  .term::after{content:"";position:absolute;left:50%;top:50%;width:10px;height:10px;margin:-5px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#f1f5f9,#64748b);box-shadow:inset 0 0 0 1px #0006}
+  .term svg{position:absolute;left:50%;top:50%;width:15px;height:15px;margin:-7.5px;fill:#fff;stroke:#111827;stroke-width:1.6;paint-order:stroke;pointer-events:none}
   .term.sel{box-shadow:0 0 0 3px #fff,0 0 18px var(--tc)}
   .term.ok{filter:brightness(1.1);box-shadow:0 0 12px var(--tc)}
   .beltband{position:absolute;height:8px;border-radius:4px;background:repeating-linear-gradient(90deg,#ffffff1c 0 5px,#0000 5px 20px);animation:beltmv .6s linear infinite;pointer-events:none;z-index:2}
@@ -268,3 +268,10 @@
   .fishsw{position:absolute;z-index:2;line-height:0;opacity:.85;filter:drop-shadow(0 0 6px #0008);transition:opacity .3s}
   .fishsw.caught{transform:translateY(-60px) rotate(-20deg);opacity:1;transition:transform .4s ease-out}
 .code{display:block;width:100%;margin-top:8px;padding:10px;border-radius:12px;border:1px solid var(--line);background:#0b1020;color:var(--ink);font:12px/1.4 ui-monospace,Menlo,monospace;word-break:break-all;resize:vertical;user-select:text;-webkit-user-select:text}
+/* Systemeinstellung „Bewegung reduzieren“: kein Wackeln, keine Dauer-Pulse; Spielsignale bleiben als feste Markierung */
+@media (prefers-reduced-motion:reduce){
+  .screen.on,.plot.ready,.plot .bug,#ovbox.alarm,nav button.dot::after,.flask.boil,.spad.act,.tile.rich,.card.broken,.btn.pulse,.msg.pop,.shake,.smoke,.win,.hl,.hint,.flame,.waves,.bobber{animation:none!important}
+  #ovbox.alarm{box-shadow:0 0 0 3px #ef4444,0 0 40px #ef444499}
+  .spad.act{box-shadow:0 0 0 6px #ffffff40,0 0 26px #fbbf24}
+  #toast,.screw,.bolt,.pc svg{transition:none}
+}

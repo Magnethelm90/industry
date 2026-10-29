@@ -32,7 +32,7 @@ export function gPipes(s){return new Promise(res=>{
       b.innerHTML=`<svg viewBox="0 0 100 100" style="transform:rotate(${c.r*90}deg)">${pipeSvg(c.t)}</svg>`;
       b.onpointerdown=()=>{if(done)return;c.r=(c.r+1)%4;SFX.tick();vib(5);draw()};pp.appendChild(b)});
     const end=r1*C+C-1;
-    if(on.has(end)&&(conn(end)&DIR.E)&&!done){done=true;const el=(performance.now()-t0)/1000;SFX.win();vib([30,40,60]);pop($('m'),'Es fließt! 💧');
+    if(on.has(end)&&(conn(end)&DIR.E)&&!done){done=true;const el=(performance.now()-t0)/1000;SFX.water();SFX.win();vib([30,40,60]);pop($('m'),'Es fließt! 💧');
       setTimeout(()=>ov.alive&&res(Math.max(.4,Math.min(1,1-(el-8)/40))),800)}}
   draw();
   $('pp').__cells=cells; // nur für automatische Tests (Lösung steht in cell.sol)

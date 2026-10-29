@@ -35,7 +35,7 @@ export function gForge(s){return new Promise(res=>{
     hm.animate([{transform:REST},{transform:HIT,offset:.55},{transform:REST}],{duration:300,easing:'cubic-bezier(.6,0,.3,1)'});
     if(t<0)return;
     const d=Math.abs(r()-1);
-    setTimeout(()=>{if(!ov.alive)return;
+    setTimeout(()=>{if(!ov.alive)return;SFX.clank();
       if(d<=.1){SFX.perfect();vib(30);shakeStage(st);sparks(st,wcx,wcy,22,'#fde047')}
       else if(d<=.24){SFX.good();vib(15);sparks(st,wcx,wcy,10,'#fb923c')}
       else{SFX.miss();sparks(st,wcx,wcy,5,'#94a3b8')}},150);

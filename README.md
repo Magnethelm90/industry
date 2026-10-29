@@ -13,6 +13,7 @@ npm test         # baut und startet die Browser-Tests in tests/ (braucht Playwri
 ONLY=fish REP=5 node tests/minigames.cjs   # ein Minispiel mehrfach vom Bot spielen lassen (nach npm run build)
 npm run balance  # Tabelle: Credits und XP pro Minute je Station, Betrieb und Verkaufsweg
 node tools/pace.mjs  # Simulation: Spielminuten bis zu jedem Level
+node tools/pace.mjs --days=30  # spätes Spiel: täglich 1 h aktiv + 8 h offline, mit Export, Übernahmen, Großprojekten
 ```
 
 ## Aufbau
@@ -24,7 +25,8 @@ node tools/pace.mjs  # Simulation: Spielminuten bis zu jedem Level
 - `src/state.js`: Spielstand und abgeleitete Werte (Level, Lager, Preise)
 - `src/features/`: je ein Spielbereich (Werkstatt, Farm, Betriebe, Markt, Laden, Aufträge, Export, Untergrund …)
 - `src/games/`: je ein Minispiel; `games/index.js` ist das Register
-- `src/ui.js`, `src/fx.js`, `src/util.js`: Overlay, Sound/Effekte, Helfer
+- `src/ui.js`, `src/fx.js`, `src/util.js`: Overlay, Sound/Effekte, Helfer. Alle Geräusche entstehen live per Web Audio (Töne und gefiltertes Rauschen: Metall, Stein, Wasser, Zischen, LKW-Motor), keine Audiodateien
+- `src/music.js`: leise Hintergrundmusik, ebenfalls live erzeugt (8 Takte Moll, Bass, Arpeggio); startet nach der ersten Berührung, pausiert im Hintergrund, abschaltbar in der Firmen-Übersicht
 - `src/assets/icons/`: in Blender gerenderte Icons (WebP, 192 px)
 - `src/icons.svg`: nur noch Farbverläufe für das Smartphone-Minispiel
 - `public/`: App-Manifest, App-Icons und Service Worker (`sw.js`) – damit lässt sich das Spiel auf dem Handy wie eine App installieren und offline spielen. Das gilt nur für die gehostete Version (https), nicht für die Einzeldatei-Vorschau.
@@ -33,9 +35,14 @@ node tools/pace.mjs  # Simulation: Spielminuten bis zu jedem Level
 
 Neue Spieler folgen 23 Zielen (`src/features/goals.js`). Bereiche öffnen sich nach Level (`UNL` in `src/data.js`): Betriebe und Aufträge ab 2, Farm, Laden mit Filialen und Labor ab 3, Untergrund und Elektronik ab 4, Flughafen ab 5, Übernahmen ab 6, Großprojekte ab 7. Was schon benutzt wird, bleibt immer offen. Betriebe (außer Läden) verlieren 1 % Zustand pro 15 Minuten (`WEAR` in `src/data.js`) und fallen bei 0 % aus; unter 50 % sinkt ihre Leistung linear bis auf 50 %. Ab unter 85 % kann man warten. Die XP-Schwellen stehen in `LV_XP` (`src/data.js`); laut `tools/pace.mjs` braucht ein pausenlos spielender Spieler etwa 12 / 35 / 66 Minuten bis Level 3 / 4 / 5.
 
-**Spätes Spiel:** Die Konkurrenz wächst logistisch bis zu einer Obergrenze (`RIVALS[].cap`). Ab Level 6 kann man sie für das 1,5-Fache ihres Werts übernehmen; Tochterfirmen zahlen 2 % des Kaufpreises pro Stunde (`TAKE_PREM`, `TAKE_DIV`). Ab Level 7 gibt es Großprojekte (`PROJECTS`): Waren nach und nach anliefern, fertig gibt es Credits und einen dauerhaften Bonus.
+**Spätes Spiel:** Die Konkurrenz wächst logistisch bis zu einer Obergrenze (`RIVALS[].cap`). Ab Level 6 kann man sie für das 1,5-Fache ihres Werts übernehmen; Tochterfirmen zahlen 2 % des Kaufpreises pro Stunde (`TAKE_PREM`, `TAKE_DIV`). Ab Level 7 gibt es Großprojekte (`PROJECTS`): Waren nach und nach anliefern, fertig gibt es Credits und einen dauerhaften Bonus. Laut `tools/pace.mjs --days=30` (1 h Spielzeit pro Tag) erreicht die Konkurrenz nach 3–4 Tagen ihre Obergrenze; Krupp ist ab etwa Tag 7 bezahlbar, NovaTech ab Tag 16, Ivanov ab Tag 30, und den Firmenwert von Global Industries überholt man um Tag 19.
 
 **Spielstand sichern:** In der Firmen-Übersicht (Tippen aufs Level) erzeugt man einen Sicherungscode (komprimiertes JSON, Base64) und lädt ihn auf einem anderen Gerät wieder.
+
+## Barrierefreiheit
+
+- Ist im System „Bewegung reduzieren“ eingestellt, entfallen Wackeln und Dauer-Pulsieren, und es gibt weniger Partikel (`calm()` in `src/util.js`, Media-Query am Ende von `src/style.css`). Spielwichtige Signale bleiben als feste Markierung.
+- Im Kabel-Minispiel trägt jede Farbe zusätzlich ein Zeichen (Kreis, Dreieck, Quadrat, Raute, Stern) – lösbar auch bei Rot-Grün-Schwäche.
 
 ## Icons neu rendern
 

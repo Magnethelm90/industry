@@ -112,6 +112,8 @@ export const CUSTOMERS=['Bauhof Müller','Werft Hansen','TechStore Berlin','Elek
 export const RIVALS=[{n:'Krupp & Söhne',w:800,r:1.3,cap:60000},{n:'NovaTech AG',w:3000,r:1.15,cap:250000},{n:'Ivanov Stahl',w:12000,r:1,cap:800000},{n:'Global Industries',w:60000,r:.85,cap:3000000}];
 // Übernahme: Kaufpreis = Firmenwert × TAKE_PREM, danach Gewinnanteil TAKE_DIV des Kaufpreises pro Stunde
 export const TAKE_PREM=1.5,TAKE_DIV=.02;
+// Flughafen: Baukosten und Ausbau (Stufe k → k+1)
+export const AIRPORT_COST=5000,airUpBase=k=>Math.ceil(3000*Math.pow(1.8,k-1));
 // Großprojekte: Waren nach und nach anliefern; fertig = Belohnung und dauerhafter Bonus
 export const PROJECTS=[
   {id:'bahnhof',n:'Güterbahnhof',lv:7,need:{ziegel:400,stahl:300,maschine:40},r:30000,bonus:'Minen fördern 25 % mehr'},

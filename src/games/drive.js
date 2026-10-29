@@ -1,7 +1,7 @@
 /* Minispiel: LKW-Fahrt – LKW, Hindernisse und Bäume sind gerenderte Modelle (Verfolgerperspektive) */
-import {SFX,vib} from '../fx.js';
+import {SFX,motor,vib} from '../fx.js';
 import {OV,closeOv,openOv} from '../ui.js';
-import {$,iconUrl,propUrl} from '../util.js';
+import {$,calm,iconUrl,propUrl} from '../util.js';
 
 export function drive(route,units){return new Promise(res=>{
   const ov=openOv(`<h3>Fahrt · ${route.n}</h3><div class="sub">Tippe links/rechts oder wische. Weiche aus, sammle Münzen.</div><canvas id="cv"></canvas><div class="ctrl"><button class="btn ghost" id="L">◀</button><button class="btn ghost" id="R">▶</button></div>`);
@@ -23,6 +23,7 @@ export function drive(route,units){return new Promise(res=>{
   const key=e=>{if(!OV||!OV.alive)return removeEventListener('keydown',key);if(e.key==='ArrowLeft')mv(-1);if(e.key==='ArrowRight')mv(1)};
   addEventListener('keydown',key);
   const speed=()=>route.speed+t*3;
+  const eng=motor();let engOff=false;const engStop=()=>{if(!engOff){engOff=true;eng.stop()}};
   const sh=(px,py,rx,ry,a=.35)=>{c.fillStyle=`rgba(0,0,0,${a})`;c.beginPath();c.ellipse(px,py,rx,ry,0,0,7);c.fill()};
   const burstP=(px,py,col,n)=>{for(let i=0;i<n;i++){const a=Math.random()*6.28,v=60+Math.random()*140;parts.push({x:px,y:py,vx:Math.cos(a)*v,vy:Math.sin(a)*v,l:.6,c:col})}};
   function drawObs(o){
@@ -33,7 +34,7 @@ export function drive(route,units){return new Promise(res=>{
     const hl=c.createLinearGradient(0,TY-40,0,TY-190);hl.addColorStop(0,'rgba(255,248,200,.35)');hl.addColorStop(1,'rgba(255,248,200,0)');c.fillStyle=hl;c.beginPath();c.moveTo(x-14,TY-40);c.lineTo(x-34,TY-190);c.lineTo(x+34,TY-190);c.lineTo(x+14,TY-40);c.fill();
     draw('truck',x,TY,SZ.truck)}
   function frame(now){
-    if(!ov.alive){removeEventListener('keydown',key);return}
+    if(!ov.alive){removeEventListener('keydown',key);engStop();return}
     const dt=Math.min(0.05,(now-last)/1000);last=now;
     if(!over){t+=dt;inv=Math.max(0,inv-dt);
       x+=(LX[lane]-x)*Math.min(1,dt*14);off=(off+speed()*dt)%80;
@@ -43,11 +44,12 @@ export function drive(route,units){return new Promise(res=>{
       obs=obs.filter(o=>{
         if(o.y>TY-50&&o.y<TY+40&&Math.abs(o.x-x)<(o.k==='barrier'?38:30)){
           if(o.k==='coin'){coins++;SFX.coin();vib(10);burstP(o.x,o.y,'#fbbf24',10);return false}
-          if(inv<=0){integ-=20;inv=1;flash=1;shake=.3;SFX.crash();vib([60,30,80]);burstP(x,TY-10,'#ffb84d',16)}
+          if(inv<=0){integ-=20;inv=1;flash=1;shake=calm()?0:.3;SFX.crash();vib([60,30,80]);burstP(x,TY-10,'#ffb84d',16)}
           return true}
         return o.y<500});
       trees.forEach(tr=>{tr.y+=speed()*dt;if(tr.y>H+30){tr.y=-30;tr.r=9+Math.random()*7;tr.dx=Math.random()*8}});
-      if(t>=route.T||integ<=0){over=integ<=0?'wreck':'ok';overT=0;if(over==='ok')SFX.win()}
+      eng.set(Math.min(1,(speed()-150)/150));
+      if(t>=route.T||integ<=0){over=integ<=0?'wreck':'ok';overT=0;engStop();if(over==='ok')SFX.win()}
     }else{overT+=dt;if(overT>1.1&&!ov.done){ov.done=true;const r={integ:Math.max(0,integ),coins};removeEventListener('keydown',key);closeOv();res(r);return}}
     shake=Math.max(0,shake-dt);flash=Math.max(0,flash-dt*2.5);
     parts.forEach(p=>{p.x+=p.vx*dt;p.y+=p.vy*dt;p.l-=dt});parts=parts.filter(p=>p.l>0);

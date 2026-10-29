@@ -162,6 +162,23 @@ const URL='file://'+path.resolve(__dirname,'../dist/index.html')+'?debug';
   await Promise.all([p.waitForEvent('load'),p.click('#bkload')]);await p.waitForTimeout(500);
   ok(await ev(()=>S.money>=12345&&lvl()>=6),'Spielstand aus dem Code geladen');
 
+  // Ton: Musik startet nach der ersten Berührung, Stumm und Musik-Schalter beenden sie; alle Geräusche laufen fehlerfrei
+  await ev(()=>{S.mute=false;S.music=true;closeOv()});await p.mouse.click(200,600);await p.waitForTimeout(300);
+  ok(await ev(()=>musicPlaying()&&AC&&AC.state==='running'),'Musik läuft nach der ersten Berührung');
+  await ev(()=>{for(const k in SFX)SFX[k]();const m=motor();m.set(.5);m.stop()});await p.waitForTimeout(200);
+  await p.click('#snd');ok(await ev(()=>S.mute&&!musicPlaying()),'Stumm schaltet auch die Musik ab');
+  await p.click('#snd');ok(await ev(()=>!S.mute&&musicPlaying()),'Ton wieder an: Musik läuft');
+  await p.click('#lvpill');await p.click('#mus');ok(await ev(()=>S.music===false&&!musicPlaying())&&(await p.textContent('#mus')).includes('aus'),'Musik-Schalter in der Firmen-Übersicht');
+  await p.click('#mus');await p.click('#done');ok(await ev(()=>musicPlaying()),'Musik wieder an');
+
+  // „Bewegung reduzieren“: Dauer-Pulse aus, weniger Partikel; ohne die Einstellung bleibt alles wie gehabt
+  const mot=async rm=>{const q=await b.newPage({viewport:{width:400,height:860},reducedMotion:rm});q.on('pageerror',e=>errs.push(e.message));await q.goto(URL);
+    const r=await q.evaluate(()=>{const d=document.createElement('button');d.className='btn pulse';document.body.appendChild(d);const a=getComputedStyle(d).animationName;d.remove();
+      const n0=document.querySelectorAll('.sp').length;burst(100,100,'#fff',16);return {calm:calm(),a,n:document.querySelectorAll('.sp').length-n0}});await q.close();return r};
+  const rmOn=await mot('reduce'),rmOff=await mot('no-preference');
+  ok(rmOn.calm&&rmOn.a==='none'&&rmOn.n===4,'Bewegung reduzieren: kein Pulsieren, 4 statt 16 Partikel');
+  ok(!rmOff.calm&&rmOff.a==='pl'&&rmOff.n===16,'ohne Einstellung: Pulsieren und volle Partikel');
+
   ok(errs.length===0,'keine JavaScript-Fehler '+JSON.stringify(errs));
   await b.close();
   console.log(fail?fail+' Fehler':'Alles bestanden');process.exit(fail?1:0);

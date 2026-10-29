@@ -30,12 +30,13 @@ export function gSolder(s){return new Promise(res=>{
   function next(){p=0;idx++;if(idx>=N){done=true;setTimeout(()=>ov.alive&&res(score/N),700);return}activate()}
   pads.forEach((b,i)=>b.onpointerdown=e=>{e.preventDefault();if(i!==idx||done)return;holding=true;p=0});
   const up=()=>release();addEventListener('pointerup',up);addEventListener('pointercancel',up);
-  activate();
+  activate();let sz=.4;
   (function loop(now){
     if(!ov.alive){removeEventListener('pointerup',up);removeEventListener('pointercancel',up);return}
     const dt=Math.min(.05,(now-last)/1000);last=now;
     iron.classList.toggle('hot',holding);
     if(holding&&(smokeT+=dt)>.09){smokeT=0;const b=pads[idx];fly(bd,b.offsetLeft+(Math.random()-.5)*10,b.offsetTop-8,'<i class="spark" style="width:10px;height:10px;background:#e2e8f055;filter:blur(2px)"></i>',{dx:(Math.random()-.5)*20,dy:-50,dur:700})}
+    if(holding&&(sz+=dt)>.5){sz=0;SFX.sizzle()}
     if(holding){p+=dt/0.9*100;const b=pads[idx];b.style.setProperty('--p',Math.min(100,p));b.style.setProperty('--rc',p<75?'#fbbf24':p<=105?'#34d399':'#fb7185');
       if(p>=75&&p<=105)$('m').textContent='Jetzt loslassen!';
       if(p>135){holding=false;b.classList.remove('act');b.classList.add('bad');b.style.setProperty('--p',0);SFX.crash();vib([60,30,60]);pop($('m'),'Verbrannt! 🔥');next()}}
