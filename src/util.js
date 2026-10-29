@@ -5,7 +5,7 @@ const ICON_URLS=import.meta.glob('./assets/icons/*.webp',{eager:true,query:'?url
 const ICON_KEYS=new Set();
 export function initIcons(){
   let css='';
-  for(const p in ICON_URLS){const k=p.slice(p.lastIndexOf('/')+1,-5);ICON_KEYS.add(k);css+=`.i-${k}{background-image:url("${ICON_URLS[p]}")}`}
+  for(const p in ICON_URLS){const k=p.slice(p.lastIndexOf('/')+1,-5);ICON_KEYS.add(k);css+=`.ico.i-${k}{background-image:url("${ICON_URLS[p]}")}`}
   const st=document.createElement('style');st.textContent=css;document.head.appendChild(st);
 }
 export const ic=(k,s=40)=>`<i class="ico${ICON_KEYS.has(k)?' i-'+k:''}" style="width:${s}px;height:${s}px"></i>`;
