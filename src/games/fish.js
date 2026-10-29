@@ -26,7 +26,7 @@ export function gFish(){return new Promise(res=>{
   st.__state=()=>({phase,T,P,tryN}); // für automatische Tests
   const startWait=(extra=0)=>{phase='wait';until=performance.now()+1500+Math.random()*3000+extra;bob.className='prop p-bobber bobber';bob.style.left=(W*.76-15)+'px';act.textContent='Warten …';$('reel').style.display='none';fishEl.innerHTML=''};
   function result(ok,txt){
-    $('dots').children[tryN].className=ok?'g':'m';pop($('m'),txt);tryN++;hold=false;phase='done';
+    $('dots').children[tryN].className=ok?'g':'m';pop($('m'),txt);tryN++;hold=false;phase='done';act.textContent='';
     if(ok){catchList[fish.g]=(catchList[fish.g]||0)+fish.n;SFX.win();vib([30,40,60]);fishEl.classList.add('caught')}else SFX.miss();
     setTimeout(()=>{if(!ov.alive)return;fishEl.classList.remove('caught');if(tryN>=TRIES){res(catchList);return}pop($('m'),'Neuer Wurf …');startWait()},1100)}
   function pickFish(){const pool=FISH.filter(f=>f.g==='hering'||unl(f.g)),w=pool.map(f=>f.w*(f.g==='hering'?1:1+.35*S.up.rod)+(f.rod?f.rod*S.up.rod:0));let r=Math.random()*w.reduce((a,b)=>a+b);
