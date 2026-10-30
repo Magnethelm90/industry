@@ -1,0 +1,49 @@
+{
+ "tick": [
+  "tick0.mp3"
+ ],
+ "good": [
+  "good0.mp3"
+ ],
+ "perfect": [
+  "perfect0.mp3"
+ ],
+ "miss": [
+  "miss0.mp3"
+ ],
+ "err": [
+  "err0.mp3"
+ ],
+ "coin": [
+  "coin0.mp3"
+ ],
+ "buy": [
+  "buy0.mp3"
+ ],
+ "win": [
+  "win0.mp3"
+ ],
+ "crash": [
+  "crash0.mp3"
+ ],
+ "clank": [
+  "clank0.mp3",
+  "clank1.mp3"
+ ],
+ "thud": [
+  "thud0.mp3",
+  "thud1.mp3"
+ ],
+ "ratchet": [
+  "ratchet0.mp3"
+ ],
+ "splash": [
+  "splash0.mp3"
+ ],
+ "whoosh": [
+  "whoosh0.mp3"
+ ],
+ "water": [
+  "water0.mp3"
+ ]
+}

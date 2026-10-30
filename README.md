@@ -29,8 +29,9 @@ node tools/pace.mjs --days=30  # spätes Spiel: täglich 1 h aktiv + 8 h offline
 - `src/state.js`: Spielstand und abgeleitete Werte (Level, Lager, Preise)
 - `src/features/`: je ein Spielbereich (Werkstatt, Farm, Betriebe, Markt, Laden, Aufträge, Export, Untergrund …)
 - `src/games/`: je ein Minispiel; `games/index.js` ist das Register
-- `src/ui.js`, `src/fx.js`, `src/util.js`: Overlay, Sound/Effekte, Helfer. Alle Geräusche entstehen live per Web Audio (Töne und gefiltertes Rauschen: Metall, Stein, Wasser, Zischen, LKW-Motor), keine Audiodateien
-- `src/music.js`: leise Hintergrundmusik, ebenfalls live erzeugt (8 Takte Moll, Bass, Arpeggio); startet nach der ersten Berührung, pausiert im Hintergrund, abschaltbar in der Firmen-Übersicht
+- `src/ui.js`, `src/fx.js`, `src/util.js`: Overlay, Sound/Effekte, Helfer. Die Effekte sind echte CC0-Aufnahmen (Kenney, rubberduck u. a., Liste in `src/assets/sfx/QUELLEN.md`), als kleine MP3s in die Spieldatei eingebettet (zusammen etwa 190 KB). Der LKW-Motor ist eine nahtlose WAV-Schleife, deren Drehzahl über die Abspielgeschwindigkeit folgt. Bis eine Aufnahme dekodiert ist oder falls der Browser sie nicht lesen kann, erzeugt Web Audio einen Ersatzton. Löten und Kurzschluss bleiben erzeugt.
+- `src/music.js`: Hintergrundmusik „Hot Spring Town“ von Kistol (CC0) als `public/music.mp3` (1,3 MB). Sie wird erst nach der ersten Berührung nachgeladen, danach kommt sie offline aus dem Cache des Service Workers. Bis dahin, und wenn die Datei fehlt, läuft eine leise erzeugte Schleife. Die Musik pausiert im Hintergrund und ist in der Firmen-Übersicht abschaltbar.
+- `tools/sounds/build.py`: baut die Sounddateien aus den heruntergeladenen Paketen (Zuordnung, Pegel, Motor-Schleife); Aufruf siehe Kopf der Datei
 - `src/assets/icons/`: in Blender gerenderte Icons (WebP, 192 px)
 - `src/icons.svg`: nur noch Farbverläufe für das Smartphone-Minispiel
 - `public/`: App-Manifest, App-Icons und Service Worker (`sw.js`) – damit lässt sich das Spiel auf dem Handy wie eine App installieren und offline spielen. Das gilt nur für die gehostete Version (https), nicht für die Einzeldatei-Vorschau.
