@@ -6,9 +6,12 @@ import {bindX,openOv,xbtn} from '../ui.js';
 import {$,ic,pop} from '../util.js';
 import {A,put} from './scene.js';
 import {dayPhase,wxIs} from '../world.js';
+import {gnow} from './clock.js';
+import {play} from './gate.js';
 
 export const FISH=[{g:'hering',w:60,n:4,str:.8},{g:'lachs',w:28,n:2,str:1},{g:'thunfisch',w:10,n:1,str:1.35},{g:'hummer',w:4,n:1,str:1.15,rod:2}];
-export function gFish(){return new Promise(res=>{
+export const gFish=()=>play(fishGame,ic('hering',56));
+function fishGame(){return new Promise(res=>{
   const TRIES=3,catchList={};
   const ov=openOv(xbtn()+`<h3>Angeln</h3><div class="sub">Warte, bis der Schwimmer abtaucht, und tippe sofort auf die Szene. Dann einholen: gedrückt halten zum Kurbeln – aber wenn die Spannung zu hoch wird, reißt die Schnur!${dayPhase()==='night'?' 🌙 Nachts beißen seltene Fische öfter.':''}${wxIs('storm')?' ⛈️ Bei Sturm auch.':''}</div><div class="dots" id="dots">${'<i></i>'.repeat(TRIES)}</div><div class="msg" id="m">Auswerfen …</div>
    <div class="stage lake" id="st" style="height:250px"><div class="waves"></div><svg id="ln" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:4"></svg><div class="hint top" id="act">Warten …</div></div>
@@ -22,10 +25,10 @@ export function gFish(){return new Promise(res=>{
   const bob=put(st,'bobber',30,'top',W*.76,WY-22,'bobber');
   const fishEl=document.createElement('div');fishEl.className='fishsw';st.appendChild(fishEl);
   const tip=a=>{const r=a*Math.PI/180,L=(tx-gx)*RS;return [GX+L*Math.cos(r),GY+L*Math.sin(r)]};
-  let tryN=0,phase='wait',until=0,hold=false,T=0,P=30,fish=null,tug=0,last=performance.now(),ang=REST;
+  let tryN=0,phase='wait',until=0,hold=false,T=0,P=30,fish=null,tug=0,last=gnow(),ang=REST;
   const act=$('act');
   st.__state=()=>({phase,T,P,tryN}); // für automatische Tests
-  const startWait=(extra=0)=>{phase='wait';until=performance.now()+1500+Math.random()*3000+extra;bob.className='prop p-bobber bobber';bob.style.left=(W*.76-15)+'px';act.textContent='Warten …';$('reel').style.display='none';fishEl.innerHTML=''};
+  const startWait=(extra=0)=>{phase='wait';until=gnow()+1500+Math.random()*3000+extra;bob.className='prop p-bobber bobber';bob.style.left=(W*.76-15)+'px';act.textContent='Warten …';$('reel').style.display='none';fishEl.innerHTML=''};
   function result(ok,txt){
     $('dots').children[tryN].className=ok?'g':'m';pop($('m'),txt);tryN++;hold=false;phase='done';act.textContent='';
     if(ok){catchList[fish.g]=(catchList[fish.g]||0)+fish.n;SFX.splash();SFX.win();vib([30,40,60]);fishEl.classList.add('caught')}else SFX.miss();
@@ -39,7 +42,7 @@ export function gFish(){return new Promise(res=>{
     else if(phase==='reel')hold=true};
   const off=()=>hold=false;st.onpointerup=off;st.onpointerleave=off;st.onpointercancel=off;
   startWait();
-  (function loop(now){
+  (function loop(){const now=gnow();
     if(!ov.alive)return;const dt=Math.min(.05,(now-last)/1000);last=now;
     if(phase==='wait'&&now>until){phase='bite';until=now+850/diff();bob.className='prop p-bobber bobber dip';pop($('m'),'BISS! JETZT!');tone(880,.12,'square',.06);SFX.splash();vib(40);act.textContent='❗ JETZT TIPPEN'}
     else if(phase==='bite'&&now>until){result(false,'Zu langsam – weg ist er!')}
@@ -55,5 +58,5 @@ export function gFish(){return new Promise(res=>{
     else{ex=bob.offsetLeft+15;ey=bob.offsetTop+2}
     const sag=phase==='reel'?Math.max(0,30-T*.4):30;
     $('ln').innerHTML=`<path d="M${sx} ${sy} Q${(sx+ex)/2} ${Math.max(sy,ey)+sag},${ex} ${ey}" stroke="#e2e8f0cc" stroke-width="1.4" fill="none"/>`;
-    requestAnimationFrame(loop)})(performance.now());
+    requestAnimationFrame(loop)})();
 })}

@@ -5,6 +5,7 @@ import {diff} from '../state.js';
 import {bindX,openOv,xbtn} from '../ui.js';
 import {$,pop} from '../util.js';
 import {A,at,put,sparks} from './scene.js';
+import {gnow} from './clock.js';
 
 export function gPour(s){return new Promise(res=>{
   const N=3;
@@ -22,7 +23,7 @@ export function gPour(s){return new Promise(res=>{
   const la=document.createElement('div');la.className='prop p-ladle';
   la.style.cssText=`width:${LW}px;height:${LW}px;left:${P[0]-pvx*LW}px;top:${P[1]-pvy*LW}px;transform-origin:${pvx*LW}px ${pvy*LW}px;z-index:4`;st.appendChild(la);
   const lip=a=>{const r=a*Math.PI/180,dx=(lpx-pvx)*LW,dy=(lpy-pvy)*LW;return [P[0]+dx*Math.cos(r)-dy*Math.sin(r),P[1]+dx*Math.sin(r)+dy*Math.cos(r)]};
-  let k=0,fill=0,flow=0,tilt=0,ang=0,target=0,score=0,phase='pour',last=performance.now(),poured=false,spl=0;
+  let k=0,fill=0,flow=0,tilt=0,ang=0,target=0,score=0,phase='pour',last=gnow(),poured=false,spl=0;
   const newMold=()=>{fill=0;flow=0;poured=false;target=40+Math.random()*45;line.style.top=(ib-IH*target/100)+'px';fillEl.style.height='0';fillEl.style.top=ib+'px';phase='pour'};
   newMold();
   let y0=null;
@@ -30,7 +31,7 @@ export function gPour(s){return new Promise(res=>{
   st.onpointermove=e=>{if(y0!=null&&phase==='pour')tilt=Math.max(0,Math.min(1,(e.clientY-y0)/100))};
   st.onpointerup=st.onpointercancel=st.onpointerleave=()=>{y0=null;tilt=0};
   let sz=0;
-  (function loop(now){
+  (function loop(){const now=gnow();
     if(!ov.alive)return;const dt=Math.min(.05,(now-last)/1000);last=now;
     const want=phase==='pour'?tilt*50*diff():0;
     flow=flow<want?Math.min(want,flow+95*dt):Math.max(want,flow-115*dt);
@@ -46,10 +47,10 @@ export function gPour(s){return new Promise(res=>{
     if(fill>=100&&phase==='pour'){tilt=0;y0=null;phase='settle'}
     if(phase==='pour'&&poured&&tilt===0&&y0==null)phase='settle';
     if(phase==='settle'&&flow<=0){
-      const err=Math.abs(fill-target),v=err<=3?1:err<=8?.6:err<=15?.3:0;score+=v;phase='wait';
+      const err=Math.abs(fill-target),v=err<=5?1:err<=10?.7:err<=18?.35:0;score+=v;phase='wait';
       $('dots').children[k].className=v>=1?'p':v>0?'g':'m';
       pop($('m'),v>=1?'Perfekt! ✨':v>0?(fill>target?'+':'')+Math.round(fill-target)+' % daneben':fill>target?'Übergelaufen! 🔥':'Viel zu wenig!');
       v>=1?SFX.perfect():v>0?SFX.good():SFX.miss();k++;
       setTimeout(()=>{if(!ov.alive)return;if(k>=N){res(score/N);return}newMold();pop($('m'),'Form '+(k+1))},900)}
-    requestAnimationFrame(loop)})(performance.now());
+    requestAnimationFrame(loop)})();
 })}

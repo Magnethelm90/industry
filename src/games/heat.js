@@ -3,6 +3,7 @@ import {SFX} from '../fx.js';
 import {bindX,openOv,xbtn} from '../ui.js';
 import {$,pop} from '../util.js';
 import {A,at,fly,put} from './scene.js';
+import {gnow} from './clock.js';
 
 export function gHeat(moving=false,s){return new Promise(res=>{
   const ov=openOv(xbtn()+`<h3>${s?s.n:'Schmelzofen'}${moving?' · Wandernde Hitze':''}</h3><div class="sub">Halte gedrückt, um den Blasebalg zu pumpen – das Feuer wird heißer. Loslassen kühlt ab. Halte das Thermometer im grünen Bereich!</div><div class="msg" id="m">Aufheizen …</div>
@@ -22,14 +23,14 @@ export function gHeat(moving=false,s){return new Promise(res=>{
   const bx=lx-6-(1-nx)*BW,by=ly-24-ny*BW;
   bel.style.cssText=`width:${BW}px;height:${BW}px;left:${bx}px;top:${by}px;transform:scaleX(-1);transition:transform .12s`;st.appendChild(bel);
   const nozzle=[lx-6,ly-24];
-  let temp=25,hold=false,inZ=0,tt=0,last=performance.now(),prev='',puff=0,smoke=0;const D=12;
-  const zw=20+Math.random()*10;let zl=moving?40:25+Math.random()*(55-zw),zd=Math.random()<.5?1:-1;
+  let temp=25,hold=false,inZ=0,tt=0,last=gnow(),prev='',puff=0,smoke=0;const D=12;
+  const zw=26+Math.random()*10;let zl=moving?40:25+Math.random()*(55-zw),zd=Math.random()<.5?1:-1;
   const setZone=()=>{$('hz').style.bottom=zl+'%';$('hz').style.height=zw+'%'};setZone();
   const on=e=>{e.preventDefault();hold=true;bel.style.transform='scaleX(-1) scaleY(.72)'},off=()=>{hold=false;bel.style.transform='scaleX(-1)'};
   st.onpointerdown=on;st.onpointerup=off;st.onpointerleave=off;st.onpointercancel=off;
   let wsn=0;
-  function tick(t){if(!ov.alive)return;const dt=Math.min(0.05,(t-last)/1000);last=t;
-    temp+=(hold?34:-20)*dt+(Math.random()-0.5)*14*dt;temp=Math.max(0,Math.min(100,temp));
+  function tick(){const t=gnow();if(!ov.alive)return;const dt=Math.min(0.05,(t-last)/1000);last=t;
+    temp+=(hold?30:-16)*dt+(Math.random()-0.5)*10*dt;temp=Math.max(0,Math.min(100,temp));
     tt+=dt;
     if(moving){zl+=zd*9*dt;if(zl<10||zl>90-zw){zd*=-1;zl=Math.max(10,Math.min(90-zw,zl))}setZone()}
     const z=temp>=zl&&temp<=zl+zw;if(z)inZ+=dt;
@@ -42,6 +43,6 @@ export function gHeat(moving=false,s){return new Promise(res=>{
     if(h>.7&&(smoke+=dt)>.25){smoke=0;fly(st,cx,cy,'<i class="spark" style="width:16px;height:16px;background:#64748b88;filter:blur(2px)"></i>',{dx:(Math.random()-.3)*30,dy:-50,dur:900})}
     $('tm').style.width=(100-tt/D*100)+'%';
     const msg=temp>zl+zw?'Zu heiß! 🥵':temp<zl?'Zu kalt! 🥶':'Perfekt! 👍';if(msg!==prev){pop($('m'),msg);prev=msg;if(z)SFX.good();else SFX.tick()}
-    if(tt>=D){res(inZ/D);return}requestAnimationFrame(tick)}
+    if(tt>=D){res(Math.min(1,inZ/(D*.8)));return}requestAnimationFrame(tick)}
   requestAnimationFrame(tick);
 })}

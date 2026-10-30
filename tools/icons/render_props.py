@@ -490,7 +490,8 @@ def _screwdriver():
 # ---------------------------------------------------------------- LKW-Fahrt
 # Verfolgerperspektive schräg von oben (elev 55): Fahrtrichtung ist +Y, im Bild nach oben.
 
-@prop('truck', size=200, elev=55)
+# Straße (LKW-Fahrt): flache Verfolgerperspektive von hinten, die Fahrzeuge zeigen ihr Heck
+@prop('truck', size=300, elev=13)
 def _truck():
     red, tire = mat('#e11d48', rough=0.35, coat=0.8), mat('#111827', rough=0.8)
     box(1.3, 2.3, 1.3, (0, -0.55, 0.95), mat('#e5e9f0', rough=0.5), 0.06)
@@ -513,7 +514,7 @@ def _truck():
     return {'center': (0, 0, 0.8)}
 
 
-@prop('cone', size=110, elev=55)
+@prop('cone', size=120, elev=10)
 def _cone():
     box(0.72, 0.72, 0.1, (0, 0, 0.05), mat('#1f2937', rough=0.8), 0.04)
     lathe([(0, 0.1), (0.3, 0.1), (0.06, 1.2), (0, 1.22)], m=mat('#f97316', rough=0.4, coat=0.6))
@@ -521,7 +522,7 @@ def _cone():
     return {'center': (0, 0, 0.5)}
 
 
-@prop('barrier', size=180, elev=55)
+@prop('barrier', size=260, elev=10)
 def _barrier():
     for i in range(6):
         box(0.4, 0.2, 0.42, (-1.0 + i * 0.4, 0, 0.75), mat('#e11d48' if i % 2 else '#f8fafc', rough=0.4, coat=0.5), 0.02)
@@ -531,7 +532,7 @@ def _barrier():
     return {'center': (0, 0, 0.6)}
 
 
-@prop('boulder', size=130, elev=55)
+@prop('boulder', size=200, elev=10)
 def _boulder():
     stone = mat('#7a7883', rough=0.85)
     rock(0.8, (0, 0, 0.5), stone, seed=31, rough=0.14, sc=(1.25, 1, 0.75), sub=3, smooth=True)
@@ -539,13 +540,52 @@ def _boulder():
     return {'center': (0, 0, 0.5)}
 
 
-@prop('tree', size=130, elev=55)
+@prop('tree', size=240, elev=6)
 def _tree():
     cyl(0.12, 0.6, (0, 0, 0.3), mat('#5b3a1e', rough=0.8))
     leaf = [mat('#2f8f4e', rough=0.7), mat('#3fa45e', rough=0.7), mat('#25753f', rough=0.7)]
     for i, (x, y, z, r) in enumerate([(0, 0, 1.1, 0.75), (0.45, 0.2, 0.9, 0.5), (-0.45, 0.15, 0.95, 0.5), (0.1, -0.4, 0.85, 0.5), (0, 0.35, 1.45, 0.45)]):
         rock(r, (x, y, z), leaf[i % 3], seed=40 + i, rough=0.1, sub=3, smooth=True)
     return {'center': (0, 0, 0.9)}
+
+
+def _car(paint, lp):
+    """Kompaktwagen in Fahrtrichtung +Y; Kamera sieht das Heck."""
+    body = mat(paint, rough=0.3, coat=1.0)
+    glass = mat('#0f172a', rough=0.08, coat=1.0)
+    tire = mat('#111827', rough=0.8)
+    box(1.5, 3.1, 0.55, (0, 0, 0.55), body, 0.16)
+    box(1.3, 1.6, 0.5, (0, -0.15, 1.05), body, 0.14)
+    box(1.12, 0.06, 0.38, (0, -0.96, 1.06), glass, 0.04)   # Heckscheibe
+    box(1.31, 1.2, 0.34, (0, -0.1, 1.07), glass, 0.04)     # Seitenfenster
+    for x in (-0.52, 0.52):
+        box(0.34, 0.06, 0.14, (x, -1.56, 0.68), mat('#ef4444', emit=lp), 0.03)  # Rücklichter
+    box(0.42, 0.04, 0.12, (0, -1.56, 0.42), mat('#e5e7eb', rough=0.4), 0.01)     # Kennzeichen
+    box(1.52, 0.12, 0.14, (0, -1.56, 0.3), mat('#1f2937', rough=0.6), 0.04)      # Stoßstange
+    for x in (-0.7, 0.7):
+        for y in (1.0, -1.0):
+            cyl(0.3, 0.24, (x, y, 0.3), tire, rot=(0, math.pi / 2, 0), b=0.05)
+    return {'center': (0, 0, 0.7)}
+
+
+@prop('car_a', size=240, elev=13)
+def _car_a():
+    return _car('#2563eb', 3.0)
+
+
+@prop('car_b', size=240, elev=13)
+def _car_b():
+    return _car('#facc15', 3.0)
+
+
+@prop('lamp', size=220, elev=6, shadow=False)
+def _lamp():
+    pole = mat('#475569', metal=0.8, rough=0.35)
+    cyl(0.07, 3.2, (0, 0, 1.6), pole)
+    rod((0, 0, 3.15), (0.9, 0, 3.35), 0.05, pole)
+    box(0.5, 0.26, 0.12, (1.0, 0, 3.32), mat('#334155', metal=0.6, rough=0.4), 0.04)
+    box(0.42, 0.2, 0.04, (1.0, 0, 3.25), mat('#fff7cc', emit=6.0), 0.01)
+    return {'light': (1.0, 0, 3.22)}
 
 
 def main():

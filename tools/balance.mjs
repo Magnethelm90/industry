@@ -1,10 +1,10 @@
 // Balance-Übersicht: Wertschöpfung pro Minute (Basispreise, Score 0,75, ohne Upgrades/Combo). Aufruf: node tools/balance.mjs
 const D=await import('../src/data.js');
 const {G,ST,BLD,CROPS,MODES,COUNTRIES,ROUTES}=D;
-const DUR={timing:10,timingMove:10,mash:8,heat:14,heatMove:14,simon:25,whack:17,wall:18,catch:20,stack:15,bolts:12,mix:17,solder:15,pour:15,forge:12,pipes:20,wires:15,sort:17,phone:30};
+const DUR={timing:12,timingMove:12,mash:8,heat:14,heatMove:14,simon:28,whack:17,wall:20,catch:20,stack:17,bolts:16,mix:17,solder:16,pour:15,forge:14,pipes:22,wires:16,sort:17,phone:30}; // Spielzeit in s, ohne Startbildschirm
 const SC=.75,lv=s=>s.lv||G[s.out].lv||1;
 const rows=ST.filter(s=>!s.secret||1).map(s=>{
-  const t=s.games.reduce((a,g)=>a+DUR[g],0)/s.games.length+3;
+  const t=s.games.reduce((a,g)=>a+DUR[g],0)/s.games.length+5; // +5 s: Startbildschirm und Auswertung
   const out=Math.max(1,Math.round(SC*s.max));const vin=Object.keys(s.in).reduce((a,k)=>a+s.in[k]*G[k].base,0);
   const val=out*G[s.out].base,net=val-vin,xp=out*(G[s.out].base>=15?4:1)+1;
   return {id:s.id,lv:lv(s),t:Math.round(t),out,vin,val,net,perMin:Math.round(net/t*60),xpMin:Math.round(xp/t*60),marge:vin?+(val/vin).toFixed(2):Infinity};

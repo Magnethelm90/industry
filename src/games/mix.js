@@ -4,6 +4,7 @@ import {SFX,tone} from '../fx.js';
 import {bindX,openOv,xbtn} from '../ui.js';
 import {$,pop} from '../util.js';
 import {at,put} from './scene.js';
+import {gnow} from './clock.js';
 
 export function gMix(s){return new Promise(res=>{
   const ING=[{n:'Basis',c:'#8b5cf6',p:'bottle_a'},{n:'Härter',c:'#06b6d4',p:'bottle_b'},{n:'Farbe',c:'#ec4899',p:'bottle_c'}];
@@ -27,7 +28,7 @@ export function gMix(s){return new Promise(res=>{
   const bottles=ING.map((g,i)=>{const b=put(st,g.p,BW,null,bx[i],52);b.style.pointerEvents='auto';b.style.touchAction='none';b.style.transition='transform .18s';b.style.zIndex=4;
     const lb=document.createElement('div');lb.className='pourlbl';lb.style.left=bx[i]+'px';lb.style.top='92px';lb.style.bottom='auto';lb.innerHTML=`${g.n} <span id="pv${i}">0 / ${Math.round(T[i])}</span>`;st.appendChild(lb);return b});
   const streams=ING.map(g=>{const e=document.createElement('div');e.className='stream';e.style.cssText=`opacity:0;background:${g.c};box-shadow:0 0 10px ${g.c}`;st.appendChild(e);return e});
-  let act=-1,done=false,last=performance.now(),tick=0;const t0=performance.now();
+  let act=-1,done=false,last=gnow(),tick=0;const t0=gnow();
   const ang=i=>bx[i]<bcx-10?105:bx[i]>bcx+10?-105:115;
   bottles.forEach((b,i)=>{
     b.onpointerdown=e=>{e.preventDefault();e.stopPropagation();if(done)return;act=i;b.style.transform=`translateY(14px) rotate(${ang(i)}deg)`};
@@ -35,10 +36,10 @@ export function gMix(s){return new Promise(res=>{
   $('fill').onclick=()=>{if(!done&&amt.some(v=>v>0))finish()};
   function finish(){
     done=true;act=-1;bottles.forEach((b,i)=>{b.style.transform='';streams[i].style.opacity=0});const tot=amt.reduce((a,b)=>a+b);
-    const err=amt.reduce((a,v,i)=>a+Math.abs(v-T[i]),0),sc=Math.max(0,1-err/60)*Math.min(1,tot/100);
+    const err=amt.reduce((a,v,i)=>a+Math.abs(v-T[i]),0),sc=Math.max(0,1-Math.max(0,err-6)/60)*Math.min(1,tot/100);
     pop($('m'),'Mischung '+Math.round(sc*100)+' % genau');sc>.7?SFX.win():SFX.miss();
     setTimeout(()=>ov.alive&&res(sc),900)}
-  (function loop(now){
+  (function loop(){const now=gnow();
     if(!ov.alive||done)return;const dt=Math.min(.05,(now-last)/1000);last=now;
     const tot=amt.reduce((a,b)=>a+b);
     if(act>=0){amt[act]+=Math.min(22*dt,100-tot);if((tick+=dt)>.12){tick=0;tone(300+act*120+tot*3,.05,'sine',.03)}
@@ -48,5 +49,5 @@ export function gMix(s){return new Promise(res=>{
     amt.forEach((v,i)=>{layers[i].style.height=(v/100*IH)+'px';$('pv'+i).textContent=Math.round(v)+' / '+Math.round(T[i])});
     const el=(now-t0)/1000;$('tm').style.width=Math.max(0,100-el/D*100)+'%';
     if(amt.reduce((a,b)=>a+b)>=99.9||el>=D){finish();return}
-    requestAnimationFrame(loop)})(performance.now());
+    requestAnimationFrame(loop)})();
 })}

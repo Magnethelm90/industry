@@ -5,6 +5,7 @@ import {diff} from '../state.js';
 import {bindX,openOv,xbtn} from '../ui.js';
 import {$,pop} from '../util.js';
 import {A,at,put,shakeStage,sparks} from './scene.js';
+import {gnow} from './clock.js';
 
 export function gForge(s){return new Promise(res=>{
   const N=8;
@@ -23,10 +24,10 @@ export function gForge(s){return new Promise(res=>{
   const hm=document.createElement('div');hm.className='prop p-hammer';
   hm.style.cssText=`width:${T}px;height:${T}px;left:${Px-px*T}px;top:${Py-py*T}px;transform-origin:${px*T}px ${py*T}px;z-index:5`;
   const REST='rotate(30deg) scaleX(-1)',HIT='rotate(0deg) scaleX(-1)';hm.style.transform=REST;st.appendChild(hm);
-  let beat=0,t=-.6,dur=1.25/diff(),score=0,done=false,last=performance.now(),flat=0;
+  let beat=0,t=-.6,dur=1.45/diff(),score=0,done=false,last=gnow(),flat=0;
   const r=()=>2.6-2.2*Math.max(0,t)/dur;
   function next(v,txt){
-    $('dots').children[beat].className=v>=1?'p':v>0?'g':'m';pop($('m'),txt);score+=v;beat++;t=-.25;dur*=.93;
+    $('dots').children[beat].className=v>=1?'p':v>0?'g':'m';pop($('m'),txt);score+=v;beat++;t=-.25;dur*=.95;
     flat+=v*.06;wk.style.transform=`scaleY(${1-flat}) scaleX(${1+flat*.8})`;
     wk.style.filter=`brightness(${1.15-.45*beat/N})`;
     if(beat>=N){done=true;setTimeout(()=>ov.alive&&res(score/N),700)}}
@@ -36,8 +37,8 @@ export function gForge(s){return new Promise(res=>{
     if(t<0)return;
     const d=Math.abs(r()-1);
     setTimeout(()=>{if(!ov.alive)return;SFX.clank();
-      if(d<=.1){SFX.perfect();vib(30);shakeStage(st);sparks(st,wcx,wcy,22,'#fde047')}
-      else if(d<=.24){SFX.good();vib(15);sparks(st,wcx,wcy,10,'#fb923c')}
+      if(d<=.13){SFX.perfect();vib(30);shakeStage(st);sparks(st,wcx,wcy,22,'#fde047')}
+      else if(d<=.3){SFX.good();vib(15);sparks(st,wcx,wcy,10,'#fb923c')}
       else{SFX.miss();sparks(st,wcx,wcy,5,'#94a3b8')}},150);
     if(d<=.1)next(1,'PERFEKT! 🔥');else if(d<=.24)next(.6,'Gut!');else next(0,'Daneben!');
   }
@@ -46,9 +47,9 @@ export function gForge(s){return new Promise(res=>{
   st.onpointerdown=e=>{e.preventDefault();y0=e.clientY;struck=false};
   st.onpointermove=e=>{if(y0!=null&&!struck&&e.clientY-y0>26){struck=true;strike()}};
   st.onpointerup=st.onpointercancel=e=>{if(y0!=null&&!struck&&Math.abs(e.clientY-y0)<10&&!done){pop($('m'),'Nach unten wischen! ↓')}y0=null};
-  (function loop(now){
+  (function loop(){const now=gnow();
     if(!ov.alive||done)return;const dt=Math.min(.05,(now-last)/1000);last=now;t+=dt;
     const rr=r();rg.style.transform=`scale(${Math.max(.2,rr)})`;rg.style.opacity=t<0?0:1;
     if(t>=0&&rr<.55){SFX.miss();next(0,'Zu spät!')}
-    requestAnimationFrame(loop)})(performance.now());
+    requestAnimationFrame(loop)})();
 })}

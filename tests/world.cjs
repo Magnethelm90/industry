@@ -30,7 +30,7 @@ const WX=(code,p,wind)=>({latitude:52.52,longitude:13.41,current:{time:'2025-07-
   ok(r.food===1.15&&r.steel===1,'Wochenendmarkt: Brot +15 %, Stahl unverändert');
   ok(Math.abs(r.grow-1.25)<1e-9,'Sommer: Felder wachsen 25 % schneller');
   ok(r.o===true,'Aufträge am Wochenende markiert (+20 %)');
-  await p.evaluate(()=>gFish());await p.waitForTimeout(200);
+  await p.evaluate(()=>{gFish()});await p.waitForTimeout(200);
   ok((await p.textContent('#ovbox')).includes('Nachts beißen seltene Fische öfter'),'Angeln: Hinweis auf Nacht');
   await p.evaluate(()=>closeOv());
   await p.evaluate(()=>go('market'));ok((await p.textContent('#s-market')).includes('Wochenendmarkt'),'Markt zeigt Wochenendmarkt');

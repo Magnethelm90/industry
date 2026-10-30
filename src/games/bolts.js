@@ -4,9 +4,10 @@ import {SFX,vib} from '../fx.js';
 import {bindX,openOv,xbtn} from '../ui.js';
 import {$,pop} from '../util.js';
 import {A,at,put,shakeStage,sparks} from './scene.js';
+import {gnow} from './clock.js';
 
 export function gBolts(s,title){return new Promise(res=>{
-  const ROUNDS=[5,7],T=10,total=12;
+  const ROUNDS=[5,7],T=14,total=12;
   const ov=openOv(xbtn()+`<h3>${title||'Schrauben · '+G[s.out].n}</h3><div class="sub">Tippe die Schrauben in der richtigen Reihenfolge an: 1, 2, 3 … Der Schlüssel zieht sie fest. Falsche Schraube kostet Zeit.</div><div class="msg" id="m"></div>
     <div class="stage factory" id="st" style="height:270px"></div><div class="timer"><i id="tm" style="width:100%"></i></div>`);
   bindX();ov.abort=()=>res(null);
@@ -24,7 +25,7 @@ export function gBolts(s,title){return new Promise(res=>{
       const cx=x0+p.x*(x1-x0),cy=y0+p.y*(y1-y0),b=put(st,'bolt',52,'c',cx,cy,'boltp');
       b.style.pointerEvents='auto';b.innerHTML=`<span class="bnum">${i+1}</span>`;b._c=[cx,cy];
       b.onpointerdown=e=>{e.preventDefault();tap(b,i)};bolts.push(b)});
-    need=0;t0=performance.now();pop($('m'),'Runde '+(r+1)+' / '+ROUNDS.length)}
+    need=0;t0=gnow();pop($('m'),'Runde '+(r+1)+' / '+ROUNDS.length)}
   function end(){dead=true;setTimeout(()=>ov.alive&&res(correct/total),600)}
   function tap(b,i){
     if(dead||!ov.alive||b.classList.contains('ok'))return;
@@ -35,8 +36,8 @@ export function gBolts(s,title){return new Promise(res=>{
         b.classList.add('ok');SFX.ratchet();vib(8);sparks(st,cx,cy,5,'#e2e8f0')},150);
       if(need>=ROUNDS[r]){SFX.good();r++;if(r>=ROUNDS.length){pop($('m'),'Alles fest! 🔩');end()}else setTimeout(()=>ov.alive&&!dead&&layout(ROUNDS[r]),550)}}
     else{SFX.miss();vib([40,30,40]);shakeStage(st);b.animate([{transform:'rotate(0)'},{transform:'rotate(12deg)'},{transform:'rotate(-12deg)'},{transform:'rotate(0)'}],{duration:220});
-      t0-=1500;pop($('m'),'Falsche Schraube! −1,5 s')}}
+      t0-=1000;pop($('m'),'Falsche Schraube! −1 s')}}
   layout(ROUNDS[0]);
-  (function loop(){if(!ov.alive||dead)return;const l=1-(performance.now()-t0)/(T*1000);$('tm').style.width=Math.max(0,l*100)+'%';
+  (function loop(){if(!ov.alive||dead)return;const l=1-(gnow()-t0)/(T*1000);$('tm').style.width=Math.max(0,l*100)+'%';
     if(l<=0){pop($('m'),'Zeit um!');end();return}requestAnimationFrame(loop)})();
 })}

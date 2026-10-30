@@ -5,6 +5,7 @@ import {diff} from '../state.js';
 import {OV,bindX,canvasFor,openOv,xbtn} from '../ui.js';
 import {iconUrl,propUrl} from '../util.js';
 import {A} from './scene.js';
+import {gnow} from './clock.js';
 
 export function gCatch(s){return new Promise(res=>{
   const D=18,W=320,H=400,col=G[s.out].c;
@@ -16,18 +17,18 @@ export function gCatch(s){return new Promise(res=>{
   const CART=img(propUrl('minecart')),GOOD=img(iconUrl(s.out)),ROCK=img(iconUrl('junk')),CS=118,[,rimY]=A.minecart.rim;
   // Nur für automatische Tests: Lage der Lore und fallenden Teile
   cv.__state=()=>({bx,items:items.map(o=>({x:o.x,y:o.y,st:o.st}))});
-  let bx=160,tx=160,items=[],parts=[],t=0,spawnT=0.4,good=0,caught=0,stones=0,flash=0,ended=false,last=performance.now();
+  let bx=160,tx=160,items=[],parts=[],t=0,spawnT=0.4,good=0,caught=0,stones=0,flash=0,ended=false,last=gnow();
   const setX=e=>{const r=cv.getBoundingClientRect();tx=Math.max(38,Math.min(W-38,(e.clientX-r.left)/r.width*W))};
   cv.onpointerdown=e=>{setX(e);try{cv.setPointerCapture(e.pointerId)}catch(_){}};
   cv.onpointermove=e=>{if(e.buttons||e.pointerType==='touch')setX(e)};
   const key=e=>{if(!OV||!OV.alive)return removeEventListener('keydown',key);if(e.key==='ArrowLeft')tx=Math.max(38,tx-44);if(e.key==='ArrowRight')tx=Math.min(W-38,tx+44)};
   addEventListener('keydown',key);
-  function frame(now){
+  function frame(){const now=gnow();
     if(!ov.alive||ended){removeEventListener('keydown',key);return}
     const dt=Math.min(.05,(now-last)/1000);last=now;t+=dt;bx+=(tx-bx)*Math.min(1,dt*16);
     spawnT-=dt;
     if(spawnT<=0&&t<D-1.5){spawnT=Math.max(.3,.75-t*.02);const st=Math.random()<.28;if(!st)good++;
-      items.push({x:24+Math.random()*(W-48),y:-20,v:(140+t*9+Math.random()*60)*diff(),st,r:st?14:12,rot:Math.random()*6})}
+      items.push({x:24+Math.random()*(W-48),y:-20,v:(120+t*7+Math.random()*50)*diff(),st,r:st?14:12,rot:Math.random()*6})}
     items.forEach(o=>{o.y+=o.v*dt;o.rot+=dt*2});
     items=items.filter(o=>{
       if(o.y>H-78&&o.y<H-48&&Math.abs(o.x-bx)<42){
@@ -58,7 +59,7 @@ export function gCatch(s){return new Promise(res=>{
     c.fillStyle='#fff';c.font='800 13px system-ui,sans-serif';c.textAlign='left';c.fillText(caught+' gefangen'+(stones?' · '+stones+(stones>1?' Steine':' Stein'):''),22,29);
     c.fillStyle='rgba(255,255,255,.15)';c.fillRect(W-112,21,88,6);c.fillStyle='#fbbf24';c.fillRect(W-112,21,88*Math.max(0,1-t/D),6);
     if(t>=D){ended=true;removeEventListener('keydown',key);SFX.win();
-      setTimeout(()=>ov.alive&&res(Math.max(0,Math.min(1,caught/Math.max(1,good*.85)-stones*.12))),500);return}
+      setTimeout(()=>ov.alive&&res(Math.max(0,Math.min(1,caught/Math.max(1,good*.75)-stones*.1))),500);return}
     requestAnimationFrame(frame)}
   requestAnimationFrame(frame);
 })}

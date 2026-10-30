@@ -67,9 +67,9 @@ const STRAT={
   async whack(p){for(let k=0;k<900;k++){const r=await p.evaluate(()=>{if(!document.getElementById('st'))return null;const w=[...document.querySelectorAll('.hwin')].find(e=>e.innerHTML&&!e.querySelector('.i-tnt'));
       if(!w)return {};const b=w.getBoundingClientRect();return {x:b.x+b.width/2,y:b.y+b.height/2}});if(!r)break;if(r.x)await p.mouse.click(r.x,r.y);await p.waitForTimeout(20)}},
   // Adern klopfen, bei Grubengas warten
-  async wall(p){for(let k=0;k<1500;k++){const r=await p.evaluate(()=>{const wl=document.getElementById('wl');if(!wl)return null;if(wl.classList.contains('gas'))return {gas:1};
-      const t=[...wl.querySelectorAll('.tile')].find(e=>e.dataset.k==='v'||e.dataset.k==='rich');if(!t)return {};const b=t.getBoundingClientRect();return {x:b.x+b.width/2,y:b.y+b.height/2}});
-      if(!r)break;if(r.x)await p.mouse.click(r.x,r.y);await p.waitForTimeout(r.gas?40:60)}},
+  async wall(p){for(let k=0;k<1500;k++){const r=await p.evaluate(()=>{const wl=document.getElementById('wl');if(!wl)return null;
+      const ts=[...wl.querySelectorAll('.tile')],t=ts.find(e=>e.dataset.k==='drill')||ts.find(e=>e.dataset.k==='v'||e.dataset.k==='rich');if(!t)return {};const b=t.getBoundingClientRect();return {x:b.x+b.width/2,y:b.y+b.height/2}});
+      if(!r)break;if(r.x)await p.mouse.click(r.x,r.y);await p.waitForTimeout(60)}},
   // bündig ablegen (Test-Schnittstelle des Canvas)
   async stack(p){const bb=await (await p.$('#cv')).boundingBox();for(let i=0;i<10;i++){
       for(let k=0;k<800;k++){const st=await p.evaluate(()=>document.getElementById('cv').__state());if(st.done)return;if(Math.abs(st.x-st.top)<4)break;await p.waitForTimeout(3)}
@@ -96,11 +96,17 @@ const STRAT={
           if(want&&!down){await p.mouse.down();down=true}else if(!want&&down){await p.mouse.up();down=false}await p.waitForTimeout(10)}
         if(down)await p.mouse.up()}
       await p.waitForTimeout(10)}},
-  // LKW: Spur ohne Hindernis in Reichweite wählen (Zustand über cv.__state), per Pfeiltasten wechseln
-  async drive(p){for(let k=0;k<2000;k++){const s=await p.evaluate(()=>{const c=document.getElementById('cv');return c&&c.__state?c.__state():null});if(!s||s.over)break;
-      const danger=l=>Math.max(0,...s.obs.filter(o=>o.k!=='coin'&&o.x===s.LX[l]&&o.y>s.TY-230&&o.y<s.TY+45).map(o=>o.y));
-      if(danger(s.lane)){const opts=[s.lane-1,s.lane+1].filter(l=>l>=0&&l<3).sort((a,b)=>danger(a)-danger(b));if(danger(opts[0])<danger(s.lane)||!danger(opts[0]))await p.keyboard.press(opts[0]<s.lane?'ArrowLeft':'ArrowRight')}
-      await p.waitForTimeout(25)}},
+  // LKW: Spur mit dem weitesten freien Weg wählen (Zustand über cv.__state) und per Ziehen auf dem Canvas dorthin lenken
+  async drive(p){const cv=await p.$('#cv'),bb=await cv.boundingBox(),x0=bb.x+bb.width/2,y0=bb.y+bb.height*.7,PXM=bb.width*(714/22)/(320*1.2);
+    await p.mouse.move(x0,y0);await p.mouse.down();await p.mouse.move(x0+20,y0);await p.mouse.move(x0,y0);let j=1;
+    for(let k=0;k<3000;k++){const s=await p.evaluate(()=>{const c=document.getElementById('cv');return c&&c.__state?c.__state():null});if(!s||s.over)break;
+      const free=L=>Math.min(1e3,...s.objs.filter(o=>o.k!=='coin'&&Math.abs(o.lx-L)<2.4&&o.dz>-3&&o.dz<90).map(o=>o.dz));
+      const coins=L=>s.objs.filter(o=>o.k==='coin'&&Math.abs(o.lx-L)<1&&o.dz>0&&o.dz<45).length;
+      // Quer über die Mittelspur nur, wenn dort gerade nichts steht
+      const cur=[-3,0,3].reduce((a,l)=>Math.abs(l-s.px)<Math.abs(a-s.px)?l:a),mid=!s.objs.some(o=>o.k!=='coin'&&Math.abs(o.lx)<2.4&&o.dz>-4&&o.dz<14);
+      const best=[-3,0,3].filter(L=>Math.abs(L-cur)<6||mid).map(L=>({L,f:free(L),c:coins(L),d:Math.abs(L-s.px)})).sort((a,b)=>(b.f>=60?60:b.f)-(a.f>=60?60:a.f)||b.c-a.c||a.d-b.d)[0];
+      j=-j;await p.mouse.move(x0+best.L*PXM+j*.3,y0);await p.waitForTimeout(25)}
+    await p.mouse.up()},
   // Jede Flasche halten, bis ihr Anteil das Ziel erreicht
   async mix(p){for(let i=0;i<3;i++){const b=(await p.$$('#st .prop.p-bottle_a, #st .prop.p-bottle_b, #st .prop.p-bottle_c'))[i],bb=await b.boundingBox();
       await p.mouse.move(bb.x+bb.width/2,bb.y+bb.height/2);await p.mouse.down();
@@ -111,7 +117,7 @@ const STRAT={
 // Mindestwerte bewusst unter dem, was die Bots erreichen (Zufall, Reaktionszeit des Testbrowsers)
 const RUNS=[['timing','erz',.8],['timingMove','kohle',.6],['timing','ziegel',.8],['heat','stahl',.6],['heatMove','glas',.5],['mash','ziegel',.9],['forge','stahl',.35],['pour','stahl',.3],['mix','kunststoff',.85],
   ['bolts','maschine',.9],['simon','maschine',.8],['wires','platine',.9],['sort','lehm',.7],['catch','erz',.6],['whack','erz',.6],['wall','kohle',.7],
-  ['stack','ziegel',.8],['solder','platine',.8],['pipes','kunststoff',.4],['phone','handy',.8],['fish','-',1],['drive','-',60]];
+  ['stack','ziegel',.8],['solder','platine',.8],['pipes','kunststoff',.4],['phone','handy',.8],['fish','-',1],['drive','-',85]]; // LKW: Es bleibt immer eine Spur frei – ein schneller Fahrer kommt fast ohne Schaden an
 
 (async()=>{
   const b=await chromium.launch();let fail=0;
@@ -120,6 +126,8 @@ const RUNS=[['timing','erz',.8],['timingMove','kohle',.6],['timing','ziegel',.8]
     const p=await b.newPage({viewport:{width:390,height:844}});const errs=[];p.on('pageerror',e=>errs.push(e.message));
     await p.goto(URL);await p.evaluate(()=>{S.xp=xpFor(5);S.goal=GOALS.length});
     await p.evaluate(([g,id])=>{window.__r='offen';(g==='fish'?gFish():g==='drive'?drive(ROUTES[1],{}):GAMES[g](ST.find(s=>s.id===id))).then(v=>window.__r=v)},[g,id]);await p.waitForTimeout(400);
+    // Startbildschirm: „Los!“ tippen und das Herunterzählen abwarten
+    await p.click('#gogo');await p.waitForFunction(()=>!document.getElementById('gate'),null,{timeout:5000});
     let note='';try{await STRAT[g.replace('Move','')](p)}catch(e){note=e.message}
     for(let i=0;i<100&&await p.evaluate(()=>window.__r)==='offen';i++)await p.waitForTimeout(100);
     let r=await p.evaluate(()=>window.__r);if(r&&typeof r==='object')r=g==='drive'?r.integ:Object.keys(r).length; // LKW: Zustand der Ladung, Angeln: Zahl der Fischarten

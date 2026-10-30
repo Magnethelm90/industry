@@ -81,7 +81,9 @@
   #ovbox.alarm{animation:alarm .6s infinite alternate}@keyframes alarm{from{box-shadow:0 0 0 2px #ef4444,0 0 40px rgba(239,68,68,.6)}to{box-shadow:0 0 0 2px #3b82f6,0 0 40px rgba(59,130,246,.6)}}
   .raidc{width:100%;text-align:left;color:var(--ink);font:inherit}.raidc b{color:var(--ok);font-size:13px}
   #s-under{--glass:rgba(251,113,133,.05)}
-  .wall.gas{box-shadow:inset 0 0 40px rgba(132,204,22,.8);background:#1a2e05}
+  .wall.power{box-shadow:inset 0 0 0 2px #fde047,inset 0 0 36px rgba(253,224,71,.45)}
+  .tile.drill{background:radial-gradient(circle at 50% 45%,#fde04766,transparent 70%),var(--pb-stone) center/118% no-repeat,#2b303e;box-shadow:inset 0 0 0 2px #fde047,inset 0 0 14px #fde04788;animation:glow 1s infinite alternate}
+  .tile .drl{font-size:26px;line-height:1;pointer-events:none;filter:drop-shadow(0 0 6px #fde047)}
   nav button.dot::after{content:"";position:absolute;top:5px;right:calc(50% - 17px);width:9px;height:9px;border-radius:50%;background:var(--bad);box-shadow:0 0 8px var(--bad);animation:pg2 1s infinite alternate}
   @keyframes pg2{to{transform:scale(1.3)}}
   .pick{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:12px 0}
@@ -166,7 +168,18 @@
   @keyframes pop{from{opacity:0;transform:translateY(24px) scale(.94)}to{opacity:1;transform:none}}
   #ovbox h3{margin:0 0 2px;font-size:20px;font-weight:800;padding-right:40px}
   #ovbox .sub{padding-right:40px}
-  .x{position:absolute;right:12px;top:12px;width:34px;height:34px;border-radius:12px;border:1px solid var(--line);background:var(--glass2);color:var(--ink);font-size:14px}
+  .x{position:absolute;z-index:16;right:12px;top:12px;width:34px;height:34px;border-radius:12px;border:1px solid var(--line);background:var(--glass2);color:var(--ink);font-size:14px}
+  /* Startbildschirm der Minispiele: Anleitung, „Los!“, dann 3-2-1 über dem Spielfeld */
+  #ovbox.gated{overflow:hidden}
+  .gate{position:absolute;inset:0;z-index:15;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:28px 22px;text-align:center;border-radius:inherit;background:linear-gradient(160deg,#202a52,#0e1428)}
+  .gate .btn{flex:0 0 auto}
+  .gate #goback{padding:10px 22px}
+  .gate .gt{font-size:24px;font-weight:900;letter-spacing:-.01em;text-wrap:balance}
+  .gate .gh{font-size:17px;line-height:1.5;color:var(--ink);max-width:30ch;text-wrap:pretty}
+  .gate .btn.big{font-size:20px;padding:16px 44px;min-width:210px;margin-top:6px}
+  .gate.count{background:rgba(5,8,18,.4);pointer-events:auto}
+  .gate .cd{font-size:120px;font-weight:900;line-height:1;color:#fff;text-shadow:0 0 40px #22d3ee,0 4px 0 #0008;animation:cdpop .6s ease-out}
+  @keyframes cdpop{from{transform:scale(1.7);opacity:0}30%{opacity:1}to{transform:scale(1)}}
   .msg{min-height:30px;text-align:center;font-weight:800;font-size:18px;margin:8px 0}
   .msg.pop{animation:msg .35s}@keyframes msg{from{transform:scale(1.5);opacity:.3}to{transform:none;opacity:1}}
   .dots{display:flex;justify-content:center;gap:7px;margin:4px 0 8px}.dots i{width:12px;height:12px;border-radius:50%;background:rgba(255,255,255,.14)}
@@ -270,7 +283,7 @@
 .code{display:block;width:100%;margin-top:8px;padding:10px;border-radius:12px;border:1px solid var(--line);background:#0b1020;color:var(--ink);font:12px/1.4 ui-monospace,Menlo,monospace;word-break:break-all;resize:vertical;user-select:text;-webkit-user-select:text}
 /* Systemeinstellung „Bewegung reduzieren“: kein Wackeln, keine Dauer-Pulse; Spielsignale bleiben als feste Markierung */
 @media (prefers-reduced-motion:reduce){
-  .screen.on,.plot.ready,.plot .bug,#ovbox.alarm,nav button.dot::after,.flask.boil,.spad.act,.tile.rich,.card.broken,.btn.pulse,.msg.pop,.shake,.smoke,.win,.hl,.hint,.flame,.waves,.bobber{animation:none!important}
+  .screen.on,.plot.ready,.plot .bug,#ovbox.alarm,nav button.dot::after,.flask.boil,.spad.act,.tile.rich,.tile.drill,.card.broken,.btn.pulse,.msg.pop,.shake,.smoke,.win,.hl,.hint,.flame,.waves,.bobber,.gate .cd{animation:none!important}
   #ovbox.alarm{box-shadow:0 0 0 3px #ef4444,0 0 40px #ef444499}
   .spad.act{box-shadow:0 0 0 6px #ffffff40,0 0 26px #fbbf24}
   #toast,.screw,.bolt,.pc svg{transition:none}

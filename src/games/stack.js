@@ -4,6 +4,7 @@ import {SFX,vib} from '../fx.js';
 import {OV,bindX,canvasFor,openOv,xbtn} from '../ui.js';
 import {$,propUrl} from '../util.js';
 import {A} from './scene.js';
+import {gnow} from './clock.js';
 
 export function gStack(s){return new Promise(res=>{
   const N=10,W=320,H=440,BH=26;
@@ -11,7 +12,7 @@ export function gStack(s){return new Promise(res=>{
   bindX();ov.abort=()=>res(null);
   const [cv,c]=canvasFor(W,H);
   const HOOK=new Image();HOOK.src=propUrl('hook');const HS=74,[,htip]=A.hook.tip,[,htop]=A.hook.top;
-  let stack=[{x:80,w:160}],cur={x:0,w:160,dir:1},speed=150,cam=0,camT=0,placed=0,perfect=0,done=false,falls=[],msg='',msgT=0,last=performance.now();
+  let stack=[{x:80,w:160}],cur={x:0,w:160,dir:1},speed=120,cam=0,camT=0,placed=0,perfect=0,done=false,falls=[],msg='',msgT=0,last=gnow();
   const yOf=i=>H-30-BH*(i+1)+cam;
   function brick(x,y,w,row){
     const g=c.createLinearGradient(0,y,0,y+BH);g.addColorStop(0,'#f26a4b');g.addColorStop(1,'#a8271c');c.fillStyle=g;c.fillRect(x,y,w,BH-2);
@@ -23,11 +24,11 @@ export function gStack(s){return new Promise(res=>{
     if(done||!ov.alive)return;
     const top=stack[stack.length-1],l=Math.max(cur.x,top.x),r=Math.min(cur.x+cur.w,top.x+top.w),w=r-l;
     if(w<=0){done=true;falls.push({x:cur.x,w:cur.w,y:yOf(stack.length),vy:0,row:stack.length});msg='DANEBEN!';msgT=2;SFX.crash();vib([60,40,60]);finish();return}
-    if(Math.abs(cur.x-top.x)<=5){cur.x=top.x;perfect++;msg='PERFEKT!';msgT=1;SFX.perfect();vib(25)}
+    if(Math.abs(cur.x-top.x)<=8){cur.x=top.x;perfect++;msg='PERFEKT!';msgT=1;SFX.perfect();vib(25)}
     else{falls.push({x:cur.x<top.x?cur.x:r,w:cur.w-w,y:yOf(stack.length),vy:0,row:stack.length});cur.x=l;cur.w=w;msg='';SFX.good();vib(12)}
     stack.push({x:cur.x,w:cur.w});placed++;
     if(placed>=N){done=true;msg='GESCHAFFT!';msgT=3;SFX.win();finish();return}
-    speed+=18;const left=Math.random()<.5;cur={x:left?0:W-cur.w,w:cur.w,dir:left?1:-1};
+    speed+=12;const left=Math.random()<.5;cur={x:left?0:W-cur.w,w:cur.w,dir:left?1:-1};
     camT=Math.max(0,stack.length-9)*BH;
   }
   $('drop').onpointerdown=drop;cv.onpointerdown=drop;
@@ -35,7 +36,7 @@ export function gStack(s){return new Promise(res=>{
   cv.__state=()=>({x:cur.x,top:stack[stack.length-1].x,done});
   const key=e=>{if(!OV||!OV.alive)return removeEventListener('keydown',key);if(e.key===' '||e.key==='Enter'){e.preventDefault();drop()}};
   addEventListener('keydown',key);
-  function frame(now){
+  function frame(){const now=gnow();
     if(!ov.alive){removeEventListener('keydown',key);return}
     const dt=Math.min(.05,(now-last)/1000);last=now;
     if(!done){cur.x+=cur.dir*speed*dt;if(cur.x<0){cur.x=0;cur.dir=1}if(cur.x>W-cur.w){cur.x=W-cur.w;cur.dir=-1}}

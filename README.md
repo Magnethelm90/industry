@@ -63,6 +63,12 @@ Neue Spieler folgen 23 Zielen (`src/features/goals.js`). Bereiche öffnen sich n
 - Sicherungscodes sind die einzige Eingabe von außen. `readCode` (`src/features/backup.js`) lehnt Codes ab, die HTML- oder Skript-Zeichen enthalten, zu lang sind oder beim Entpacken zu groß würden (Zip-Bombe). Tests dafür stehen in `tests/systems.cjs`.
 - Der Workflow nutzt auf Commits gepinnte Actions und pro Job nur die nötigen Rechte.
 
+## Minispiele
+
+- **Startbildschirm:** Jedes Minispiel zeigt zuerst seine Anleitung und den Knopf „Los!“, danach zählt es 3-2-1 herunter (`src/games/gate.js`). Erst dann läuft die Zeit: Alle Spiele messen Zeit mit `gnow()` aus `src/games/clock.js`, und diese Uhr steht still, solange der Startbildschirm offen ist.
+- **LKW-Fahrt** (`src/games/drive.js`): Straße in Perspektive mit Horizont, sanften Kurven, Tag/Nacht und Wetter. Gelenkt wird durch Ziehen mit dem Finger, kurzes Tippen links oder rechts wechselt die Spur, dazu Knöpfe und Pfeiltasten. Kurven drücken leicht nach außen. Hindernisse kommen in Reihen, in denen immer eine Spur frei bleibt, mit genug Abstand zum Ausweichen; langsame Autos werden überholt, solange kommen daneben nur Münzen. Der Test-Bot in `tests/minigames.cjs` muss mit mindestens 85 % Zustand ankommen.
+- **Flöz:** Statt Grubengas gibt es eine Presslufthammer-Kachel (⚡): Für 4 Sekunden bricht jede Ader mit einem Schlag.
+
 ## Icons neu rendern
 
 Die Icons entstehen per Skript in Blender (Cycles, transparenter Hintergrund, gleiches Licht für alle):
@@ -71,10 +77,10 @@ Die Icons entstehen per Skript in Blender (Cycles, transparenter Hintergrund, gl
 pip install bpy pillow                                   # Blender als Python-Modul (Python 3.13)
 python tools/icons/render_icons.py src/assets/icons      # alle 59 Icons, ca. 3 Minuten auf 4 Kernen
 python tools/icons/render_icons.py src/assets/icons erz  # nur einzelne
-python tools/icons/render_props.py src/assets/props      # Requisiten der Minispiel-Szenen
+python tools/icons/render_props.py src/assets/props      # Requisiten der Minispiel-Szenen (getestet mit bpy 5.2.3)
 python tools/icons/render_appicon.py public              # App-Icon (192 und 512 px)
 ```
 
-Für die Szenen der Minispiele (Amboss, Ofen, Presse, Gießpfanne, Becherglas …) rendert `tools/icons/render_props.py` die Requisiten in Frontansicht nach `src/assets/props/` und schreibt in `anchors.json`, wo z. B. die Ofentür oder der Ausguss im Bild liegt. `src/games/scene.js` setzt die Requisiten danach auf die Bühne. Alle Minispiele spielen so in einer gerenderten Szene (Schaltkasten, Förderband, Grubenlore, Stollen, Kranhaken, Steg mit Angelrute, LKW auf der Straße …). Die LKW-Fahrt nutzt eine Verfolgerperspektive schräg von oben. Wo ein Test-Bot den Spielzustand nicht sicher aus dem Bild lesen kann, gibt das Spiel ihn über eine kleine Test-Schnittstelle heraus (`__state` an der Bühne bzw. am Canvas, `__cells` beim Rohrspiel).
+Für die Szenen der Minispiele (Amboss, Ofen, Presse, Gießpfanne, Becherglas …) rendert `tools/icons/render_props.py` die Requisiten in Frontansicht nach `src/assets/props/` und schreibt in `anchors.json`, wo z. B. die Ofentür oder der Ausguss im Bild liegt. `src/games/scene.js` setzt die Requisiten danach auf die Bühne. Alle Minispiele spielen so in einer gerenderten Szene (Schaltkasten, Förderband, Grubenlore, Stollen, Kranhaken, Steg mit Angelrute, LKW auf der Straße …). Für die LKW-Fahrt sind LKW, Autos, Hütchen, Baken, Felsen, Bäume und Laternen flach von hinten gerendert (Verfolgerperspektive). Wo ein Test-Bot den Spielzustand nicht sicher aus dem Bild lesen kann, gibt das Spiel ihn über eine kleine Test-Schnittstelle heraus (`__state` an der Bühne bzw. am Canvas, `__cells` beim Rohrspiel).
 
 Jedes Icon ist eine kleine Funktion in `tools/icons/render_icons.py`. Ein neues Icon braucht dort eine Funktion mit `@icon('schluessel')`; das Spiel findet die Datei dann automatisch. Gespeichert wird als WebP mit Qualität 78 – sichtbar gleich, aber deutlich kleiner, weil alle Bilder in die eine HTML-Datei eingebettet werden.

@@ -4,6 +4,7 @@ import {SFX,burst,vib} from '../fx.js';
 import {bindX,openOv,shakeBox,xbtn} from '../ui.js';
 import {$,ic,pop} from '../util.js';
 import {fly} from './scene.js';
+import {gnow} from './clock.js';
 
 export function phoneSVG(has,next,powered){
   const SL={gehaeuse:[10,6,140,288,26],platine:[26,26,108,112,8],akku:[30,150,100,118,10],display:[16,14,128,272,20]};
@@ -25,11 +26,11 @@ export function gPhone(s){return new Promise(res=>{
   const parts=['gehaeuse','platine','akku','display',decoy].sort(()=>Math.random()-.5);
   const ov=openOv(xbtn()+`<h3>Smartphone montieren</h3><div class="sub">Zieh die Teile in der richtigen Reihenfolge ins Handy (oder tippe sie an). Ein Teil gehört nicht dazu!</div><div class="msg" id="m">Womit fängst du an?</div><div class="phonewrap"><div class="phone" id="ph"></div><div class="tray" id="tr"></div></div><div id="pw" style="margin-top:12px"></div><div class="timer" style="margin-top:12px"><i id="tm" style="width:100%"></i></div>`);
   bindX();ov.abort=()=>res(null);
-  let ph=0,mist=0,powered=false,done=false;const has={},t0=performance.now();
+  let ph=0,mist=0,powered=false,done=false;const has={},t0=gnow();
   const cur=()=>PH[ph];
   function finish(){
-    done=true;const el=(performance.now()-t0)/1000;
-    const sc=Math.max(0,Math.min(1,1-mist*.15-Math.max(0,el-25)/50));
+    done=true;const el=(gnow()-t0)/1000;
+    const sc=Math.max(0,Math.min(1,1-mist*.15-Math.max(0,el-30)/50));
     setTimeout(()=>ov.alive&&res(sc),1400)}
   function draw(){
     const c=cur();$('ph').innerHTML=phoneSVG(has,c&&c.p,powered);
@@ -60,5 +61,5 @@ export function gPhone(s){return new Promise(res=>{
         if(moved&&!inside)return;place(b,part)};
       mv(e);addEventListener('pointermove',mv);addEventListener('pointerup',up);addEventListener('pointercancel',cancel)}});
   draw();
-  (function loop(){if(!ov.alive||done)return;const el=(performance.now()-t0)/1000;$('tm').style.width=Math.max(0,100-el/40*100)+'%';requestAnimationFrame(loop)})();
+  (function loop(){if(!ov.alive||done)return;const el=(gnow()-t0)/1000;$('tm').style.width=Math.max(0,100-el/40*100)+'%';requestAnimationFrame(loop)})();
 })}

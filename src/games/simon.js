@@ -3,6 +3,7 @@ import {SFX,tone,vib} from '../fx.js';
 import {bindX,openOv,xbtn} from '../ui.js';
 import {$,pop,sleep} from '../util.js';
 import {at,put} from './scene.js';
+import {running} from './clock.js';
 
 export function gSimon(){return new Promise(res=>{
   const col=['#ef4444','#22c55e','#3b82f6','#eab308'],key=['pbtn_r','pbtn_g','pbtn_b','pbtn_y'],fq=[262,330,392,523];
@@ -21,15 +22,18 @@ export function gSimon(){return new Promise(res=>{
   }
   const lit=(i,on)=>{lamps[i].classList.toggle('on',on);pads[i].classList.toggle('down',on)};
   const flash=async(i,d=350)=>{lit(i,true);tone(fq[i],d/1000,'triangle',.08);await sleep(d);lit(i,false);await sleep(150)};
-  let seq=[],done=0,listen=null;
+  let seq=[],done=0,listen=null,lives=1,retry=false;
   pads.forEach((p,i)=>p.onpointerdown=e=>{e.preventDefault();if(listen){lit(i,true);tone(fq[i],.15,'triangle',.08);vib(10);setTimeout(()=>lit(i,false),150);listen(i)}});
   (async()=>{
+    await running();if(!ov.alive)return;
     for(let r=0;r<ROUNDS;r++){
-      seq.push(Math.floor(Math.random()*4));pop($('m'),'Schau genau …');await sleep(500);
-      for(const i of seq){if(!ov.alive)return;await flash(i,Math.max(220,350-r*25))}
+      if(!ov.alive)return;
+      if(!retry)seq.push(Math.floor(Math.random()*4));retry=false;pop($('m'),'Schau genau …');await sleep(500);
+      for(const i of seq){if(!ov.alive)return;await flash(i,Math.max(320,450-r*25))}
       if(!ov.alive)return;pop($('m'),'Du bist dran!');
       const ok=await new Promise(r2=>{let k=0;listen=i=>{if(i!==seq[k]){listen=null;r2(false)}else if(++k>=seq.length){listen=null;r2(true)}}});
       if(!ov.alive)return;
+      if(!ok&&lives>0){lives--;retry=true;r--;pop($('m'),'Falsch! Noch ein Versuch – schau nochmal hin');SFX.miss();vib([40,30,40]);await sleep(1200);continue}
       if(!ok){pop($('m'),'Falsch! ❌');SFX.miss();$('dots').children[r].className='m';await sleep(900);break}
       done++;$('dots').children[r].className='g';pop($('m'),'Richtig! ✅');SFX.good();await sleep(550);
     }

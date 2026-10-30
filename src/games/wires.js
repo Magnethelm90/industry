@@ -4,9 +4,10 @@ import {SFX,vib} from '../fx.js';
 import {bindX,openOv,xbtn} from '../ui.js';
 import {$,pop} from '../util.js';
 import {at,put,shakeStage,sparks} from './scene.js';
+import {gnow} from './clock.js';
 
 export function gWires(s){return new Promise(res=>{
-  const COL=['#ef4444','#3b82f6','#facc15','#22c55e','#e879f9'],N=5,T=14;
+  const COL=['#ef4444','#3b82f6','#facc15','#22c55e','#e879f9'],N=5,T=22;
   // Jede Farbe hat zusätzlich ein Zeichen – so geht es auch bei Rot-Grün-Schwäche
   const SYM=['<circle cx="8" cy="8" r="5.5"/>','<path d="M8 2l6.5 11.5h-13z"/>','<rect x="2.5" y="2.5" width="11" height="11" rx="1"/>','<path d="M8 1l7 7-7 7-7-7z"/>','<path d="M8 1l2.1 4.6 5 .5-3.8 3.3 1.1 4.9L8 11.8l-4.4 2.5 1.1-4.9L.9 6.1l5-.5z"/>'];
   const right=[...Array(N).keys()].sort(()=>Math.random()-.5);
@@ -23,7 +24,7 @@ export function gWires(s){return new Promise(res=>{
   const cab=$('cab');
   const path=(x1,y1,x2,y2,c,tmp)=>{const d=`M${x1} ${y1} C${(x1+x2)/2} ${y1},${(x1+x2)/2} ${y2},${x2} ${y2}`;
     return `<g${tmp?' id="tmpc"':''}><path d="${d}" stroke="#0009" stroke-width="10" fill="none" stroke-linecap="round"/><path d="${d}" stroke="${COL[c]}" stroke-width="6.5" fill="none" stroke-linecap="round"/><path d="${d}" stroke="#ffffff66" stroke-width="2" fill="none" stroke-linecap="round" transform="translate(0,-1.5)"/></g>`};
-  let sel=null,drag=null,done=new Set(),mist=0,fin=false;const t0=performance.now();
+  let sel=null,drag=null,done=new Set(),mist=0,fin=false;const t0=gnow();
   const local=e=>{const r=st.getBoundingClientRect();return [e.clientX-r.left,e.clientY-r.top]};
   function end(){fin=true;const sc=done.size/N*Math.max(0,1-mist*.18);setTimeout(()=>ov.alive&&res(sc),700)}
   function attempt(i,j){
@@ -45,6 +46,6 @@ export function gWires(s){return new Promise(res=>{
   st.onpointerup=st.onpointercancel=ev=>{if(!drag)return;const t=$('tmpc');if(t)t.remove();const d=drag;drag=null;
     if(!d.moved){sel=d.i;return}
     const j=hitRight(local(ev));if(j>=0)attempt(d.i,j);else{L[d.i].classList.remove('sel');sel=null}};
-  (function loop(){if(!ov.alive||fin)return;const el=(performance.now()-t0)/1000;$('tm').style.width=Math.max(0,100-el/T*100)+'%';
+  (function loop(){if(!ov.alive||fin)return;const el=(gnow()-t0)/1000;$('tm').style.width=Math.max(0,100-el/T*100)+'%';
     if(el>=T){pop($('m'),'Zeit um!');SFX.miss();end();return}requestAnimationFrame(loop)})();
 })}
