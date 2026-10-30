@@ -27,6 +27,7 @@ node tools/pace.mjs --days=30  # spätes Spiel: täglich 1 h aktiv + 8 h offline
 - `src/app.js`: Navigation und Bildschirmaufbau
 - `src/data.js`: alle Spieldaten (Waren, Stationen, Betriebe, Länder …)
 - `src/state.js`: Spielstand und abgeleitete Werte (Level, Lager, Preise)
+- Marktpreise (Schleife in `src/main.js`): langsamer Trend um den Grundpreis (etwa ±3–4 %, 0,2 % pro Sekunde). Alle 2,5–4 Minuten kommt für eine Ware ein Boom (×2,2) oder Crash (×0,45), der 1 Minute dauert und in einigen Sekunden ein- und ausgleitet. Der Preisverlauf zeigt die letzten 5 Minuten.
 - `src/features/`: je ein Spielbereich (Werkstatt, Farm, Betriebe, Markt, Laden, Aufträge, Export, Untergrund …)
 - `src/games/`: je ein Minispiel; `games/index.js` ist das Register
 - `src/ui.js`, `src/fx.js`, `src/util.js`: Overlay, Sound/Effekte, Helfer. Die Effekte sind echte CC0-Aufnahmen (Kenney, rubberduck u. a., Liste in `src/assets/sfx/QUELLEN.md`), als kleine MP3s in die Spieldatei eingebettet (zusammen etwa 190 KB). Der LKW-Motor ist eine nahtlose WAV-Schleife, deren Drehzahl über die Abspielgeschwindigkeit folgt. Bis eine Aufnahme dekodiert ist oder falls der Browser sie nicht lesen kann, erzeugt Web Audio einen Ersatzton. Löten und Kurzschluss bleiben erzeugt.

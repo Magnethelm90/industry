@@ -33,19 +33,27 @@ $('lvpill').onclick=openCompany;
   offlineB(dt);tickRivals(dt);offlineFarm(dt);S.ug.heat=Math.max(0,S.ug.heat-.04*dt);const s=offlineShop(dt);
   if(s>0)setTimeout(()=>toast('Dein Laden hat in deiner Abwesenheit für '+fmt(s)+' Credits verkauft.'),4200)})();
 document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>go(b.dataset.s==='trade'?tradeSub:b.dataset.s));
-let nextEv=Date.now()+40000,histT=0,pressing=false;
+// Markt: Preise ziehen langsam (±3–4 %, Trends über Minuten); Boom/Crash alle 2,5–4 min, 1 min lang, mit weichem Übergang
+const EV_GAP=[150000,240000],EV_LEN=60000;
+let nextEv=Date.now()+90000,histT=0,pressing=false;const evOn={};
 addEventListener('pointerdown',()=>pressing=true,true);
 addEventListener('pointerup',()=>pressing=false,true);
 addEventListener('pointercancel',()=>pressing=false,true);
 setInterval(()=>{
   const dt=1;
   tickB(dt);
-  GK.forEach(g=>{sat[g]*=Math.exp(-dt/45);mood[g]+=(1-mood[g])*0.01+(Math.random()-0.5)*0.03;mood[g]=Math.max(0.35,mood[g])});
-  if((histT+=dt)>=4){histT=0;GK.forEach(g=>{S.hist[g].push(price(g));if(S.hist[g].length>30)S.hist[g].shift()})}
-  if(Date.now()>nextEv){nextEv=Date.now()+50000+Math.random()*50000;
-    const gl=GKU(),g=gl[Math.floor(Math.random()*gl.length)],up=Math.random()<0.6;mood[g]=up?2.2:0.45;setTimeout(()=>mood[g]=1,35000);
-    const rv=pick(freeRivals()).n;
-    toast(up?`🔥 ${rv} kauft ${G[g].n} auf – 35 s lang hohe Preise!`:`❄️ ${rv} überschwemmt den Markt mit ${G[g].n} – Preissturz!`);SFX.coin()}
+  const now=Date.now();
+  GK.forEach(g=>{sat[g]*=Math.exp(-dt/45);const e=evOn[g];
+    if(e&&now>=e.until)evOn[g]=e.to===1?null:{to:1,until:now+12000}; // nach dem Ereignis 12 s zurückgleiten
+    const f=evOn[g];if(f)mood[g]+=(f.to-mood[g])*0.25; // in gut 4 s auf das Ziel
+    else mood[g]+=(1-mood[g])*0.002+(Math.random()-0.5)*0.008; // sonst langsamer Trend
+    mood[g]=Math.max(0.35,mood[g])});
+  if((histT+=dt)>=10){histT=0;GK.forEach(g=>{S.hist[g].push(price(g));if(S.hist[g].length>30)S.hist[g].shift()})}
+  if(now>nextEv){nextEv=now+EV_GAP[0]+Math.random()*(EV_GAP[1]-EV_GAP[0]);
+    const gl=GKU().filter(g=>!evOn[g]),g=gl[Math.floor(Math.random()*gl.length)],up=Math.random()<0.6;
+    if(g){evOn[g]={to:up?2.2:0.45,until:now+EV_LEN};
+      const rv=pick(freeRivals()).n;
+      toast(up?`🔥 ${rv} kauft ${G[g].n} auf – 1 Minute lang hohe Preise!`:`❄️ ${rv} überschwemmt den Markt mit ${G[g].n} – 1 Minute Preissturz!`);SFX.coin()}}
   tickOrders();tickShop(dt);tickRivals(dt);tickFarm(dt);tickExport();tickUnder(dt);tickGoals();
   if(!OV&&!pressing&&cur!=='work')render();else badges();
   if(!saveLocked()){S.last=Date.now();try{localStorage.setItem(SAVE,JSON.stringify(S))}catch(e){}}
