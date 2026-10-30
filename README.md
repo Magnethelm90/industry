@@ -65,6 +65,13 @@ Neue Spieler folgen 23 Zielen (`src/features/goals.js`). Bereiche öffnen sich n
 - Sicherungscodes sind die einzige Eingabe von außen. `readCode` (`src/features/backup.js`) lehnt Codes ab, die HTML- oder Skript-Zeichen enthalten, zu lang sind oder beim Entpacken zu groß würden (Zip-Bombe). Tests dafür stehen in `tests/systems.cjs`.
 - Der Workflow nutzt auf Commits gepinnte Actions und pro Job nur die nötigen Rechte.
 
+## Labor
+
+Ab Level 3, in der Werkstatt. Zwei Reiter:
+
+- **Experiment:** drei Zutaten wählen (nach Kategorie gefiltert, standardmäßig nur Waren auf Lager), dann das Mischspiel mit genau diesen Zutaten als Flaschen. Stimmt das Rezept, gibt es 1 Stück, +1 bei sauberer Mischung (ab 70 %) und +1 mit dem Katalysator. Bei einem Fehlversuch bekommt jeder Kolben ✓ (gehört in das am besten passende unbekannte Rezept) oder ✗. Nur ✗-Zutaten werden verbraucht, mit dem Reinraum gar keine. Abbrechen kostet nichts.
+- **Forschung** (`RES` in `src/data.js`, Logik in `src/features/lab.js`): kostet Credits und echte Zeit, immer eine gleichzeitig, läuft auch bei geschlossener App. Spektralanalyse (wiederholbar, verrät eine Zutat eines unbekannten Rezepts, Kosten ×1,6 je Durchgang), Katalysator, Materialkunde (+50 Lager), Prozessoptimierung I/II (je +5 % Werkstatt), Marktforschung (Verkauf 20 % statt 25 % unter Marktpreis), Reinraum. Die Boni stecken in `cap()`, `mult()` und `sellP()` in `src/state.js`.
+
 ## Minispiele
 
 - **Startbildschirm:** Jedes Minispiel zeigt zuerst seine Anleitung und den Knopf „Los!“, danach zählt es 3-2-1 herunter (`src/games/gate.js`). Erst dann läuft die Zeit: Alle Spiele messen Zeit mit `gnow()` aus `src/games/clock.js`, und diese Uhr steht still, solange der Startbildschirm offen ist.

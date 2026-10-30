@@ -25,15 +25,30 @@ const URL='file://'+path.resolve(__dirname,'../dist/index.html')+'?debug';
   await ev(()=>{acceptOrder(S.offers[0]);S.orders[0].due=Date.now()-1;tickOrders()});
   ok(await ev(()=>S.rep)===Math.max(0,r1-8),'verpasste Frist kostet 8 Ruf: '+r1+' → '+await ev(()=>S.rep));
 
-  // Labor
+  // Labor: Mischspiel, ✓/✗ je Kolben (nur ✗ wird verbraucht), Forschung mit Boni
   await ev(()=>{S.stock.ziegel=3;S.stock.stahl=3;S.stock.kohle=3;S.stock.lehm=3;go('work')});
   await p.click('#lab .btn');await p.waitForTimeout(150);
+  ok(await p.$('.flask')&&!(await p.$('#labres')),'Labor öffnet auf dem Experiment-Reiter');
+  const mixIt=async()=>{await p.click('#exp');await p.click('#gogo');await p.waitForSelector('#gate',{state:'detached'});
+    const bt=await p.$('#st .prop.p-bottle_a'),bb=await bt.boundingBox();await p.mouse.move(bb.x+bb.width/2,bb.y+bb.height/2);await p.mouse.down();await p.waitForTimeout(500);await p.mouse.up();
+    await p.click('#fill');await p.waitForSelector('#lm',{timeout:5000})};
   for(const n of ['Lehm','Stahl','Kohle'])await p.locator('.pk',{hasText:n}).first().click();
-  await p.click('#exp');await p.waitForTimeout(1300);
-  ok((await p.textContent('#lm')).includes('Zutat'),'falsches Rezept gibt Hinweis: '+await p.textContent('#lm'));
-  await p.locator('.flask').first().click();await p.locator('.pk',{hasText:'Ziegel'}).first().click();
-  await p.click('#exp');await p.waitForTimeout(1300);
-  ok(await ev(()=>!!S.rec.kamin&&S.stock.kamin>=1),'Kaminofen entdeckt');
+  await mixIt();
+  const marks=await p.$$eval('.flask',fs=>fs.map(f=>f.querySelector('.fmark')?.textContent||''));
+  ok((await p.textContent('#lm')).includes('Zwei Zutaten')&&marks.join('')==='✓✓✗','Fehlversuch: zwei ✓, ein ✗ ('+marks.join(' ')+')');
+  ok(await ev(()=>S.stock.lehm===2&&S.stock.stahl===3&&S.stock.kohle===3),'nur die ✗-Zutat wird verbraucht');
+  await p.locator('.flask').nth(2).click();await p.locator('.pk',{hasText:'Ziegel'}).first().click();
+  await mixIt();
+  ok(await ev(()=>!!S.rec.kamin&&S.stock.kamin>=1)&&(await p.textContent('#lm')).includes('Kaminofen'),'Kaminofen entdeckt');
+  await p.click('[data-t="res"]');await p.waitForTimeout(100);
+  const lm0=await ev(()=>S.money);await ev(()=>{S.money=5000});await p.click('[data-t="res"]');await p.click('[data-r="analyse"]');
+  ok(await ev(()=>S.lab.res&&S.lab.res.id==='analyse'&&S.money===4700)&&!!(await p.$('#rbar')),'Forschung startet und kostet 300 Cr');
+  ok(await p.$eval('[data-r="kat"]',b=>b.disabled),'nur eine Forschung gleichzeitig');
+  await ev(()=>{S.lab.res.until=Date.now()-1;tickLab()});
+  ok(await ev(()=>Object.values(S.lab.rev).some(a=>a.length===1)&&!S.lab.res),'Spektralanalyse verrät eine Zutat');
+  const c0=await ev(()=>cap());await ev(()=>{S.lab.done.lager=1;S.lab.done.markt=1});
+  ok(await ev(()=>cap())===c0+50&&await ev(()=>Math.abs(sellP('stahl')/price('stahl')-.8)<1e-9),'Boni: Lager +50, Marktverkauf 20 % Abschlag');
+  await ev(m=>{S.lab.done={};S.lab.rev={};S.money=m},lm0);
   await p.click('#ovx');
 
   // Laden

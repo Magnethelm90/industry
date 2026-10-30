@@ -13,6 +13,7 @@ import {dayPhase,refreshLive} from './world.js';
 import {offlineShop,syncSlots,tickShop} from './features/shop.js';
 import {tickUnder} from './features/under.js';
 import {initGoals,tickGoals} from './features/goals.js';
+import {tickLab} from './features/lab.js';
 import {openCompany} from './features/company.js';
 import {SFX,toast} from './fx.js';
 import {GKU,S,mood,price,sat,saveLocked} from './state.js';
@@ -54,7 +55,7 @@ setInterval(()=>{
     if(g){evOn[g]={to:up?2.2:0.45,until:now+EV_LEN};
       const rv=pick(freeRivals()).n;
       toast(up?`🔥 ${rv} kauft ${G[g].n} auf – 1 Minute lang hohe Preise!`:`❄️ ${rv} überschwemmt den Markt mit ${G[g].n} – 1 Minute Preissturz!`);SFX.coin()}}
-  tickOrders();tickShop(dt);tickRivals(dt);tickFarm(dt);tickExport();tickUnder(dt);tickGoals();
+  tickLab();tickOrders();tickShop(dt);tickRivals(dt);tickFarm(dt);tickExport();tickUnder(dt);tickGoals();
   if(!OV&&!pressing&&cur!=='work')render();else badges();
   if(!saveLocked()){S.last=Date.now();try{localStorage.setItem(SAVE,JSON.stringify(S))}catch(e){}}
 },1000);

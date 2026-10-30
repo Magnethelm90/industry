@@ -7,10 +7,11 @@ import {at,put} from './scene.js';
 import {gnow} from './clock.js';
 
 export function gMix(s){return new Promise(res=>{
-  const ING=[{n:'Basis',c:'#8b5cf6',p:'bottle_a'},{n:'Härter',c:'#06b6d4',p:'bottle_b'},{n:'Farbe',c:'#ec4899',p:'bottle_c'}];
+  // s.ing: eigene Zutaten (Labor), sonst die drei Standard-Flaschen
+  const ING=(s.ing||[{n:'Basis',c:'#8b5cf6'},{n:'Härter',c:'#06b6d4'},{n:'Farbe',c:'#ec4899'}]).map((g,i)=>({...g,p:['bottle_a','bottle_b','bottle_c'][i]}));
   const w=[1+Math.random()*2,.6+Math.random()*1.5,.4+Math.random()],sw=w.reduce((a,b)=>a+b),T=w.map(x=>x/sw*100);
   const D=15,amt=[0,0,0];
-  const ov=openOv(xbtn()+`<h3>Mischen · ${G[s.out].n}</h3><div class="sub">Halte eine Flasche gedrückt, um einzuschenken. Triff die Schichten der Zielskala rechts – bei 100 % ist das Glas voll.</div><div class="msg" id="m">Rezept beachten!</div>
+  const ov=openOv(xbtn()+`<h3>${s.title||'Mischen · '+G[s.out].n}</h3><div class="sub">${s.how||'Halte eine Flasche gedrückt, um einzuschenken. Triff die Schichten der Zielskala rechts – bei 100 % ist das Glas voll.'}</div><div class="msg" id="m">Rezept beachten!</div>
     <div class="stage lab" id="st" style="height:290px"></div>
     <button class="btn big" id="fill" style="margin-top:8px">✓ Abfüllen</button>
     <div class="timer" style="margin-top:10px"><i id="tm" style="width:100%"></i></div>`);
@@ -26,7 +27,8 @@ export function gMix(s){return new Promise(res=>{
   ruler.innerHTML=ING.map((g,i)=>`<i style="height:${T[i]}%;background:${g.c}"></i>`).join('');st.appendChild(ruler);
   const BW=74,bx=[W*.16,W*.44,W*.72],bcx=(il+ir)/2;
   const bottles=ING.map((g,i)=>{const b=put(st,g.p,BW,null,bx[i],52);b.style.pointerEvents='auto';b.style.touchAction='none';b.style.transition='transform .18s';b.style.zIndex=4;
-    const lb=document.createElement('div');lb.className='pourlbl';lb.style.left=bx[i]+'px';lb.style.top='92px';lb.style.bottom='auto';lb.innerHTML=`${g.n} <span id="pv${i}">0 / ${Math.round(T[i])}</span>`;st.appendChild(lb);return b});
+    if(g.icon)b.insertAdjacentHTML('beforeend',`<span style="position:absolute;left:50%;top:60%;transform:translate(-50%,-50%);pointer-events:none;filter:drop-shadow(0 1px 2px #000)">${g.icon}</span>`);
+    const lb=document.createElement('div');lb.className='pourlbl';lb.style.left=bx[i]+'px';lb.style.top='92px';lb.style.bottom='auto';lb.style.textAlign='center';lb.innerHTML=`${g.n}<br><span id="pv${i}">0 / ${Math.round(T[i])}</span>`;st.appendChild(lb);return b});
   const streams=ING.map(g=>{const e=document.createElement('div');e.className='stream';e.style.cssText=`opacity:0;background:${g.c};box-shadow:0 0 10px ${g.c}`;st.appendChild(e);return e});
   let act=-1,done=false,last=gnow(),tick=0;const t0=gnow();
   const ang=i=>bx[i]<bcx-10?105:bx[i]>bcx+10?-105:115;

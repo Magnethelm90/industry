@@ -1,7 +1,7 @@
 /* Werkstatt: Stationen mit zufälligem Minispiel */
 import {render} from '../app.js';
 import {G,REC,ST} from '../data.js';
-import {openLab} from './lab.js';
+import {labStatus,openLab} from './lab.js';
 import {SFX,burst,fx,toast,vib} from '../fx.js';
 import {GAMES,GNAME} from '../games/index.js';
 import {S,cap,isOpen,lvl,mult,track} from '../state.js';
@@ -35,8 +35,8 @@ export function renderWork(){
     (S.combo>=1?`<span class="chip up" style="margin:0 2px 6px;display:inline-flex">🔥 Combo ×${S.combo} · +${Math.min(5,S.combo)*10} % Ertrag</span>`:'');
   if(isOpen('lab')){
     const known=REC.filter(r=>S.rec[r.out]).length,lab=document.createElement('div');lab.className='card';lab.id='lab';lab.style.setProperty('--c','#22d3ee');
-    lab.innerHTML=`<div class="art"><span style="font-size:30px">🧪</span></div><div class="i">Labor<small>Kombiniere Zutaten und entdecke geheime Rezepte · ${known} / ${REC.length} entdeckt</small></div><button class="btn b">Öffnen</button>`;
-    lab.querySelector('button').onclick=openLab;el.appendChild(lab);
+    lab.innerHTML=`<div class="art"><span style="font-size:30px">🧪</span></div><div class="i">Labor<small>Zutaten mischen, geheime Rezepte entdecken, forschen · ${known} / ${REC.length} entdeckt</small>${labStatus()?`<small>${labStatus()}</small>`:''}</div><button class="btn b">Öffnen</button>`;
+    lab.querySelector('button').onclick=()=>openLab();el.appendChild(lab);
   }
   [['Rohstoffe',s=>!s.secret&&!s.grp&&!s.lv&&!Object.keys(s.in).length],['Verarbeitung',s=>!s.secret&&!s.grp&&!s.lv&&Object.keys(s.in).length>0],
    ['Veredelung · Lebensmittel & Textil',s=>s.grp==='food'],

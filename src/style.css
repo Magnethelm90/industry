@@ -93,6 +93,7 @@
   .flasks{display:flex;justify-content:center;gap:14px;margin:14px 0 4px}
   .flask{width:74px;height:88px;padding:0;border-radius:16px 16px 34px 34px;border:2px solid color-mix(in srgb,var(--c) 70%,#fff);display:flex;align-items:center;justify-content:center;color:var(--mut);font-size:28px;
     background:radial-gradient(circle at 50% 78%,color-mix(in srgb,var(--c) 60%,transparent),transparent 70%),rgba(255,255,255,.04)}
+  .flask{position:relative}.fmark{position:absolute;top:-8px;right:-8px;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff;box-shadow:0 2px 6px rgba(0,0,0,.4)}.fmark.y{background:#16a34a}.fmark.n{background:#dc2626}
   .flask.boil{animation:boil .22s infinite alternate}@keyframes boil{to{transform:translateY(-4px) rotate(3deg);box-shadow:0 0 26px var(--c)}}
   .msg.good{color:var(--ok)}.msg.bad{color:var(--bad);font-size:15px}
   .rank{display:flex;gap:10px;align-items:center;padding:11px 14px;margin:6px 0;border-radius:14px;background:var(--glass);border:1px solid var(--line);font-weight:700;font-size:14px}

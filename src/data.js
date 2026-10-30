@@ -40,6 +40,17 @@ export const REC=[
  {out:'drohne',in:['akku','platine','kunststoff'],games:['solder','bolts'],hint:'Leicht, smart – und sie fliegt.'},
  {out:'roboter',in:['maschine','platine','akku'],games:['simon','solder','bolts','wires'],hint:'Mechanik mit Gehirn und eigener Energie.'}
 ];
+// Forschung im Labor: immer nur eine gleichzeitig, läuft auch bei geschlossener App weiter. t in Sekunden.
+// rep: beliebig oft (Kosten steigen je Durchgang um ×1,6), need: setzt eine andere Forschung voraus
+export const RES=[
+ {id:'analyse',n:'Spektralanalyse',d:'Verrät eine Zutat eines unbekannten Rezepts.',lv:3,c:300,t:90,rep:1},
+ {id:'kat',n:'Katalysator',d:'Gelungene Experimente ergeben 1 Stück mehr.',lv:3,c:800,t:240},
+ {id:'lager',n:'Materialkunde',d:'Jede Ware: 50 Lagerplatz mehr.',lv:4,c:1500,t:420},
+ {id:'proz1',n:'Prozessoptimierung I',d:'Werkstatt: 5 % mehr Ertrag pro Minispiel.',lv:4,c:2500,t:600},
+ {id:'markt',n:'Marktforschung',d:'Direktverkauf am Markt: 20 % statt 25 % unter Marktpreis.',lv:5,c:5000,t:900},
+ {id:'rein',n:'Reinraum',d:'Fehlversuche verbrauchen keine Zutaten mehr.',lv:5,c:8000,t:1200},
+ {id:'proz2',n:'Prozessoptimierung II',d:'Werkstatt: weitere 5 % mehr Ertrag.',lv:6,c:12000,t:1800,need:'proz1'}
+];
 export const ST=[
  {id:'erz',n:'Eisenerz abbauen',games:['wall','whack','catch','timing'],in:{},out:'erz',max:8,mult:'pick'},
  {id:'kohle',n:'Kohle abbauen',games:['wall','whack','timingMove','catch'],in:{},out:'kohle',max:8,mult:'pick'},
