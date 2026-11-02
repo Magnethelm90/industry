@@ -74,6 +74,9 @@ Ab Level 3, in der Werkstatt. Zwei Reiter:
 
 ## Minispiele
 
+
+**Passend zur Station:** Jedes Spiel hat ein festes Bild (Fels, Schmelzofen, Gießpfanne, Presse, Flaschen …). Deshalb bekommt eine Station nur Spiele, deren Bild passt (`games` in `ST`, `src/data.js`: Mühle mahlt und reinigt Korn, Kelterei presst Trauben und setzt Wein an, die Wartung zieht Schrauben fest oder prüft Kabel). Titel, Anleitung, Zutaten der Mischflaschen und die Bezeichnung auf der Stationskarte stehen pro Station und Spiel in `src/games/theme.js` (`TH`); was dort fehlt, behält den Standardtext. Der Systemtest öffnet jede Kombination und prüft, dass der Titel der Station erscheint und kein Minenspiel an einer Fabrik läuft.
+
 - **Startbildschirm:** Jedes Minispiel zeigt zuerst seine Anleitung und den Knopf „Los!“, danach zählt es 3-2-1 herunter (`src/games/gate.js`). Erst dann läuft die Zeit: Alle Spiele messen Zeit mit `gnow()` aus `src/games/clock.js`, und diese Uhr steht still, solange der Startbildschirm offen ist.
 - **LKW-Fahrt** (`src/games/drive.js`): Straße in Perspektive mit Horizont, sanften Kurven, Tag/Nacht und Wetter. Gelenkt wird durch Ziehen mit dem Finger, kurzes Tippen links oder rechts wechselt die Spur, dazu Knöpfe und Pfeiltasten. Kurven drücken leicht nach außen. Hindernisse kommen in Reihen, in denen immer eine Spur frei bleibt, mit genug Abstand zum Ausweichen; langsame Autos werden überholt, solange kommen daneben nur Münzen. Der Test-Bot in `tests/minigames.cjs` muss mit mindestens 85 % Zustand ankommen.
 - **Flöz:** Statt Grubengas gibt es eine Presslufthammer-Kachel (⚡): Für 4 Sekunden bricht jede Ader mit einem Schlag.

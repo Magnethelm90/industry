@@ -5,13 +5,14 @@ import {bindX,openOv,xbtn} from '../ui.js';
 import {$,pop} from '../util.js';
 import {at,put,shakeStage,sparks} from './scene.js';
 import {gnow} from './clock.js';
+import {th} from './theme.js';
 
 export function gWires(s){return new Promise(res=>{
   const COL=['#ef4444','#3b82f6','#facc15','#22c55e','#e879f9'],N=5,T=22;
   // Jede Farbe hat zusätzlich ein Zeichen – so geht es auch bei Rot-Grün-Schwäche
   const SYM=['<circle cx="8" cy="8" r="5.5"/>','<path d="M8 2l6.5 11.5h-13z"/>','<rect x="2.5" y="2.5" width="11" height="11" rx="1"/>','<path d="M8 1l7 7-7 7-7-7z"/>','<path d="M8 1l2.1 4.6 5 .5-3.8 3.3 1.1 4.9L8 11.8l-4.4 2.5 1.1-4.9L.9 6.1l5-.5z"/>'];
   const right=[...Array(N).keys()].sort(()=>Math.random()-.5);
-  const ov=openOv(xbtn()+`<h3>Kabel · ${G[s.out].n}</h3><div class="sub">Zieh ein Kabel von links zur Klemme mit derselben Farbe und demselben Zeichen rechts (oder tippe links und dann rechts). Falsche Verbindung = Kurzschluss!</div><div class="msg" id="m">Verkabeln …</div>
+  const ov=openOv(xbtn()+`<h3>${th(s,'title',`Kabel · ${G[s.out].n}`)}</h3><div class="sub">${th(s,'how',`Zieh ein Kabel von links zur Klemme mit derselben Farbe und demselben Zeichen rechts (oder tippe links und dann rechts). Falsche Verbindung = Kurzschluss!`)}</div><div class="msg" id="m">Verkabeln …</div>
     <div class="stage factory" id="st" style="height:300px"><svg id="cab" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:4"></svg></div>
     <div class="timer"><i id="tm" style="width:100%"></i></div>`);
   bindX();ov.abort=()=>res(null);
@@ -32,7 +33,7 @@ export function gWires(s){return new Promise(res=>{
     if(c===i){done.add(i);cab.insertAdjacentHTML('beforeend',path(lx+10,Y(i),rx-10,Y(j),c));
       L[i].classList.add('ok');Rn[j].classList.add('ok');SFX.good();vib(10);sparks(st,rx-10,Y(j),6,COL[c]);
       if(done.size>=N){pop($('m'),'Alles verbunden ⚡');SFX.win();end()}}
-    else{mist++;SFX.zap();vib([50,30,50]);sparks(st,rx-10,Y(j),16,'#fde047');shakeStage(st);pop($('m'),'Kurzschluss! ⚡')}
+    else{mist++;SFX.zap();vib([50,30,50]);sparks(st,rx-10,Y(j),16,'#fde047');shakeStage(st);pop($('m'),th(s,'bad','Kurzschluss! ⚡'))}
     L.forEach(x=>x.classList.remove('sel'));sel=null}
   const hitRight=([x,y])=>Rn.findIndex((e,j)=>Math.hypot(x-rx,y-Y(j))<30&&!e.classList.contains('ok'));
   L.forEach((e,i)=>{e.onpointerdown=ev=>{

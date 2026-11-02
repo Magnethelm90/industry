@@ -4,6 +4,7 @@ import {G,REC,ST} from '../data.js';
 import {labStatus,openLab} from './lab.js';
 import {SFX,burst,fx,toast,vib} from '../fx.js';
 import {GAMES,GNAME} from '../games/index.js';
+import {TH} from '../games/theme.js';
 import {S,cap,isOpen,lvl,mult,track} from '../state.js';
 import {addSec,closeOv,lockLine} from '../ui.js';
 import {$,ic} from '../util.js';
@@ -14,7 +15,7 @@ export async function runStation(s,srcEl){
   if(S.stock[s.out]>=cap()){SFX.err();toast('Lager für '+G[s.out].n+' ist voll – bring Ware zum Markt!');return}
   const pool=s.games.length>1?s.games.filter(g=>g!==s.lastG):s.games,gname=pool[Math.floor(Math.random()*pool.length)];
   s.lastG=gname;
-  const score=await GAMES[gname](s);
+  const score=await GAMES[gname]({...s,th:(TH[s.id]||{})[gname]});
   if(score==null)return;
   closeOv();
   for(const k in s.in)S.stock[k]-=s.in[k];
@@ -47,7 +48,7 @@ export function renderWork(){
       const need=Object.keys(s.in).map(k=>`<span class="${S.stock[k]>=s.in[k]?'up':'dn'}">${s.in[k]}× ${G[k].n} (${Math.floor(S.stock[k])})</span>`).join(' · ');
       const can=Object.keys(s.in).every(k=>S.stock[k]>=s.in[k]);
       const d=document.createElement('div');d.className='card';d.dataset.st=s.id;d.style.setProperty('--c',G[s.out].c);
-      d.innerHTML=`<div class="art">${ic(s.out,42)}</div><div class="i">${s.n}<small>🎲 ${s.games.map(g=>GNAME[g]).join(' · ')}</small><small>${need?'Braucht '+need:'Kostenlos'} → bis ${Math.max(1,Math.round(s.max*mult(s.mult)))}× ${G[s.out].n}</small></div><button class="btn ${can?'':'ghost'}">Spielen</button>`;
+      d.innerHTML=`<div class="art">${ic(s.out,42)}</div><div class="i">${s.n}<small>🎲 ${s.games.map(g=>(TH[s.id]||{})[g]?.name||GNAME[g]).join(' · ')}</small><small>${need?'Braucht '+need:'Kostenlos'} → bis ${Math.max(1,Math.round(s.max*mult(s.mult)))}× ${G[s.out].n}</small></div><button class="btn ${can?'':'ghost'}">Spielen</button>`;
       d.querySelector('button').onclick=()=>runStation(s);
       el.appendChild(d)});
     if(later.length)el.appendChild(lockLine(later.length,Math.min(...later.map(s=>s.lv)),list.length));

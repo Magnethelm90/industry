@@ -6,10 +6,11 @@ import {bindX,openOv,xbtn} from '../ui.js';
 import {$,pop} from '../util.js';
 import {A,at,put,sparks} from './scene.js';
 import {gnow} from './clock.js';
+import {th} from './theme.js';
 
 export function gPour(s){return new Promise(res=>{
   const N=3;
-  const ov=openOv(xbtn()+`<h3>Gießen · ${G[s.out].n}</h3><div class="sub">Zieh den Finger nach unten, um die Pfanne zu kippen – je weiter, desto stärker fließt es. Loslassen stellt sie wieder auf, aber es läuft noch etwas nach. Füll die Form genau bis zur grünen Linie.</div><div class="dots" id="dots">${'<i></i>'.repeat(N)}</div><div class="msg" id="m">Form 1</div>
+  const ov=openOv(xbtn()+`<h3>${th(s,'title',`Gießen · ${G[s.out].n}`)}</h3><div class="sub">${th(s,'how',`Zieh den Finger nach unten, um die Pfanne zu kippen – je weiter, desto stärker fließt es. Loslassen stellt sie wieder auf, aber es läuft noch etwas nach. Füll die Form genau bis zur grünen Linie.`)}</div><div class="dots" id="dots">${'<i></i>'.repeat(N)}</div><div class="msg" id="m">Form 1</div>
     <div class="stage forge" id="st" style="height:270px"><div class="hint top">↓ Ziehen zum Kippen ↓</div></div>`);
   bindX();ov.abort=()=>res(null);
   const st=$('st'),W=st.clientWidth,LW=150;

@@ -4,6 +4,7 @@ import {SFX,vib} from '../fx.js';
 import {bindX,openOv,xbtn} from '../ui.js';
 import {$,pop} from '../util.js';
 import {gnow} from './clock.js';
+import {th} from './theme.js';
 
 // Rohr: dunkler Rand, Metallrohr, Glanzlinie; Wasser (nur wenn verbunden) läuft als animierte Strichlinie
 const pipeSvg=t=>{const d=t==='I'?'M0 50H100':'M50 0V50H100';
@@ -19,7 +20,7 @@ export function gPipes(s){return new Promise(res=>{
   const dirTo=(a,b)=>b[0]>a[0]?DIR.E:b[0]<a[0]?DIR.W:b[1]>a[1]?DIR.S:DIR.N;
   path.forEach((p,i)=>{const inn=i===0?DIR.W:OPP[dirTo(path[i-1],p)],out=i===path.length-1?DIR.E:dirTo(p,path[i+1]),m=inn|out;
     const t=(m===10||m===5)?'I':'L';let rr=0;while(rot(BASE[t],rr)!==m)rr++;const c=cells[p[1]*C+p[0]];c.t=t;c.sol=rr;c.r=(rr+1+Math.floor(Math.random()*3))%4});
-  const ov=openOv(xbtn()+`<h3>Rohrleitung · ${G[s.out].n}</h3><div class="sub">Tippe Rohrstücke an, um sie zu drehen. Verbinde den Zulauf links mit dem Ablauf rechts.</div><div class="msg" id="m">Leitung verlegen …</div><div class="pipewrap"><div class="pipes" id="pp"></div><i class="src" style="top:${(r0+.5)/R*100}%"></i><i class="drn" style="top:${(r1+.5)/R*100}%"></i><div class="prop p-tank ptank l" style="top:${(r0+.5)/R*100}%"></div><div class="prop p-tank ptank r" style="top:${(r1+.5)/R*100}%"></div></div><div class="timer"><i id="tm" style="width:100%"></i></div>`);
+  const ov=openOv(xbtn()+`<h3>${th(s,'title',`Rohrleitung · ${G[s.out].n}`)}</h3><div class="sub">${th(s,'how',`Tippe Rohrstücke an, um sie zu drehen. Verbinde den Zulauf links mit dem Ablauf rechts.`)}</div><div class="msg" id="m">Leitung verlegen …</div><div class="pipewrap"><div class="pipes" id="pp"></div><i class="src" style="top:${(r0+.5)/R*100}%"></i><i class="drn" style="top:${(r1+.5)/R*100}%"></i><div class="prop p-tank ptank l" style="top:${(r0+.5)/R*100}%"></div><div class="prop p-tank ptank r" style="top:${(r1+.5)/R*100}%"></div></div><div class="timer"><i id="tm" style="width:100%"></i></div>`);
   bindX();ov.abort=()=>res(null);
   const conn=i=>rot(BASE[cells[i].t],cells[i].r);
   let done=false;const t0=gnow();

@@ -6,10 +6,11 @@ import {OV,bindX,canvasFor,openOv,xbtn} from '../ui.js';
 import {iconUrl,propUrl} from '../util.js';
 import {A} from './scene.js';
 import {gnow} from './clock.js';
+import {th} from './theme.js';
 
 export function gCatch(s){return new Promise(res=>{
   const D=18,W=320,H=400,col=G[s.out].c;
-  const ov=openOv(xbtn()+`<h3>Auffangen · ${G[s.out].n}</h3><div class="sub">Zieh die Lore nach links und rechts. Fang ${G[s.out].n}, weich den grauen Steinen aus.</div><canvas id="cv" style="aspect-ratio:320/400"></canvas>`);
+  const ov=openOv(xbtn()+`<h3>${th(s,'title',`Auffangen · ${G[s.out].n}`)}</h3><div class="sub">${th(s,'how',`Zieh die Lore nach links und rechts. Fang ${G[s.out].n}, weich den grauen Steinen aus.`)}</div><canvas id="cv" style="aspect-ratio:320/400"></canvas>`);
   bindX();ov.abort=()=>res(null);
   const [cv,c]=canvasFor(W,H);
   // Gerenderte Lore und Icons als Bilder für drawImage

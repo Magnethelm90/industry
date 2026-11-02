@@ -6,10 +6,11 @@ import {bindX,openOv,xbtn} from '../ui.js';
 import {$,pop} from '../util.js';
 import {A,at,put,shakeStage,sparks} from './scene.js';
 import {gnow} from './clock.js';
+import {th} from './theme.js';
 
 export function gForge(s){return new Promise(res=>{
   const N=8;
-  const ov=openOv(xbtn()+`<h3>Schmieden · ${G[s.out].n}</h3><div class="sub">Wisch nach unten, um mit dem Hammer zuzuschlagen – genau dann, wenn der weiße Ring auf dem glühenden Werkstück liegt. Der Takt wird schneller!</div><div class="dots" id="dots">${'<i></i>'.repeat(N)}</div><div class="msg" id="m">Bereit …</div>
+  const ov=openOv(xbtn()+`<h3>${th(s,'title',`Schmieden · ${G[s.out].n}`)}</h3><div class="sub">${th(s,'how',`Wisch nach unten, um mit dem Hammer zuzuschlagen – genau dann, wenn der weiße Ring auf dem glühenden Werkstück liegt. Der Takt wird schneller!`)}</div><div class="dots" id="dots">${'<i></i>'.repeat(N)}</div><div class="msg" id="m">Bereit …</div>
     <div class="stage forge" id="st" style="height:260px"><div class="fring" id="frg"></div><div class="hint top">↓ Nach unten wischen ↓</div></div>`);
   bindX();ov.abort=()=>res(null);
   const st=$('st'),W=st.clientWidth;

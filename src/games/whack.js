@@ -6,10 +6,11 @@ import {bindX,openOv,xbtn} from '../ui.js';
 import {$,ic,pop} from '../util.js';
 import {at,chunks,fly,put,shakeStage,sparks} from './scene.js';
 import {gnow} from './clock.js';
+import {th} from './theme.js';
 
 export function gWhack(s){return new Promise(res=>{
   const D=15;
-  const ov=openOv(xbtn()+`<h3>Erzader · ${G[s.out].n}</h3><div class="sub">Tippe auf die Brocken, bevor sie wieder im Stollen verschwinden. Finger weg vom Dynamit!</div><div class="msg" id="m">Bereit?</div>
+  const ov=openOv(xbtn()+`<h3>${th(s,'title',`Erzader · ${G[s.out].n}`)}</h3><div class="sub">${th(s,'how',`Tippe auf die Brocken, bevor sie wieder im Stollen verschwinden. Finger weg vom Dynamit!`)}</div><div class="msg" id="m">Bereit?</div>
     <div class="stage mine" id="st"></div><div class="timer"><i id="tm" style="width:100%"></i></div>`);
   bindX();ov.abort=()=>res(null);
   const st=$('st'),W=st.clientWidth,CW=Math.min(112,(W-12)/3);

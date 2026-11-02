@@ -5,10 +5,11 @@ import {bindX,openOv,xbtn} from '../ui.js';
 import {$,pop} from '../util.js';
 import {A,at,put,shakeStage,sparks} from './scene.js';
 import {gnow} from './clock.js';
+import {th} from './theme.js';
 
 export function gBolts(s,title){return new Promise(res=>{
   const ROUNDS=[5,7],T=14,total=12;
-  const ov=openOv(xbtn()+`<h3>${title||'Schrauben · '+G[s.out].n}</h3><div class="sub">Tippe die Schrauben in der richtigen Reihenfolge an: 1, 2, 3 … Der Schlüssel zieht sie fest. Falsche Schraube kostet Zeit.</div><div class="msg" id="m"></div>
+  const ov=openOv(xbtn()+`<h3>${th(s,'title',`${title||'Schrauben · '+G[s.out].n}`)}</h3><div class="sub">${th(s,'how',`Tippe die Schrauben in der richtigen Reihenfolge an: 1, 2, 3 … Der Schlüssel zieht sie fest. Falsche Schraube kostet Zeit.`)}</div><div class="msg" id="m"></div>
     <div class="stage factory" id="st" style="height:270px"></div><div class="timer"><i id="tm" style="width:100%"></i></div>`);
   bindX();ov.abort=()=>res(null);
   const st=$('st'),W=st.clientWidth,PS=Math.min(W*.98,310);

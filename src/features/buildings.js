@@ -2,8 +2,7 @@
 import {render} from '../app.js';
 import {BLD,BMAX,G,GK,KEEPS,SHOPT,UP,WEAR} from '../data.js';
 import {SFX,burst,fx,toast,vib} from '../fx.js';
-import {gBolts} from '../games/bolts.js';
-import {gTiming} from '../games/timing.js';
+import {GAMES} from '../games/index.js';
 import {S,cap,isOpen,lvl,price,projDone,sat,upCost} from '../state.js';
 import {addSec,closeOv,lockLine} from '../ui.js';
 import {$,fmt,ic} from '../util.js';
@@ -68,8 +67,9 @@ export function buildOrUpgrade(b,e){
   S.money-=c;s.lvl++;if(s.lvl===1)s.hp=100;S.xp+=10*s.lvl;SFX.buy();vib(25);
   burst(e.clientX,e.clientY,bc(b),16);fx(s.lvl===1?'Gebaut!':'Stufe '+s.lvl,bc(b));render();
 }
+const WRENCH='<span style="font-size:52px;line-height:1">🔧</span>';
 export async function repairB(b){
-  const sc=Math.random()<.5?await gBolts(null,'Wartung · '+b.n):await gTiming(3,'Wartung · '+b.n,'Tippe, wenn die Nadel im grünen Bereich steht – je besser, desto mehr Zustand.');
+  const sc=Math.random()<.5?await GAMES.bolts({out:'stahl',icon:WRENCH,th:{title:'Wartung · '+b.n,how:'Zieh die gelockerten Schrauben in der richtigen Reihenfolge fest: 1, 2, 3 … Eine falsche kostet Zeit. Je schneller, desto mehr Zustand.'}}):await GAMES.wires({out:'stahl',icon:WRENCH,th:{title:'Wartung · '+b.n,how:'Prüf die Verkabelung: Zieh jedes Kabel zur Klemme mit demselben Farbton und Zeichen (oder tippe links und dann rechts). Je sauberer, desto mehr Zustand.',bad:'Wackelkontakt! ⚡'}});
   if(sc==null)return;closeOv();
   const s=bst(b);s.hp=Math.max(s.hp,Math.min(100,40+60*sc));s.warned=0;if(s.hp>=50)s.weak=0;SFX.win();fx('Zustand '+Math.round(s.hp)+'%','#34d399');render();
 }

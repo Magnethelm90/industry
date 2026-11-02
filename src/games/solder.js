@@ -5,10 +5,11 @@ import {bindX,openOv,xbtn} from '../ui.js';
 import {$,center,pop} from '../util.js';
 import {A,fly} from './scene.js';
 import {gnow} from './clock.js';
+import {th} from './theme.js';
 
 export function gSolder(s){return new Promise(res=>{
   const N=6;
-  const ov=openOv(xbtn()+`<h3>Löten · ${G[s.out].n}</h3><div class="sub">Halte den leuchtenden Lötpunkt gedrückt und lass los, wenn der Ring grün ist. Zu lange = verbrannt.</div><div class="msg" id="m">Lötkolben bereit</div><div class="pcb" id="bd"></div>`);
+  const ov=openOv(xbtn()+`<h3>${th(s,'title',`Löten · ${G[s.out].n}`)}</h3><div class="sub">${th(s,'how',`Halte den leuchtenden Lötpunkt gedrückt und lass los, wenn der Ring grün ist. Zu lange = verbrannt.`)}</div><div class="msg" id="m">Lötkolben bereit</div><div class="pcb" id="bd"></div>`);
   bindX();ov.abort=()=>res(null);
   const pts=[];let guard=0;
   while(pts.length<N&&guard++<2000){const x=14+Math.random()*72,y=14+Math.random()*72;if(pts.every(p=>Math.hypot(p.x-x,p.y-y)>22))pts.push({x,y})}

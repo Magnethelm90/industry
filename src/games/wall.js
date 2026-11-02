@@ -5,10 +5,11 @@ import {bindX,openOv,shakeBox,xbtn} from '../ui.js';
 import {$,center,ic,pop} from '../util.js';
 import {chunks,fly,sparks} from './scene.js';
 import {gnow} from './clock.js';
+import {th} from './theme.js';
 
 export function gWall(s){return new Promise(res=>{
   const D=18,COLS=6,ROWS=6,TARGET=16,POWER=4;
-  const ov=openOv(xbtn()+`<h3>Flöz · ${G[s.out].n}</h3><div class="sub">Klopf ${G[s.out].n} aus der Wand: Adern brauchen 2 Schläge, glühende Adern 3 und geben dreifach. Graues Gestein kostet Zeit. Triffst du den Presslufthammer ⚡, bricht ${POWER} Sekunden lang jede Ader mit einem Schlag.</div><div class="msg" id="m">0 / ${TARGET}</div><div class="wall" id="wl"></div><div class="timer"><i id="tm" style="width:100%"></i></div>`);
+  const ov=openOv(xbtn()+`<h3>${th(s,'title',`Flöz · ${G[s.out].n}`)}</h3><div class="sub">${th(s,'how',`Klopf ${G[s.out].n} aus der Wand: Adern brauchen 2 Schläge, glühende Adern 3 und geben dreifach. Graues Gestein kostet Zeit. Triffst du den Presslufthammer ⚡, bricht ${POWER} Sekunden lang jede Ader mit einem Schlag.`)}</div><div class="msg" id="m">0 / ${TARGET}</div><div class="wall" id="wl"></div><div class="timer"><i id="tm" style="width:100%"></i></div>`);
   bindX();ov.abort=()=>res(null);
   let got=0,penalty=0,walls=0,ended=false,power=0;const t0=gnow();
   const wob=b=>{b.classList.remove('wob');void b.offsetWidth;b.classList.add('wob')};

@@ -4,9 +4,10 @@ import {bindX,openOv,xbtn} from '../ui.js';
 import {$,ic,pop} from '../util.js';
 import {A,IB,arcPath,at,gaugeAngle,put,sparks} from './scene.js';
 import {gnow} from './clock.js';
+import {th} from './theme.js';
 
 export function gMash(s){return new Promise(res=>{
-  const ov=openOv(xbtn()+`<h3>${s?s.n:'Presse'}</h3><div class="sub">Tippe so schnell du kannst – jeder Tipp ist ein Pressenhub. 6 Sekunden ab dem ersten Hub.</div><div class="msg" id="m">Tippe zum Start!</div>
+  const ov=openOv(xbtn()+`<h3>${th(s,'title',`${s?s.n:'Presse'}`)}</h3><div class="sub">${th(s,'how',`Tippe so schnell du kannst – jeder Tipp ist ein Pressenhub. 6 Sekunden ab dem ersten Hub.`)}</div><div class="msg" id="m">Tippe zum Start!</div>
     <svg class="gauge2" width="170" height="94" viewBox="0 0 200 112">
       <defs><linearGradient id="mg" x1="0" x2="1"><stop offset="0" stop-color="#34d399"/><stop offset=".6" stop-color="#fbbf24"/><stop offset="1" stop-color="#ef4444"/></linearGradient></defs>
       <path d="${arcPath(100,104,86,-70,70)}" stroke="url(#mg)" stroke-width="14" fill="none" stroke-linecap="round" opacity=".9"/>

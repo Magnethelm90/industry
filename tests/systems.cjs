@@ -213,6 +213,28 @@ const URL='file://'+path.resolve(__dirname,'../dist/index.html')+'?debug';
   ok(await tq.evaluate(()=>AC&&AC.state==='running'&&musicPlaying()),'Touch: Ton und Musik laufen nach einem Tipp');
   await tc.close();
 
+  // Minispiele passen zur Station: jede Kombination öffnet ohne Fehler, hat den Titel der Station (nicht den Standardtitel) und
+  // zeigt keinen Fels, wo keine Mine ist. Die Wartung nutzt Schrauben oder Kabel, nie Hammer auf Fels.
+  const pq=await b.newPage({viewport:{width:400,height:860}});pq.on('pageerror',e=>errs.push(e.message));await pq.goto(URL);await pq.evaluate(()=>localStorage.clear());await pq.reload();
+  await pq.evaluate(()=>{S.xp=xpFor(9);closeOv()});
+  const pairs=await pq.evaluate(()=>ST.flatMap(s=>s.games.map(g=>[s.id,g,!!(TH[s.id]&&TH[s.id][g]&&TH[s.id][g].title)])));
+  const wrong=[];
+  for(const [id,g,themed] of pairs){
+    await pq.evaluate(([id,g])=>{const s=ST.find(x=>x.id===id);GAMES[g]({...s,th:(TH[id]||{})[g]}).catch(()=>{})},[id,g]);
+    await pq.waitForSelector('#gate',{timeout:3000});
+    const t=await pq.textContent('#gate .gt'),want=await pq.evaluate(([id,g])=>(TH[id]||{})[g]?.title,[id,g]);
+    if(themed&&t!==want)wrong.push(id+':'+g+' → '+t);
+    await pq.click('#gogo');await pq.waitForSelector('#gate',{state:'detached'});
+    if(!/^(erz|kohle|lehm|kupfer)$/.test(id)&&['timing','timingMove','whack','wall'].includes(g))wrong.push(id+':'+g+' ist ein Minenspiel');
+    await pq.evaluate(()=>closeOv());
+  }
+  ok(wrong.length===0,pairs.length+' Station/Spiel-Kombinationen öffnen und tragen den Titel der Station '+JSON.stringify(wrong));
+  const rep=[];
+  for(let i=0;i<6;i++){await pq.evaluate(()=>{repairB(BLD.find(b=>b.kind==='mine')).catch(()=>{})});await pq.waitForSelector('#gate',{timeout:3000});
+    await pq.click('#gogo');await pq.waitForSelector('#gate',{state:'detached'});rep.push(await pq.evaluate(()=>({rock:!!document.querySelector('#st .p-rock'),mine:!!document.querySelector('#st.mine'),bolts:!!document.querySelector('.boltp'),cab:!!document.querySelector('#cab')})));await pq.evaluate(()=>closeOv())}
+  ok(rep.every(r=>!r.rock&&!r.mine&&(r.bolts||r.cab)),'Wartung: Schrauben oder Kabel, kein Fels ('+rep.map(r=>r.bolts?'S':'K').join('')+')');
+  await pq.close();
+
   ok(errs.length===0,'keine JavaScript-Fehler '+JSON.stringify(errs));
   await b.close();
   console.log(fail?fail+' Fehler':'Alles bestanden');process.exit(fail?1:0);

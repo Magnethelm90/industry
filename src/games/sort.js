@@ -6,10 +6,11 @@ import {bindX,openOv,xbtn} from '../ui.js';
 import {$,ic,pop} from '../util.js';
 import {IB,at,put,sparks} from './scene.js';
 import {gnow} from './clock.js';
+import {th} from './theme.js';
 
 export function gSort(s){return new Promise(res=>{
   const D=15;
-  const ov=openOv(xbtn()+`<h3>Sortierband · ${G[s.out].n}</h3><div class="sub">Tippe Fremdkörper (graue Steine) vom Band, bevor sie in der Kiste landen. ${G[s.out].n} lässt du durch!</div><div class="msg" id="m">Band läuft …</div>
+  const ov=openOv(xbtn()+`<h3>${th(s,'title',`Sortierband · ${G[s.out].n}`)}</h3><div class="sub">${th(s,'how',`Tippe Fremdkörper (graue Steine) vom Band, bevor sie in der Kiste landen. ${G[s.out].n} lässt du durch!`)}</div><div class="msg" id="m">Band läuft …</div>
     <div class="stage factory" id="st" style="height:230px"></div><div class="timer"><i id="tm" style="width:100%"></i></div>`);
   bindX();ov.abort=()=>res(null);
   const st=$('st'),W=st.clientWidth;

@@ -4,11 +4,12 @@ import {bindX,openOv,xbtn} from '../ui.js';
 import {$,pop,sleep} from '../util.js';
 import {at,put} from './scene.js';
 import {running} from './clock.js';
+import {th} from './theme.js';
 
-export function gSimon(){return new Promise(res=>{
+export function gSimon(s){return new Promise(res=>{
   const col=['#ef4444','#22c55e','#3b82f6','#eab308'],key=['pbtn_r','pbtn_g','pbtn_b','pbtn_y'],fq=[262,330,392,523];
   const ROUNDS=5;
-  const ov=openOv(xbtn()+`<h3>Montage</h3><div class="sub">Schau auf die Lampen, dann drück die Taster in derselben Reihenfolge.</div><div class="dots" id="dots">${'<i></i>'.repeat(ROUNDS)}</div><div class="msg" id="m">Merke dir die Reihenfolge …</div>
+  const ov=openOv(xbtn()+`<h3>${th(s,'title',`Montage`)}</h3><div class="sub">${th(s,'how',`Schau auf die Lampen, dann drück die Taster in derselben Reihenfolge.`)}</div><div class="dots" id="dots">${'<i></i>'.repeat(ROUNDS)}</div><div class="msg" id="m">Merke dir die Reihenfolge …</div>
     <div class="stage factory" id="st" style="height:240px"></div>`);
   bindX();ov.abort=()=>res(null);
   const st=$('st'),W=st.clientWidth,CS=Math.min(W*.98,330);

@@ -5,10 +5,11 @@ import {OV,bindX,canvasFor,openOv,xbtn} from '../ui.js';
 import {$,propUrl} from '../util.js';
 import {A} from './scene.js';
 import {gnow} from './clock.js';
+import {th} from './theme.js';
 
 export function gStack(s){return new Promise(res=>{
   const N=10,W=320,H=440,BH=26;
-  const ov=openOv(xbtn()+`<h3>Stapeln · ${G[s.out].n}</h3><div class="sub">Tippe, um den Ziegel abzulegen. Was übersteht, wird abgeschnitten. Ziel: ${N} Lagen.</div><canvas id="cv" style="aspect-ratio:320/440"></canvas><button class="btn big a" id="drop" style="margin-top:8px">ABLEGEN</button>`);
+  const ov=openOv(xbtn()+`<h3>${th(s,'title',`Stapeln · ${G[s.out].n}`)}</h3><div class="sub">${th(s,'how',`Tippe, um den Ziegel abzulegen. Was übersteht, wird abgeschnitten. Ziel: ${N} Lagen.`)}</div><canvas id="cv" style="aspect-ratio:320/440"></canvas><button class="btn big a" id="drop" style="margin-top:8px">ABLEGEN</button>`);
   bindX();ov.abort=()=>res(null);
   const [cv,c]=canvasFor(W,H);
   const HOOK=new Image();HOOK.src=propUrl('hook');const HS=74,[,htip]=A.hook.tip,[,htop]=A.hook.top;

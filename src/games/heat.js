@@ -4,9 +4,10 @@ import {bindX,openOv,xbtn} from '../ui.js';
 import {$,pop} from '../util.js';
 import {A,at,fly,put} from './scene.js';
 import {gnow} from './clock.js';
+import {th} from './theme.js';
 
 export function gHeat(moving=false,s){return new Promise(res=>{
-  const ov=openOv(xbtn()+`<h3>${s?s.n:'Schmelzofen'}${moving?' · Wandernde Hitze':''}</h3><div class="sub">Halte gedrückt, um den Blasebalg zu pumpen – das Feuer wird heißer. Loslassen kühlt ab. Halte das Thermometer im grünen Bereich!</div><div class="msg" id="m">Aufheizen …</div>
+  const ov=openOv(xbtn()+`<h3>${th(s,'title',`${s?s.n:'Schmelzofen'}${moving?' · Wandernde Hitze':''}`)}</h3><div class="sub">${th(s,'how',`Halte gedrückt, um den Blasebalg zu pumpen – das Feuer wird heißer. Loslassen kühlt ab. Halte das Thermometer im grünen Bereich!`)}</div><div class="msg" id="m">Aufheizen …</div>
     <div class="stage forge" id="st"><div class="thermo"><div class="tz" id="hz"></div><div class="tf" id="tf"></div></div><div class="hint">Gedrückt halten zum Pumpen</div></div>
     <div class="timer"><i id="tm" style="width:100%"></i></div>`);
   bindX();ov.abort=()=>res(null);
