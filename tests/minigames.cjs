@@ -54,6 +54,22 @@ const STRAT={
     for(let i=0;i<5;i++){const g=info.R.find(r=>r.c===i).p,[x,y]=info.L[i];
       if(i===4){await p.mouse.click(x,y);await p.waitForTimeout(80);await p.mouse.click(g[0],g[1]);continue}
       await p.mouse.move(x,y);await p.mouse.down();await p.mouse.move(g[0],g[1],{steps:8});await p.mouse.up();await p.waitForTimeout(120)}},
+  // Hin und her wischen im Takt (ca. 0,55 s pro Zug)
+  async knead(p){const bb=await stageBox(p),y=bb.y+bb.height/2,x=bb.x+bb.width/2;await p.mouse.move(x-60,y);await p.mouse.down();
+    for(let i=0;i<22;i++){const to=x+(i%2?-80:80);await p.mouse.move(to,y,{steps:6});await p.waitForTimeout(500)}await p.mouse.up()},
+  // Spur mit der Lücke antippen, sobald die Reihe in die Trefferzone läuft
+  async weave(p){const bb=await stageBox(p);
+    for(let k=0;k<4000;k++){const s=await p.evaluate(()=>{const e=document.getElementById('st');return e&&e.__state?e.__state():null});if(!s||s.done)break;
+      const r=s.rows.filter(r=>r.y+44>s.COMB-45).sort((a,b)=>b.y-a.y)[0];
+      if(r&&r.y+44<s.COMB+4)await p.mouse.click(bb.x+(r.gap+.5)*s.LW,bb.y+bb.height/2);await p.waitForTimeout(8)}},
+  // Der Bahn mit der Maus folgen, drei Schnitte
+  async cut(p){const bb=await (await p.$('#st')).boundingBox();
+    for(let r=0;r<3;r++){await p.waitForTimeout(150);const s=await p.evaluate(()=>document.getElementById('st').__state()),k=bb.width/s.W,pt=s.fy.map(([x,y])=>[bb.x+x*k,bb.y+y*k]);
+      await p.mouse.move(pt[0][0],pt[0][1]);await p.mouse.down();for(const [x,y] of pt)await p.mouse.move(x,y,{steps:2});await p.mouse.move(bb.x+300*k,pt[pt.length-1][1],{steps:2});await p.mouse.up();await p.waitForTimeout(1000)}},
+  // Gleichmäßig im Kreis (5,5 rad/s) um den Kessel
+  async stir(p){const c=await (await p.$('.liq')).boundingBox(),cx=c.x+c.width/2,cy=c.y+c.height/2,R=60;await p.mouse.move(cx+R,cy);await p.mouse.down();
+    const t0=Date.now();for(let k=0;k<2000;k++){const s=await p.evaluate(()=>{const e=document.getElementById('st');return e&&e.__state?e.__state():null});if(!s||s.done)break;
+      const a=5.5*(Date.now()-t0)/1000;await p.mouse.move(cx+R*Math.cos(a),cy+R*Math.sin(a));await p.waitForTimeout(14)}await p.mouse.up()},
   // Steine vom Band tippen
   async sort(p){for(let k=0;k<1000;k++){const r=await p.evaluate(()=>{if(!document.getElementById('st'))return null;
       const it=[...document.querySelectorAll('.bitem')].find(e=>e.querySelector('.i-junk')&&!e.dataset.t&&e.getBoundingClientRect().x>20);if(!it)return {};it.dataset.t=1;
@@ -117,7 +133,7 @@ const STRAT={
 // Mindestwerte bewusst unter dem, was die Bots erreichen (Zufall, Reaktionszeit des Testbrowsers)
 const RUNS=[['timing','erz',.8],['timingMove','kohle',.6],['timing','ziegel',.8],['heat','stahl',.6],['heatMove','glas',.5],['mash','ziegel',.9],['forge','stahl',.35],['pour','stahl',.3],['mix','kunststoff',.85],
   ['bolts','maschine',.9],['simon','maschine',.8],['wires','platine',.9],['sort','lehm',.7],['catch','erz',.6],['whack','erz',.6],['wall','kohle',.7],
-  ['stack','ziegel',.8],['solder','platine',.8],['pipes','kunststoff',.4],['phone','handy',.8],['fish','-',1],['drive','-',85]]; // LKW: Es bleibt immer eine Spur frei – ein schneller Fahrer kommt fast ohne Schaden an
+  ['stack','ziegel',.8],['solder','platine',.8],['pipes','kunststoff',.4],['phone','handy',.8],['knead','baeckerei',.8],['weave','weberei',.8],['cut','schneiderei',.75],['stir','brauerei',.8],['fish','-',1],['drive','-',85]]; // LKW: Es bleibt immer eine Spur frei – ein schneller Fahrer kommt fast ohne Schaden an
 
 (async()=>{
   const b=await chromium.launch();let fail=0;

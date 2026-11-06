@@ -54,7 +54,9 @@ const SHOTS=process.argv[2];
 
   // Level 2: Freischaltungen
   await ev(()=>{S.xp=xpFor(2)+5;render()});await p.waitForTimeout(150);
-  ok((await p.textContent('#toast')).includes('Neu: Betriebe, Aufträge'),'Level-Hinweis: '+await p.textContent('#toast'));
+  const lu=await ev(()=>document.querySelector('.lvlup')?.textContent||'');
+  ok(lu.includes('Betriebe')&&lu.includes('Aufträge')&&lu.includes('2'),'Level-Feier zeigt die Freischaltungen: '+lu);
+  await ev(()=>document.querySelector('.lvlup').click());await p.waitForTimeout(400);
   ok(await ev(()=>[...document.querySelectorAll('#nav button.lock')].map(b=>b.dataset.s).join(','))==='farm,under','Betriebe offen');
   await p.click('#nav [data-s=bld]');await p.waitForTimeout(150);
   ok(await ev(()=>cur)==='bld','Betriebe öffnen');

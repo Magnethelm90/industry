@@ -235,6 +235,39 @@ const URL='file://'+path.resolve(__dirname,'../dist/index.html')+'?debug';
   ok(rep.every(r=>!r.rock&&!r.mine&&(r.bolts||r.cab)),'Wartung: Schrauben oder Kabel, kein Fels ('+rep.map(r=>r.bolts?'S':'K').join('')+')');
   await pq.close();
 
+  // Tagesaufgaben, Erfolge, Ergebnis-Karte, Levelfeier
+  const dq=await b.newPage({viewport:{width:400,height:860}});dq.on('pageerror',e=>errs.push(e.message));await dq.goto(URL);await dq.evaluate(()=>localStorage.clear());await dq.reload();
+  await dq.evaluate(()=>{S.xp=xpFor(4);S.goal=GOALS.length;S.daily.tasks=[];tickDaily();render()});await dq.waitForTimeout(300);
+  await dq.evaluate(()=>document.querySelector('.lvlup')?.click());
+  let D=await dq.evaluate(()=>JSON.parse(JSON.stringify(S.daily)));
+  ok(D.tasks.length===3&&D.tasks[0].k==='make'&&D.tasks[1].k==='perf'&&new Set(D.tasks.map(x=>x.k)).size===3,'Tagesaufgaben: drei verschiedene ('+D.tasks.map(x=>x.k)+')');
+  let dm0=await dq.evaluate(()=>S.money);
+  await dq.evaluate(()=>{for(const t of S.daily.tasks){const k=t.k,n=t.need;if(k==='make')S.st.make.erz=(S.st.make.erz||0)+n;else if(k==='perf')S.st.perf+=n;else if(k==='sold')S.st.sold+=n;else if(k==='drives')S.st.drives+=n;else if(k==='orders')S.st.orders+=n;else if(k==='harvest')S.st.harvest+=n}tickDaily()});
+  D=await dq.evaluate(()=>JSON.parse(JSON.stringify(S.daily)));
+  ok(D.tasks.every(x=>x.done)&&D.chest===1&&D.streak===1,'Aufgaben erledigt: Kiste geholt, Serie 1');
+  ok(await dq.evaluate(()=>S.money)>dm0+300,'Belohnung bezahlt ('+(await dq.evaluate(()=>Math.round(S.money-0))-dm0)+' Cr)');
+  dm0=await dq.evaluate(()=>S.money);await dq.evaluate(()=>{tickDaily();tickDaily()});
+  ok(await dq.evaluate(()=>S.money)===dm0,'nicht doppelt ausgezahlt');
+  // Neuer Tag: gestern geschafft → Serie läuft weiter, Kiste wieder zu
+  await dq.evaluate(()=>{const y=new Date();y.setDate(y.getDate()-1);const f=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');S.daily.day=f(y);S.daily.last=f(y);tickDaily()});
+  D=await dq.evaluate(()=>JSON.parse(JSON.stringify(S.daily)));
+  ok(D.chest===0&&D.tasks.every(x=>!x.done)&&D.streak===1,'neuer Tag: neue Aufgaben, Serie bleibt bis zur Kiste');
+  await dq.evaluate(()=>{S.daily.last='2000-01-01';S.daily.day='2000-01-02';tickDaily()});
+  ok(await dq.evaluate(()=>S.daily.streak)===0,'Serie reißt nach einem verpassten Tag');
+  // Manipulierte Sicherung wird bereinigt
+  await dq.evaluate(()=>{localStorage.setItem(SAVE,JSON.stringify({...S,daily:{day:5,tasks:[{k:'<img>',need:'x'},{k:'make',need:-4,base:'a'}],streak:-9},ach:{'<b>':1,make0:7,lv5:1}}))});await dq.reload();
+  const cl=await dq.evaluate(()=>({d:S.daily,a:Object.keys(S.ach)}));
+  ok(cl.d.tasks.length===1&&cl.d.tasks[0].need===1&&cl.d.streak===0&&cl.a.join()==='lv5','Sicherung: Aufgaben und Erfolge bereinigt '+JSON.stringify(cl));
+  // Erfolge werden einmal belohnt
+  await dq.evaluate(()=>{S.ach={};S.st.make.erz=10;S.money=0;tickDaily();tickDaily();tickDaily();tickDaily()});
+  ok(await dq.evaluate(()=>S.ach.make0===1&&S.money===50),'Erfolg „10 Waren“ einmal belohnt (+50 Cr)');
+  // Ergebnis-Karte: Sterne nach Score
+  const st=await dq.evaluate(()=>[0,.3,.7,.97,1].map(stars));
+  ok(st.join()==='0,1,2,3,3','Sterne: '+st);
+  await dq.evaluate(()=>showResult({score:1,out:3,good:'erz',gname:'Eisenerz',color:'#94a3b8',combo:2,xp:5}));
+  ok(await dq.evaluate(()=>document.querySelectorAll('.rescard .rs .on').length===3&&/Combo/.test(document.querySelector('.rescard').textContent)),'Ergebnis-Karte zeigt 3 Sterne und Combo');
+  await dq.close();
+
   ok(errs.length===0,'keine JavaScript-Fehler '+JSON.stringify(errs));
   await b.close();
   console.log(fail?fail+' Fehler':'Alles bestanden');process.exit(fail?1:0);

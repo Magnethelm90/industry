@@ -13,6 +13,7 @@ import {dayPhase,refreshLive} from './world.js';
 import {offlineShop,syncSlots,tickShop} from './features/shop.js';
 import {tickUnder} from './features/under.js';
 import {initGoals,tickGoals} from './features/goals.js';
+import {tickDaily} from './features/daily.js';
 import {tickLab} from './features/lab.js';
 import {openCompany} from './features/company.js';
 import {SFX,toast} from './fx.js';
@@ -55,12 +56,14 @@ setInterval(()=>{
     if(g){evOn[g]={to:up?2.2:0.45,until:now+EV_LEN};
       const rv=pick(freeRivals()).n;
       toast(up?`🔥 ${rv} kauft ${G[g].n} auf – 1 Minute lang hohe Preise!`:`❄️ ${rv} überschwemmt den Markt mit ${G[g].n} – 1 Minute Preissturz!`);SFX.coin()}}
-  tickLab();tickOrders();tickShop(dt);tickRivals(dt);tickFarm(dt);tickExport();tickUnder(dt);tickGoals();
+  tickLab();tickOrders();tickShop(dt);tickRivals(dt);tickFarm(dt);tickExport();tickUnder(dt);tickGoals();tickDaily();
   if(!OV&&!pressing&&cur!=='work')render();else badges();
   if(!saveLocked()){S.last=Date.now();try{localStorage.setItem(SAVE,JSON.stringify(S))}catch(e){}}
 },1000);
 // Nur für automatische Tests: ?debug macht alle Modul-Exporte im Browser sichtbar
 if(/[?&]debug/.test(location.search)){
+  // Feier- und Ergebniskarten fangen in Tests keine Klicks ab
+  const sty=document.createElement('style');sty.textContent='.lvlup,.rescard{pointer-events:none!important}';document.head.appendChild(sty);
   const mods=import.meta.glob(['./**/*.js','!./main.js'],{eager:true});
   for(const m of Object.values(mods))for(const k in m)try{Object.defineProperty(window,k,{get:()=>m[k],configurable:true})}catch(e){}
 }

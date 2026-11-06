@@ -8,6 +8,7 @@ import {renderMarket} from './features/market.js';
 import {canDeliver,renderOrders} from './features/orders.js';
 import {custQ,renderShop} from './features/shop.js';
 import {illLager,renderUnder} from './features/under.js';
+import {levelUp} from './features/celebrate.js';
 import {renderWork} from './features/workshop.js';
 import {SFX,fx,toast} from './fx.js';
 import {S,isOpen,lvl,truckCap} from './state.js';
@@ -33,7 +34,7 @@ export function render(){
   $('ringc').style.strokeDashoffset=113.1*(1-Math.max(0,Math.min(1,(S.xp-a)/(b-a))));
   if(l>lastLvl){const was=lastLvl;lastLvl=l;SFX.win();fx('LEVEL '+l,'#22d3ee');
     const news=Object.values(UNL).filter(u=>u.lv>was&&u.lv<=l).map(u=>u.n);
-    toast('⭐ Level '+l+' erreicht!'+(news.length?' Neu: '+news.join(', '):''))}
+    levelUp(l,news)}
   if(OV)return;
   SCREENS[cur]();
   const el=$('s-'+cur),gc=goalCard();if(gc)el.prepend(gc);

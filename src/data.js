@@ -62,7 +62,7 @@ export const ST=[
  {id:'kupfer',n:'Kupfer abbauen',games:['wall','whack','timingMove'],in:{},out:'kupfer',max:6,mult:'pick',lv:4},
  {id:'oel',n:'Öl fördern',games:['catch','pipes'],in:{},out:'oel',max:6,mult:'pick',lv:4},
  {id:'glas',n:'Glashütte',games:['heat','heatMove','pour'],in:{sand:4},out:'glas',max:3,mult:'bench',lv:4},
- {id:'kunststoff',n:'Kunststoff mischen',games:['mix','pipes'],in:{oel:3},out:'kunststoff',max:3,mult:'bench',lv:4},
+ {id:'kunststoff',n:'Kunststoff mischen',games:['mix','pipes','stir'],in:{oel:3},out:'kunststoff',max:3,mult:'bench',lv:4},
  {id:'draht',n:'Draht ziehen',games:['mash','heat'],in:{kupfer:2},out:'draht',max:4,mult:'bench',lv:4},
  {id:'platine',n:'Platine löten',games:['solder','wires'],in:{draht:2,kunststoff:1},out:'platine',max:2,mult:'bench',lv:4},
  {id:'akku',n:'Akku bauen',games:['mix','solder','wires'],in:{draht:1,kunststoff:2,stahl:1},out:'akku',max:2,mult:'bench',lv:4},
@@ -70,17 +70,17 @@ export const ST=[
  {id:'gehaeuse',n:'Gehäuse gießen',games:['mix','pour','bolts'],in:{kunststoff:2,stahl:1},out:'gehaeuse',max:2,mult:'bench',lv:4},
  {id:'handy',n:'Smartphone montieren',games:['phone'],in:{platine:1,akku:1,display:1,gehaeuse:1},out:'handy',max:1,mult:'bench',lv:4},
  {id:'muehle',n:'Mühle',grp:'food',games:['mash','sort'],in:{weizen:3},out:'mehl',max:4,mult:'bench'},
- {id:'baeckerei',n:'Bäckerei',grp:'food',games:['heat','heatMove'],in:{mehl:2,eier:1},out:'brot',max:3,mult:'bench'},
- {id:'kaeserei',n:'Käserei',grp:'food',games:['mix','mash'],in:{milch:3},out:'kaese',max:2,mult:'bench'},
+ {id:'baeckerei',n:'Bäckerei',grp:'food',games:['knead','heat','heatMove'],in:{mehl:2,eier:1},out:'brot',max:3,mult:'bench'},
+ {id:'kaeserei',n:'Käserei',grp:'food',games:['mix','mash','stir'],in:{milch:3},out:'kaese',max:2,mult:'bench'},
  {id:'chipsfabrik',n:'Chips frittieren',grp:'food',games:['sort','heat'],in:{kartoffel:3},out:'chips',max:3,mult:'bench'},
  {id:'raeucherei',n:'Räucherei',grp:'food',games:['heat','heatMove'],in:{lachs:2},out:'raeucherlachs',max:2,mult:'bench'},
  {id:'kelterei',n:'Kelterei',grp:'food',games:['mash','mix'],in:{trauben:4},out:'wein',max:2,mult:'bench',lv:3},
- {id:'brauerei',n:'Brauerei',grp:'food',games:['mix','pipes','heat'],in:{hopfen:2,weizen:2},out:'bier',max:3,mult:'bench',lv:3},
- {id:'weberei',n:'Weberei',grp:'food',games:['simon','wires'],in:{baumwolle:3},out:'stoff',max:2,mult:'bench',lv:3},
- {id:'schneiderei',n:'Schneiderei',grp:'food',games:['wires','simon'],in:{stoff:2,draht:1},out:'kleidung',max:1,mult:'bench',lv:4}
+ {id:'brauerei',n:'Brauerei',grp:'food',games:['mix','pipes','heat','stir'],in:{hopfen:2,weizen:2},out:'bier',max:3,mult:'bench',lv:3},
+ {id:'weberei',n:'Weberei',grp:'food',games:['weave','simon','wires'],in:{baumwolle:3},out:'stoff',max:2,mult:'bench',lv:3},
+ {id:'schneiderei',n:'Schneiderei',grp:'food',games:['cut','wires','simon'],in:{stoff:2,draht:1},out:'kleidung',max:1,mult:'bench',lv:4}
 ];
 ST.push(
- {id:'brennerei',n:'Schwarzbrennerei',grp:'ill',games:['mix','pipes'],in:{weizen:4},out:'schnaps',max:3,mult:'bench',lv:4,heat:5},
+ {id:'brennerei',n:'Schwarzbrennerei',grp:'ill',games:['mix','pipes','stir'],in:{weizen:4},out:'schnaps',max:3,mult:'bench',lv:4,heat:5},
  {id:'faelscher',n:'Fälscherwerkstatt',grp:'ill',games:['solder','wires'],in:{stahl:1,display:1,kunststoff:1},out:'replika',max:2,mult:'bench',lv:4,heat:7},
  {id:'kopierer',n:'Raubkopierer',grp:'ill',games:['wires','sort'],in:{platine:1,kunststoff:2},out:'raubkopie',max:3,mult:'bench',lv:4,heat:6});
 REC.forEach(r=>ST.push({id:'r_'+r.out,n:G[r.out].n+' bauen',games:r.games,in:Object.fromEntries(r.in.map(k=>[k,2])),out:r.out,max:3,mult:'bench',lv:G[r.out].lv,secret:true}));

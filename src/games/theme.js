@@ -20,6 +20,7 @@ export const TH={
     wires:{title:'Steuerung verkabeln',name:'Verkabeln'}},
   kunststoff:{
     mix:{title:'Kunststoff mischen',ing:[sauce('Polymer','#8b5cf6'),sauce('Weichmacher','#06b6d4'),sauce('Farbstoff','#ec4899')]},
+    stir:{title:'Polymer rühren',how:'Wisch mit dem Finger im Kreis um den Kessel und rühr die Masse. Zu langsam gibt Klumpen, zu schnell spritzt sie. 12 Sekunden ab der ersten Bewegung.',col:'#8b5cf6',name:'Rühren'},
     pipes:{title:'Raffinerie · Rohre',how:'Tippe Rohrstücke an, um sie zu drehen. Leite das Öl vom Tank links zur Anlage rechts.',name:'Rohre'}},
   draht:{
     mash:{title:'Ziehbank',how:'Tippe so schnell du kannst – jeder Tipp zieht den Draht ein Stück durch die Ziehdüse. 6 Sekunden ab dem ersten Zug.',name:'Drahtziehen'},
@@ -33,10 +34,12 @@ export const TH={
     mash:{title:'Mahlwerk',how:'Tippe so schnell du kannst – jeder Tipp dreht den Mahlstein weiter. 6 Sekunden ab dem ersten Hub.',name:'Mahlen'},
     sort:{title:'Korn reinigen',how:'Tippe Steine und Spreu (graue Brocken) vom Band, bevor sie ins Mehl geraten. Das Korn lässt du durch!',name:'Reinigen'}},
   baeckerei:{
+    knead:{title:'Teig kneten',how:'Wisch mit dem Finger hin und her über den Teig – nicht zu hastig und nicht zu lahm. Im gleichmäßigen Takt wird der Teig am besten. 11 Sekunden ab dem ersten Zug.',name:'Teig kneten'},
     heat:{...HEAT('Backofen','den Ofen anzuheizen','damit das Brot goldbraun wird!'),name:'Backofen'},
     heatMove:{...HEAT('Backofen · Wandernde Hitze','den Ofen anzuheizen','der gewünschte Bereich wandert mit!'),name:'Wandernde Hitze'}},
   kaeserei:{
     mix:{title:'Käsen',how:'Halte eine Flasche gedrückt, um einzufüllen. Triff die Schichten der Zielskala rechts – Milch, Lab und Salz im richtigen Verhältnis.',ing:[sauce('Milch','#e7e5e4'),sauce('Lab','#fbbf24'),sauce('Salz','#94a3b8')],name:'Käsen'},
+    stir:{title:'Käsebruch rühren',how:'Wisch mit dem Finger im Kreis um den Kessel und rühr die Milch. Zu langsam gibt Klumpen, zu schnell spritzt sie. 12 Sekunden ab der ersten Bewegung.',col:'#f5f0dc',name:'Rühren'},
     mash:{title:'Käsepresse',how:'Tippe so schnell du kannst – jeder Tipp presst die Molke aus dem Käse. 6 Sekunden ab dem ersten Hub.',name:'Pressen'}},
   chipsfabrik:{
     sort:{title:'Kartoffeln verlesen',how:'Tippe faule Stellen und Steine (graue Brocken) vom Band, bevor sie in die Kiste fallen. Gute Kartoffeln lässt du durch!',name:'Verlesen'},
@@ -50,6 +53,7 @@ export const TH={
   brauerei:{
     mix:{title:'Bier brauen',how:'Halte eine Flasche gedrückt, um einzufüllen. Triff die Schichten der Zielskala rechts – Wasser, Malz und Hopfen im richtigen Verhältnis.',ing:[sauce('Wasser','#38bdf8'),sauce('Malz','#b45309'),sauce('Hopfen','#84cc16')],name:'Brauen'},
     pipes:{title:'Brauanlage · Rohre',how:'Tippe Rohrstücke an, um sie zu drehen. Leite die Würze vom Kessel links zum Gärtank rechts.',name:'Brauanlage'},
+    stir:{title:'Maische rühren',how:'Wisch mit dem Finger im Kreis um den Kessel und rühr die Maische. Zu langsam gibt Klumpen, zu schnell spritzt sie. 12 Sekunden ab der ersten Bewegung.',col:'#b45309',name:'Maische rühren'},
     heat:{...HEAT('Maischekessel','den Kessel zu heizen','damit die Maische nicht kocht!'),name:'Maischen'}},
   // Rezept-Stationen (geheime Rezepte aus dem Labor)
   r_kamin:{mix:{title:'Mörtel anrühren',ing:[sauce('Zement','#94a3b8'),sauce('Sand','#e9c46a'),sauce('Wasser','#38bdf8')]},bolts:{title:'Ofen aufbauen',name:'Aufbauen'}},
@@ -65,13 +69,16 @@ export const TH={
     bolts:{title:'Gelenke montieren',name:'Gelenke'},wires:{title:'Steuerung verkabeln',name:'Verkabeln'}},
   // Untergrund
   brennerei:{mix:{title:'Maische ansetzen',ing:[sauce('Maische','#d97706'),sauce('Hefe','#d6b88a'),sauce('Wasser','#38bdf8')],name:'Ansetzen'},
+    stir:{title:'Maische rühren',how:'Wisch mit dem Finger im Kreis um den Kessel und rühr die Maische. Zu langsam gibt Klumpen, zu schnell spritzt sie. 12 Sekunden ab der ersten Bewegung.',col:'#d97706',name:'Rühren'},
     pipes:{title:'Brennblase · Rohre',how:'Tippe Rohrstücke an, um sie zu drehen. Leite den Dampf von der Blase links zum Kühler rechts.',name:'Brennblase'}},
   faelscher:{solder:{title:'Uhrwerk löten',name:'Uhrwerk'}},
   kopierer:{wires:{title:'Kopierer verkabeln',name:'Verkabeln'},sort:{title:'Rohlinge prüfen',how:'Tippe defekte Rohlinge (graue Brocken) vom Band, bevor sie in die Kiste fallen. Gute lässt du durch!',name:'Prüfen'}},
   weberei:{
+    weave:{title:'Weben',how:'In jeder Fadenreihe fehlt ein Faden. Tippe die Spur mit der Lücke, bevor die Reihe den Webkamm unten erreicht. Falsche Spur = Fehler.',name:'Weben'},
     simon:{title:'Webmuster',how:'Schau auf die Lampen und drück die Taster in derselben Reihenfolge – so merkst du dir das Muster.',name:'Webmuster'},
     wires:{title:'Fäden einfädeln',how:'Zieh jeden Faden zur Spule mit demselben Farbton und Zeichen rechts (oder tippe links und dann rechts). Falsch eingefädelt kostet Zeit.',name:'Einfädeln',bad:'Verheddert! 🧵'}},
   schneiderei:{
+    cut:{title:'Stoff zuschneiden',how:'Setz den Finger links auf die Schere und zieh sie entlang der gestrichelten Linie nach rechts. Je genauer, desto sauberer der Schnitt. 3 Schnitte.',name:'Zuschneiden'},
     wires:{title:'Nähte verbinden',how:'Zieh jeden Faden zur Naht mit demselben Farbton und Zeichen rechts (oder tippe links und dann rechts). Falsch genäht kostet Zeit.',name:'Nähen',bad:'Falsch genäht! 🧵'},
     simon:{title:'Schnittmuster',how:'Schau auf die Lampen und drück die Taster in derselben Reihenfolge – so merkst du dir das Schnittmuster.',name:'Schnittmuster'}}
 };

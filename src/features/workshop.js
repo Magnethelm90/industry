@@ -2,6 +2,8 @@
 import {render} from '../app.js';
 import {G,REC,ST} from '../data.js';
 import {labStatus,openLab} from './lab.js';
+import {showResult} from './celebrate.js';
+import {dailyCard,openAch} from './daily.js';
 import {SFX,burst,fx,toast,vib} from '../fx.js';
 import {GAMES,GNAME} from '../games/index.js';
 import {TH} from '../games/theme.js';
@@ -24,16 +26,19 @@ export async function runStation(s,srcEl){
   const cb=Math.min(5,S.combo);if(cb&&out>0)out=Math.round(out*(1+cb*.1));
   S.combo=score>=.85?S.combo+1:0;
   out=Math.min(out,Math.floor(cap()-S.stock[s.out]));
-  S.stock[s.out]+=out;if(out>0)track('make',s.out,out);S.xp+=out*Math.max(G[s.out].base>=15?4:1,Math.ceil(G[s.out].base/50))+1;
+  S.stock[s.out]+=out;if(out>0)track('make',s.out,out);
+  const gain=out*Math.max(G[s.out].base>=15?4:1,Math.ceil(G[s.out].base/50))+1;S.xp+=gain;
+  if(score>=.85)track('perf');track('rounds');
   if(s.heat){S.ug.heat=Math.min(100,S.ug.heat+s.heat);S.ug.active=1}
-  if(out>0){SFX.win();vib([30,40,60]);fx('+'+out+' '+G[s.out].n,G[s.out].c);burst(innerWidth/2,innerHeight*.4,G[s.out].c,20)}
-  else{SFX.crash();fx('Fehlschlag','#fb7185')}
-  toast((out>0?`Score ${Math.round(score*100)}% – ${out}× ${G[s.out].n} hergestellt`:'Material verloren 😬 Versuch es nochmal!')+(S.combo>=2?` · 🔥 Combo ×${S.combo}`:''));
+  if(out>0){SFX.win();vib([30,40,60]);burst(innerWidth/2,innerHeight*.4,G[s.out].c,20)}
+  else SFX.crash();
+  showResult({score,out,good:s.out,gname:G[s.out].n,color:G[s.out].c,combo:S.combo,xp:gain});
   render();
 }
 export function renderWork(){
   const el=$('s-work'),L=lvl();el.innerHTML='<h2>Werkstatt</h2><p class="sub">Stell Waren in Minispielen her. Runden ab 85 % bauen eine Combo auf: bis +50 % Ertrag.</p>'+
     (S.combo>=1?`<span class="chip up" style="margin:0 2px 6px;display:inline-flex">🔥 Combo ×${S.combo} · +${Math.min(5,S.combo)*10} % Ertrag</span>`:'');
+  const dc=S.goal>=5||L>=2?dailyCard(openAch):null;if(dc)el.appendChild(dc);
   if(isOpen('lab')){
     const known=REC.filter(r=>S.rec[r.out]).length,lab=document.createElement('div');lab.className='card';lab.id='lab';lab.style.setProperty('--c','#22d3ee');
     lab.innerHTML=`<div class="art"><span style="font-size:30px">🧪</span></div><div class="i">Labor<small>Zutaten mischen, geheime Rezepte entdecken, forschen · ${known} / ${REC.length} entdeckt</small>${labStatus()?`<small>${labStatus()}</small>`:''}</div><button class="btn b">Öffnen</button>`;

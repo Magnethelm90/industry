@@ -20,7 +20,13 @@ S.lab=Object.assign({res:null,done:{},rev:{}},S.lab);
   for(const k in L.done)if(!Number.isFinite(L.done[k]))delete L.done[k];
   for(const k in L.rev){const a=L.rev[k];if(!G[k]||!Array.isArray(a))delete L.rev[k];else L.rev[k]=a.filter(x=>typeof x==='string'&&G[x]).slice(0,2)}
   if(!obj(L.res)||typeof L.res.id!=='string'||!Number.isFinite(L.res.until))L.res=null}
-S.st=Object.assign({make:{},sold:0,drives:0,orders:0,harvest:0,fish:0,harbour:0,exports:0},S.st);
+S.st=Object.assign({make:{},sold:0,drives:0,orders:0,harvest:0,fish:0,harbour:0,exports:0,perf:0,rounds:0},S.st);
+// Tagesaufgaben und Erfolge absichern (Sicherungscodes können von Hand verändert sein)
+{const o=v=>v&&typeof v==='object'&&!Array.isArray(v),n=v=>Number.isFinite(v)?v:0;
+  S.ach=o(S.ach)?Object.fromEntries(Object.entries(S.ach).filter(([k,v])=>/^[a-z0-9_]{1,24}$/.test(k)&&v===1)):{};
+  const d=o(S.daily)?S.daily:{};
+  S.daily={day:typeof d.day==='string'?d.day.slice(0,10):'',streak:Math.max(0,Math.min(999,n(d.streak))),last:typeof d.last==='string'?d.last.slice(0,10):'',chest:d.chest===1?1:0,
+    tasks:Array.isArray(d.tasks)?d.tasks.slice(0,3).filter(x=>o(x)&&typeof x.k==='string'&&/^[a-z]{2,12}$/.test(x.k)).map(x=>({k:x.k,need:Math.max(1,Math.min(9999,n(x.need))),base:n(x.base),done:x.done===1?1:0})):[]}}
 BLD.forEach(b=>{if(!S.b[b.id])S.b[b.id]={lvl:0,hp:100,p:0,keep:0,cust:0,nc:0,warned:0}});
 // Beim Laden eines Sicherungscodes darf der Takt den alten Stand nicht mehr speichern
 let locked=false;
