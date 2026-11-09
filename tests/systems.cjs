@@ -97,7 +97,7 @@ const URL='file://'+path.resolve(__dirname,'../dist/index.html')+'?debug';
 
   // Untergrund
   await ev(()=>{S.stock.weizen=40;go('under')});await p.waitForTimeout(150);
-  await ev(async()=>{GAMES.mix=GAMES.pipes=()=>Promise.resolve(1);await runStation(ST.find(s=>s.id==='brennerei'))});
+  await ev(async()=>{GAMES.mix=GAMES.pipes=GAMES.stir=()=>Promise.resolve(1);await runStation(ST.find(s=>s.id==='brennerei'))});
   ok(await ev(()=>S.stock.schnaps)>0&&await ev(()=>S.ug.heat)>0,'Schnaps gebrannt, Verdacht steigt');
   await ev(()=>render());
   await p.locator('#s-under .card',{hasText:'Schwarzgebrannter'}).locator('button',{hasText:'Verstecken'}).click();
