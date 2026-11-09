@@ -266,6 +266,21 @@ const URL='file://'+path.resolve(__dirname,'../dist/index.html')+'?debug';
   ok(st.join()==='0,1,2,3,3','Sterne: '+st);
   await dq.evaluate(()=>showResult({score:1,out:3,good:'erz',gname:'Eisenerz',color:'#94a3b8',combo:2,xp:5}));
   ok(await dq.evaluate(()=>document.querySelectorAll('.rescard .rs .on').length===3&&/Combo/.test(document.querySelector('.rescard').textContent)),'Ergebnis-Karte zeigt 3 Sterne und Combo');
+  // Übersicht der Werkstatt: Kacheln, Filter „Bereit“, Bereiche einklappen
+  await dq.evaluate(()=>{S.xp=xpFor(4);S.goal=GOALS.length;Object.keys(S.stock).forEach(g=>S.stock[g]=0);S.stock.weizen=0;go('work')});await dq.waitForTimeout(300);
+  ok(await dq.evaluate(()=>document.querySelectorAll('#s-work .tile').length)>=3,'Werkstatt: Kacheln für Aufgaben, Labor, Erfolge');
+  await dq.evaluate(()=>[...document.querySelectorAll('#s-work .tile')].find(b=>/Aufgaben/.test(b.textContent)).click());await dq.waitForTimeout(150);
+  ok(await dq.evaluate(()=>/Tagesaufgaben/.test(document.getElementById('ovbox').textContent)),'Kachel „Aufgaben“ öffnet die Tagesaufgaben');await dq.evaluate(()=>closeOv());
+  const all=await dq.evaluate(()=>document.querySelectorAll('#s-work .wcard').length);
+  await dq.evaluate(()=>[...document.querySelectorAll('#s-work .cats .chip2')].find(b=>/^Bereit/.test(b.textContent)).click());await dq.waitForTimeout(150);
+  const ready=await dq.evaluate(()=>[...document.querySelectorAll('#s-work .wcard')].map(c=>c.classList.contains('idle')));
+  ok(ready.length>0&&ready.length<all&&ready.every(i=>!i),'Filter „Bereit“ zeigt nur Stationen, die laufen können ('+ready.length+' von '+all+')');
+  await dq.evaluate(()=>[...document.querySelectorAll('#s-work .cats .chip2')].find(b=>b.textContent==='Alle').click());await dq.waitForTimeout(150);
+  await dq.evaluate(()=>document.querySelector('#s-work .sec.fold').click());await dq.waitForTimeout(150);
+  const folded=await dq.evaluate(()=>document.querySelectorAll('#s-work .wcard').length);
+  ok(folded<all,'Bereich einklappen blendet seine Stationen aus ('+folded+' von '+all+')');
+  await dq.evaluate(()=>document.querySelector('#s-work .sec.fold').click());await dq.waitForTimeout(150);
+  ok(await dq.evaluate(()=>document.querySelectorAll('#s-work .wcard').length)===all,'wieder aufklappen');
   await dq.close();
 
   ok(errs.length===0,'keine JavaScript-Fehler '+JSON.stringify(errs));

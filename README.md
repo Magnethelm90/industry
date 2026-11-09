@@ -65,6 +65,10 @@ Neue Spieler folgen 23 Zielen (`src/features/goals.js`). Bereiche öffnen sich n
 - Sicherungscodes sind die einzige Eingabe von außen. `readCode` (`src/features/backup.js`) lehnt Codes ab, die HTML- oder Skript-Zeichen enthalten, zu lang sind oder beim Entpacken zu groß würden (Zip-Bombe). Tests dafür stehen in `tests/systems.cjs`.
 - Der Workflow nutzt auf Commits gepinnte Actions und pro Job nur die nötigen Rechte.
 
+## Übersicht
+
+Die Werkstatt zeigt oben drei kleine Kacheln (Aufgaben, Labor, Erfolge) statt großer Karten. Darunter filtern Chips nach „Bereit“ (nur Stationen, die gerade laufen können) oder nach Gruppe, und jede Gruppe lässt sich einklappen (gemerkt im Browser unter `ia_fold`). Der Markt zeigt eine Zeile pro Ware. Das Ziel oben erscheint außerhalb der Werkstatt ohne Beschreibung. Der Systemtest prüft Kacheln, Filter und Einklappen.
+
 ## 3D-Modus (neu, Stufe 1)
 
 Der Knopf 🧊 in der Kopfzeile (oder `?3d` in der Adresse) öffnet eine begehbare 3D-Welt (`src/world3d/index.js`, Three.js, wird erst beim Öffnen geladen). Du steuerst einen Arbeiter von hinten: Daumenstick links (oder WASD / Pfeile), Kamera durch Wischen rechts. An vier Stationen leuchtet ein Ring: Eisenerz- und Kohlemine, Schmelzofen und Markt. Dort erscheint ein Knopf. Er öffnet das normale Minispiel (Spielstand, Lager, Level und XP sind dieselben wie im 2D-Spiel) oder verkauft alles auf dem Markt. Das 2D-Spiel bleibt unverändert; „Zurück“ führt dorthin.

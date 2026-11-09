@@ -3,7 +3,7 @@ import {render} from '../app.js';
 import {G,REC,ST} from '../data.js';
 import {labStatus,openLab} from './lab.js';
 import {showResult} from './celebrate.js';
-import {dailyCard,openAch} from './daily.js';
+import {ACH,dailyDone,openAch,openDaily} from './daily.js';
 import {SFX,burst,fx,toast,vib} from '../fx.js';
 import {GAMES,GNAME} from '../games/index.js';
 import {TH} from '../games/theme.js';
@@ -35,27 +35,49 @@ export async function runStation(s,srcEl){
   showResult({score,out,good:s.out,gname:G[s.out].n,color:G[s.out].c,combo:S.combo,xp:gain});
   render();
 }
+// Anzeige-Zustand: Filter und eingeklappte Bereiche (nur für diese Sitzung bzw. im Browser gemerkt)
+let wFilter='alle';
+const fold=(()=>{try{return JSON.parse(localStorage.getItem('ia_fold'))||{}}catch(e){return {}}})();
+const saveFold=()=>{try{localStorage.setItem('ia_fold',JSON.stringify(fold))}catch(e){}};
+const canRun=s=>!(s.lv>lvl())&&Object.keys(s.in).every(k=>S.stock[k]>=s.in[k])&&S.stock[s.out]<cap();
+const GROUPS=[['Rohstoffe',s=>!s.secret&&!s.grp&&!s.lv&&!Object.keys(s.in).length],['Verarbeitung',s=>!s.secret&&!s.grp&&!s.lv&&Object.keys(s.in).length>0],
+  ['Lebensmittel & Textil',s=>s.grp==='food'],['Elektronik',s=>!s.secret&&!s.grp&&!!s.lv],['Eigene Rezepte',s=>s.secret&&S.rec[s.out]]];
 export function renderWork(){
-  const el=$('s-work'),L=lvl();el.innerHTML='<h2>Werkstatt</h2><p class="sub">Stell Waren in Minispielen her. Runden ab 85 % bauen eine Combo auf: bis +50 % Ertrag.</p>'+
-    (S.combo>=1?`<span class="chip up" style="margin:0 2px 6px;display:inline-flex">🔥 Combo ×${S.combo} · +${Math.min(5,S.combo)*10} % Ertrag</span>`:'');
-  const dc=S.goal>=5||L>=2?dailyCard(openAch):null;if(dc)el.appendChild(dc);
+  const el=$('s-work'),L=lvl();el.innerHTML='<h2>Werkstatt</h2>'+
+    (S.combo>=1?`<span class="chip up" style="margin:0 2px 6px;display:inline-flex">🔥 Combo ×${S.combo} · +${Math.min(5,S.combo)*10} % Ertrag</span>`:'<p class="sub">Runden ab 85 % bauen eine Combo auf: bis +50 % Ertrag.</p>');
+  // Schnellzugriffe: Aufgaben, Labor, Erfolge als kleine Kacheln
+  const tiles=document.createElement('div');tiles.className='tiles';
+  if(S.goal>=5||L>=2){const d=document.createElement('button');d.className='tile';d.innerHTML=`<span class="te">📅</span><b>Aufgaben</b><small>${dailyDone()} / 3 · Serie ${S.daily.streak}</small>`;d.onclick=openDaily;tiles.appendChild(d)}
   if(isOpen('lab')){
-    const known=REC.filter(r=>S.rec[r.out]).length,lab=document.createElement('div');lab.className='card';lab.id='lab';lab.style.setProperty('--c','#22d3ee');
-    lab.innerHTML=`<div class="art"><span style="font-size:30px">🧪</span></div><div class="i">Labor<small>Zutaten mischen, geheime Rezepte entdecken, forschen · ${known} / ${REC.length} entdeckt</small>${labStatus()?`<small>${labStatus()}</small>`:''}</div><button class="btn b">Öffnen</button>`;
-    lab.querySelector('button').onclick=()=>openLab();el.appendChild(lab);
-  }
-  [['Rohstoffe',s=>!s.secret&&!s.grp&&!s.lv&&!Object.keys(s.in).length],['Verarbeitung',s=>!s.secret&&!s.grp&&!s.lv&&Object.keys(s.in).length>0],
-   ['Veredelung · Lebensmittel & Textil',s=>s.grp==='food'],
-   ['Elektronik',s=>!s.secret&&!s.grp&&!!s.lv],['Eigene Rezepte',s=>s.secret&&S.rec[s.out]]].forEach(([title,f])=>{
-    const all=ST.filter(f),list=all.filter(s=>!(s.lv>L)),later=all.filter(s=>s.lv>L);if(!all.length)return;
-    addSec(el,title);
-    list.forEach(s=>{
+    const known=REC.filter(r=>S.rec[r.out]).length,lab=document.createElement('div');lab.className='tile';lab.id='lab';
+    lab.innerHTML=`<button class="btn tbtn"><span class="te">🧪</span><b>Labor</b><small>${labStatus()||known+' / '+REC.length+' Rezepte'}</small></button>`;
+    lab.querySelector('button').onclick=()=>openLab();tiles.appendChild(lab)}
+  if(S.goal>=5||L>=2){const a=document.createElement('button');a.className='tile';a.innerHTML=`<span class="te">🏆</span><b>Erfolge</b><small>${Object.keys(S.ach).length} / ${ACH.length}</small>`;a.onclick=openAch;tiles.appendChild(a)}
+  if(tiles.children.length)el.appendChild(tiles);
+  // Filter
+  const groups=GROUPS.map(([n,f])=>({n,f,list:ST.filter(f)})).filter(g=>g.list.length),usable=groups.filter(g=>g.list.some(s=>!(s.lv>L)));
+  const chips=document.createElement('div');chips.className='cats';
+  const nReady=ST.filter(s=>(!s.secret||S.rec[s.out])&&canRun(s)).length;
+  [['alle','Alle'],['bereit','Bereit ('+nReady+')'],...usable.map(g=>[g.n,g.n.split(' ')[0]])].forEach(([k,n])=>{const b=document.createElement('button');b.className='chip2'+(k===wFilter?' on':'');b.textContent=n;b.onclick=()=>{wFilter=k;SFX.tick();render()};chips.appendChild(b)});
+  if(usable.length>1)el.appendChild(chips);
+  if(wFilter!=='alle'&&wFilter!=='bereit'&&!usable.some(g=>g.n===wFilter))wFilter='alle';
+  groups.forEach(g=>{
+    const all=g.list,list=all.filter(s=>!(s.lv>L)),later=all.filter(s=>s.lv>L);
+    const shown=wFilter==='bereit'?list.filter(canRun):wFilter==='alle'||wFilter===g.n?list:[];
+    if(!shown.length&&!(wFilter==='alle'&&later.length))return;
+    const open=!fold[g.n]||wFilter!=='alle';
+    const h=document.createElement('button');h.className='sec fold';h.innerHTML=`<span>${open?'▾':'▸'} ${g.n}</span><i>${list.length?list.filter(canRun).length+' bereit · '+list.length:'gesperrt'}</i>`;
+    h.onclick=()=>{fold[g.n]=!fold[g.n];saveFold();SFX.tick();render()};
+    if(wFilter==='alle')el.appendChild(h);else addSec(el,g.n);
+    if(!open)return;
+    shown.forEach(s=>{
       const need=Object.keys(s.in).map(k=>`<span class="${S.stock[k]>=s.in[k]?'up':'dn'}">${s.in[k]}× ${G[k].n} (${Math.floor(S.stock[k])})</span>`).join(' · ');
-      const can=Object.keys(s.in).every(k=>S.stock[k]>=s.in[k]);
-      const d=document.createElement('div');d.className='card';d.dataset.st=s.id;d.style.setProperty('--c',G[s.out].c);
-      d.innerHTML=`<div class="art">${ic(s.out,42)}</div><div class="i">${s.n}<small>🎲 ${s.games.map(g=>(TH[s.id]||{})[g]?.name||GNAME[g]).join(' · ')}</small><small>${need?'Braucht '+need:'Kostenlos'} → bis ${Math.max(1,Math.round(s.max*mult(s.mult)))}× ${G[s.out].n}</small></div><button class="btn ${can?'':'ghost'}">Spielen</button>`;
+      const can=canRun(s);
+      const d=document.createElement('div');d.className='card wcard'+(can?'':' idle');d.dataset.st=s.id;d.style.setProperty('--c',G[s.out].c);
+      d.innerHTML=`<div class="art">${ic(s.out,40)}</div><div class="i">${s.n}<small class="one">🎲 ${s.games.map(g=>(TH[s.id]||{})[g]?.name||GNAME[g]).join(' · ')}</small><small>${need?'Braucht '+need:'Kostenlos'} → bis ${Math.max(1,Math.round(s.max*mult(s.mult)))}× ${G[s.out].n}</small></div><button class="btn ${can?'':'ghost'}">Spielen</button>`;
       d.querySelector('button').onclick=()=>runStation(s);
       el.appendChild(d)});
-    if(later.length)el.appendChild(lockLine(later.length,Math.min(...later.map(s=>s.lv)),list.length));
+    if(wFilter==='alle'&&later.length)el.appendChild(lockLine(later.length,Math.min(...later.map(s=>s.lv)),list.length));
   });
+  if(wFilter==='bereit'&&!nReady)el.insertAdjacentHTML('beforeend','<p class="sub" style="margin-top:14px">Gerade ist nichts bereit. Besorg Rohstoffe oder verkauf Ware, damit das Lager Platz hat.</p>');
 }

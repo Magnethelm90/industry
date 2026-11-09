@@ -84,3 +84,11 @@ export function openAch(){
   openOv(xbtn()+`<h3>🏆 Erfolge</h3><div class="sub">${Object.keys(S.ach).length} von ${ACH.length} geschafft. Die Belohnung kommt automatisch, sobald du ein Ziel erreichst.</div>${rows}<button class="btn big b" id="done" style="margin-top:12px">Schließen</button>`);
   bindX();$('done').onclick=closeOv;
 }
+
+// Tagesaufgaben im Fenster (die Werkstatt zeigt nur eine kleine Kachel)
+export function openDaily(){
+  const c=dailyCard(()=>{closeOv();openAch()});if(!c)return;
+  openOv(xbtn()+'<h3>📅 Tagesaufgaben</h3>');bindX();$('ovbox').appendChild(c);
+  const b=document.createElement('button');b.className='btn big b';b.textContent='Schließen';b.style.marginTop='12px';b.onclick=closeOv;$('ovbox').appendChild(b);
+}
+export const dailyDone=()=>S.daily.tasks.filter(t=>t.done).length;

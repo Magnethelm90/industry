@@ -75,7 +75,7 @@ export function goalCard(){
     d.innerHTML=`<div class="gi">✅</div><div class="i"><small>${n} · geschafft!</small>${g.t}</div><button class="btn pulse">Abholen<br>+${fmt(g.r)}</button>`;
     d.querySelector('button').onclick=claim;return d;
   }
-  d.className='goal';
+  d.className='goal'+(cur!=='work'?' compact':'');
   d.innerHTML=`<div class="gi">🎯</div><div class="i"><small>${n} · Belohnung ${fmt(g.r)} Cr</small>${g.t}<small>${g.d}</small></div>${g.go!==cur||g.hl?'<button class="btn b">Zeigen</button>':''}`;
   const b=d.querySelector('button');if(b)b.onclick=show;
   return d;

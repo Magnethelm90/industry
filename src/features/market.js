@@ -23,17 +23,17 @@ export function mTrade(g,buy,e){
 export let mCat='alle';
 export function renderMarket(){
   const el=$('s-market'),all=GKU();
-  el.innerHTML=`<h2>Markt</h2><p class="sub">Direkt handeln: Ankauf 20 % über, Verkauf ${labHas('markt')?20:25} % unter Marktpreis. Per LKW (Logistik) bekommst du den vollen Preis, am Hafen +30 %.</p>`+(isWeekend()?'<div class="worldline"><span>🛍️ Wochenendmarkt: Lebensmittel, Agrarwaren und Fisch sind 15 % mehr wert, Aufträge zahlen 20 % mehr.</span></div>':'');
+  el.innerHTML=`<h2>Markt</h2><p class="sub">Ankauf +20 %, Verkauf −${labHas('markt')?20:25} %. Per LKW bekommst du den vollen Preis.</p>`+(isWeekend()?'<div class="worldline"><span>🛍️ Wochenendmarkt: Lebensmittel, Agrarwaren und Fisch sind 15 % mehr wert, Aufträge zahlen 20 % mehr.</span></div>':'');
   const cats=document.createElement('div');cats.className='cats';
   CATS.filter(([k])=>k==='alle'||all.some(g=>catOf(g)===k)).forEach(([k,n])=>{const b=document.createElement('button');b.className='chip2'+(k===mCat?' on':'');b.textContent=n;b.onclick=()=>{mCat=k;SFX.tick();render()};cats.appendChild(b)});
   el.appendChild(cats);
   const bar=document.createElement('div');bar.className='amt';
   [1,10,50,'max'].forEach(a=>{const b=document.createElement('button');b.className='chip2'+(a===mAmt?' on':'');b.textContent=a==='max'?'Max':'× '+a;b.onclick=()=>{mAmt=a;SFX.tick();render()};bar.appendChild(b)});
   el.appendChild(bar);
-  all.filter(g=>mCat==='alle'||catOf(g)===mCat).forEach(g=>{const p=price(g),d=p/G[g].base,c=document.createElement('div');c.className='card';c.style.setProperty('--c',G[g].c);
+  all.filter(g=>mCat==='alle'||catOf(g)===mCat).forEach(g=>{const p=price(g),d=p/G[g].base,c=document.createElement('div');c.className='card mcard';c.style.setProperty('--c',G[g].c);
     const tag=mood[g]>1.8?'<span class="chip up">🔥 BOOM</span>':mood[g]<.6?'<span class="chip dn">❄️ CRASH</span>':'';
-    c.innerHTML=`<div class="art">${ic(g,42)}</div><div class="i"><div class="mtop"><span>${G[g].n} ${tag}<small><b class="num" style="font-size:17px;color:var(--ink)">${p.toFixed(2)}</b> · <span class="${d>=1?'up':'dn'}">${d>=1?'▲':'▼'} ${Math.round(Math.abs(d-1)*100)}%</span> · Lager ${Math.floor(S.stock[g])}/${cap()}</small></span>${spark(g)}</div>
-      <div class="mrow"><button class="btn b sm" data-a="buy">Kaufen<span class="num">${buyP(g).toFixed(1)} / Stk</span></button><button class="btn sm" data-a="sell" ${S.stock[g]<1?'disabled':''}>Verkaufen<span class="num">${sellP(g).toFixed(1)} / Stk</span></button></div></div>`;
-    c.querySelectorAll('.mrow button').forEach(b=>b.onclick=e=>mTrade(g,b.dataset.a==='buy',e));
+    c.innerHTML=`<div class="art">${ic(g,36)}</div><div class="i"><span class="mn">${G[g].n} ${tag}</span><span class="mp"><b class="num">${p.toFixed(2)}</b> <span class="${d>=1?'up':'dn'}">${d>=1?'▲':'▼'} ${Math.round(Math.abs(d-1)*100)}%</span> · ${Math.floor(S.stock[g])} im Lager</span></div>
+      <div class="mbtn"><button class="btn b sm" data-a="buy">Kaufen<span class="num">${buyP(g).toFixed(1)}</span></button><button class="btn sm" data-a="sell" ${S.stock[g]<1?'disabled':''}>Verkaufen<span class="num">${sellP(g).toFixed(1)}</span></button></div>`;
+    c.querySelectorAll('.mbtn button').forEach(b=>b.onclick=e=>mTrade(g,b.dataset.a==='buy',e));
     el.appendChild(c)});
 }
