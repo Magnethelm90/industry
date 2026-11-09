@@ -10,7 +10,7 @@ import {$,fmt,ic} from '../util.js';
 import {dayPhase} from '../world.js';
 import {loadAll} from './models.js';
 
-const WARES=['erz','kohle','stahl'];
+const WARES=['erz','kohle','lehm','ziegel','stahl','maschine'];
 // Rotation um Y: lokal (x,z) → Welt
 const rot=(x,z,a)=>[x*Math.cos(a)+z*Math.sin(a),-x*Math.sin(a)+z*Math.cos(a)];
 // colliders: Kreise oder achsenparallele Kästen (nur bei Drehung 0 oder π), lokal zur Station; h = Höhe (für die Kamera)
@@ -20,7 +20,11 @@ const STATIONS=[
   {id:'kohle',n:'Kohle',at:[17,-6],ry:-.5,model:'mine',tint:{rock:'#4b5563',ore:'#15161c'},zone:[-2.7,8.4],h:6,
     col:[{x:0,z:-1.2,r:5.8},{x:-4.6,z:1.2,r:3.3},{x:4.8,z:.4,r:2.9}],lblY:8},
   {id:'stahl',n:'Schmelzofen',at:[0,-24],ry:0,model:'furnace',zone:[0,5.4],h:6,col:[{x:0,z:0,hw:3.8,hd:3.2}],lblY:12.8},
-  {id:'markt',n:'Markt',at:[0,17],ry:Math.PI,model:'market',zone:[0,3.9],h:4.2,col:[{x:0,z:0,hw:3.3,hd:1.6},{x:-4.4,z:.4,hw:1.1,hd:1.2},{x:4.3,z:-.4,hw:.8,hd:.9}],lblY:6.6}
+  {id:'markt',n:'Markt',at:[0,17],ry:Math.PI,model:'market',zone:[0,3.9],h:4.2,col:[{x:0,z:0,hw:3.3,hd:1.6},{x:-4.4,z:.4,hw:1.1,hd:1.2},{x:4.3,z:-.4,hw:.8,hd:.9}],lblY:6.6},
+  {id:'lehm',n:'Lehm',at:[-28,10],ry:1.0,model:'mine',tint:{rock:'#a5714a',ore:'#d98a5a'},zone:[2.7,8.4],h:6,
+    col:[{x:0,z:-1.2,r:5.8},{x:-4.6,z:1.2,r:3.3},{x:4.8,z:.4,r:2.9}],lblY:8},
+  {id:'ziegel',n:'Ziegelei',at:[-22,-25],ry:0,model:'brickworks',zone:[0,5.4],h:6,col:[{x:0,z:0,hw:3.8,hd:3.1}],lblY:9.4},
+  {id:'maschine',n:'Montage',at:[22,-25],ry:0,model:'workshop',zone:[0,5.4],h:6,col:[{x:0,z:0,hw:4,hd:3.2}],lblY:8.4}
 ];
 // Kollisionen in Weltkoordinaten vorberechnen
 for(const s of STATIONS)s.cw=s.col.map(c=>{const [dx,dz]=rot(c.x,c.z,s.ry);return {...c,x:s.at[0]+dx,z:s.at[1]+dz,h:s.h}});
@@ -75,7 +79,7 @@ export async function open3d(){
   catch(e){root.remove();toast('3D wird von diesem Gerät nicht unterstützt');return}
   window.__w3d=1;
   let alive=true;
-  const M=await loadAll(['worker','mine','furnace','market','truck','pine','oak','rock','bush','lamp','fence','signpost','crates']).catch(e=>{toast('3D-Modelle konnten nicht geladen werden');return null});
+  const M=await loadAll(['worker','mine','furnace','market','brickworks','workshop','truck','pine','oak','rock','bush','lamp','fence','signpost','crates']).catch(e=>{toast('3D-Modelle konnten nicht geladen werden');return null});
   if(!M||!window.__w3d){renderer.dispose();root.remove();window.__w3d=0;return}
   $('w3l').remove();
   let pr=Math.min(devicePixelRatio||1,2);renderer.setPixelRatio(pr);renderer.shadowMap.enabled=true;renderer.shadowMap.type=PCFSoftShadowMap;
@@ -93,7 +97,7 @@ export async function open3d(){
   const gt=grassTex(),ground=new Mesh(new PlaneGeometry(320,320),new MeshLambertMaterial({map:gt}));ground.rotation.x=-Math.PI/2;ground.receiveShadow=true;scene.add(ground);
   const pt=pathTex(),pm=new MeshLambertMaterial({map:pt});
   const path=(x,z,w,d)=>{const t=pt.clone();t.needsUpdate=true;t.repeat.set(w/6,d/6);t.anisotropy=8;const p=new Mesh(new PlaneGeometry(w,d),new MeshLambertMaterial({map:t}));p.rotation.x=-Math.PI/2;p.position.set(x,.025,z);p.receiveShadow=true;scene.add(p)};
-  path(0,-3,5.2,46);path(-9,-3,20,4.2);path(9,-3,20,4.2);path(-17,-6+7,3.6,16);path(17,-6+7,3.6,16);
+  path(0,-3,5.2,46);path(0,-17.5,50,4);path(-22,-20,3.6,5);path(22,-20,3.6,5);path(-10,12,22,4);path(-9,-3,20,4.2);path(9,-3,20,4.2);path(-17,-6+7,3.6,16);path(17,-6+7,3.6,16);
   // Plätze vor den Stationen
   const plaza=(x,z,r)=>{const m=new Mesh(new RingGeometry(0,r,28),new MeshLambertMaterial({map:pt}));m.rotation.x=-Math.PI/2;m.position.set(x,.03,z);m.receiveShadow=true;scene.add(m)};
   plaza(0,6,7.5);plaza(0,-17,6);plaza(0,12,5);
@@ -111,14 +115,16 @@ export async function open3d(){
     zones.push({s,x:X,z:Z,ring,disc});
   }
   // Deko: LKW am Markt, Zaun, Laternen, Wegweiser, Kisten
-  const truck=M.truck.clone(true);truck.position.set(11,0,15);truck.rotation.y=-2.4;scene.add(truck);EXTRA.length=0;EXTRA.push({x:11,z:15,r:2.4,h:3});
+  path(34,24.5,50,4.6);path(12,22,6,10);
+  const truck=M.truck.clone(true);truck.position.set(14,0,24.5);truck.rotation.y=Math.PI/2;scene.add(truck);EXTRA.length=0;const tcol={x:14,z:24.5,r:2.2,h:3};EXTRA.push(tcol);
+  const T={x:14,dir:1,turn:0,wait:0};
   const lamps=[[-3.6,6],[3.6,6],[-3.6,-8],[3.6,-8],[-3.6,-17],[3.6,-17],[-3.6,12],[3.6,12]];
   lamps.forEach(([x,z])=>{const l=M.lamp.clone(true);l.position.set(x,0,z);scene.add(l);EXTRA.push({x,z,r:.4,h:4})});
   const fenceM=[];for(let i=-5;i<=5;i++){if(Math.abs(i)<1)continue;fenceM.push(place(i*3.8,-35,1,0))}for(let i=-5;i<=5;i++)fenceM.push(place(i*3.8,36,1,0));scatter(scene,M.fence,fenceM);
   const sp=M.signpost.clone(true);sp.position.set(4.2,0,0);sp.rotation.y=-.5;scene.add(sp);
   const cr=M.crates.clone(true);cr.position.set(-7,0,13.5);cr.rotation.y=.4;scene.add(cr);EXTRA.push({x:-7,z:13.5,r:1.3,h:2});
   // Wald, Felsen, Büsche
-  const free=(x,z,pad=3)=>!(Math.abs(x)<8&&z>-34&&z<26)&&!STATIONS.some(s=>Math.hypot(s.at[0]-x,s.at[1]-z)<10+pad)&&Math.hypot(x-11,z-15)>5&&!(Math.abs(z+3)<4&&Math.abs(x)<26)&&!(Math.abs(Math.abs(x)-17)<4&&z>0&&z<16);
+  const free=(x,z,pad=3)=>!(Math.abs(x)<8&&z>-34&&z<26)&&!STATIONS.some(s=>Math.hypot(s.at[0]-x,s.at[1]-z)<10+pad)&&!(Math.abs(z-24.5)<5&&x>5)&&!(Math.hypot(x+28,z-10)<14)&&!(Math.abs(z+3)<4&&Math.abs(x)<26)&&!(Math.abs(Math.abs(x)-17)<4&&z>0&&z<16);
   const pines=[],oaks=[],rocks=[],bushes=[];
   for(let i=0;i<260&&pines.length+oaks.length<110;i++){const x=(rnd()-.5)*150,z=(rnd()-.5)*140;if(!free(x,z))continue;const k=.75+rnd()*.7;(rnd()<.55?pines:oaks).push(place(x,z,k,rnd()*6.28));EXTRA.push({x,z,r:.5*k,h:6})}
   for(let i=0;i<90&&rocks.length<22;i++){const x=(rnd()-.5)*110,z=(rnd()-.5)*100;if(!free(x,z,1))continue;rocks.push(place(x,z,.6+rnd()*1.0,rnd()*6.28))}
@@ -176,7 +182,7 @@ export async function open3d(){
     scene.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material){(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>{m.map&&m.map.dispose();m.dispose()})}});
     renderer.dispose();root.remove();window.__w3d=0;delete window.__w3dState};
   $('w3x').onclick=exit;
-  window.__w3dState=()=>({x:P.x,z:P.z,zones:zones.map(z=>({id:z.s.id,x:z.x,z:z.z})),near:near&&near.s.id,alive,calls:renderer.info.render.calls,tri:renderer.info.render.triangles,pr});
+  window.__w3dState=()=>({x:P.x,z:P.z,truck:T.x,zones:zones.map(z=>({id:z.s.id,x:z.x,z:z.z})),near:near&&near.s.id,alive,calls:renderer.info.render.calls,tri:renderer.info.render.triangles,pr});
   window.__w3dTeleport=(x,z)=>{P.x=x;P.z=z};
   hud();refreshLabels();
   // Kollision (Kreis gegen Kreise und Kästen)
@@ -229,6 +235,10 @@ export async function open3d(){
     // Rauch, Staub, Glut, Wolken
     sm.forEach(s=>{const u=s.userData;u.t=(u.t+dt*.16)%1;const t=u.t;s.position.set(chim[0]+Math.sin(t*5+u.t*3)*.5+t*2.2,chim[1]+t*9,chim[2]-t*.8);s.scale.setScalar(1.4+t*4.5);s.material.opacity=Math.sin(Math.PI*Math.min(1,t*1.15))*.42});
     dust.forEach(s=>{const u=s.userData;if(u.t>=1)return;u.t+=dt*2.8;if(u.t>=1){s.visible=false;return}s.position.y=.15+u.t*.6;s.scale.setScalar(.5+u.t*1.1);s.material.opacity=(1-u.t)*.4});
+    // LKW fährt auf der Straße hin und her, wendet an den Enden
+    {if(T.wait>0)T.wait-=dt;else if(T.turn>0){T.turn-=dt;truck.rotation.y+=T.dir*Math.PI*dt/1.2*-1;if(T.turn<=0){T.dir*=-1;truck.rotation.y=T.dir>0?Math.PI/2:-Math.PI/2;T.wait=.6}}
+      else{T.x+=T.dir*6*dt;if(T.x>52&&T.dir>0||T.x<14&&T.dir<0)T.turn=1.2}
+      truck.position.x=T.x;tcol.x=T.x}
     glow.intensity=(night?56:24)+Math.sin(tm*17)*3+Math.sin(tm*5.3)*2.5;
     clouds.forEach(c=>{c.position.x+=dt*.9;if(c.position.x>140)c.position.x=-140});
     if((hudT-=dt)<=0){hudT=.5;hud();refreshAct();refreshLabels();const t=$('w3t');if(t&&tm>9)t.style.opacity=0}

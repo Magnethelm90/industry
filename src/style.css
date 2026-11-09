@@ -370,7 +370,7 @@ body[data-time=night] .stage.lake::before{content:"";position:absolute;inset:0 0
 .w3top{position:absolute;left:0;right:0;top:0;display:flex;gap:10px;align-items:center;padding:max(10px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) 0 max(12px,env(safe-area-inset-left));pointer-events:none}
 .w3top .btn{pointer-events:auto}
 .w3hud{display:flex;flex-direction:column;gap:4px;background:rgba(10,16,40,.72);backdrop-filter:blur(6px);padding:7px 12px;border-radius:16px;border:1px solid rgba(255,255,255,.12);font-size:13px;color:#fff;pointer-events:none}
-.w3r{display:flex;align-items:center;gap:10px}.w3hud b{font-size:17px;color:#fbbf24}.w3hud span{color:#cbd5e1;font-weight:700}.w3c{display:inline-flex;align-items:center;gap:3px}
+.w3r{display:flex;align-items:center;gap:6px 10px;flex-wrap:wrap}.w3hud b{font-size:17px;color:#fbbf24}.w3hud span{color:#cbd5e1;font-weight:700}.w3c{display:inline-flex;align-items:center;gap:3px}
 .w3load{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;background:radial-gradient(circle,#16224a,#050a24)}
 .w3vig{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,transparent 58%,rgba(0,0,0,.38))}
 .w3act{position:absolute;left:0;right:0;bottom:max(24px,env(safe-area-inset-bottom));display:flex;justify-content:center;pointer-events:none}

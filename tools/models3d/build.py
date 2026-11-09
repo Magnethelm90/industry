@@ -185,6 +185,60 @@ def furnace():
     box((.9, .5, .5), (-3.6, -3.7, .5), mat('#2f3640', .4, .8), bevel=.05); box((.5, .3, .35), (-3.6, -3.7, .9), mat('#2f3640', .4, .8), bevel=.03)
     cyl(.5, 1.1, (3.7, 2.3, .85), wood, seg=12); cyl(.52, .1, (3.7, 2.3, .55), metal, seg=12); cyl(.52, .1, (3.7, 2.3, 1.15), metal, seg=12)
 
+
+# ---------------------------------------------------------------- Ziegelei
+@model
+def brickworks():
+    br = mat(BRICK, .9); br2 = mat('#c0694a', .9); clay = mat('#c58a5b', .95); st = mat(STONE2, .9); wood = mat(WOOD, .85); metal = mat('#475569', .45, .7)
+    dark = mat('#0c0a09', 1); glow = mat('#fb923c', .4, emit='#f97316', strength=2.2)
+    box((7.4, 6.0, .5), (0, 0, .25), st, bevel=.05)
+    # Brennofen: Tonnengewölbe aus Halbzylinder
+    cyl(2.3, 5.2, (0, 0, 2.5), br, rot=(math.radians(90), 0, 0), seg=16)
+    box((5.0, 5.2, 2.6), (0, 0, 1.3), br, bevel=.1); box((4.6, 5.4, .3), (0, 0, .62), br2, bevel=.02); box((4.6, 5.4, .3), (0, 0, 1.6), br2, bevel=.02)
+    box((2.0, .5, 2.0), (0, -2.55, 1.2), mat('#2a1d17', .9), bevel=.1); box((1.6, .2, 1.6), (0, -2.8, 1.2), dark, bevel=.05); box((1.4, .1, .7), (0, -2.86, .8), glow, bevel=.02)
+    cyl(.7, 4.0, (1.6, .8, 5.0), br, seg=10, r2=.55); cyl(.8, .4, (1.6, .8, 7.2), st, seg=10); cyl(.62, .1, (1.6, .8, 7.42), glow, seg=10)
+    # Ziegelstapel auf Paletten
+    for k, (x, y) in enumerate([(-4.0, -3.4), (-2.6, -3.4), (4.0, -3.6), (2.6, -4.2)]):
+        box((1.3, 1.0, .18), (x, y, .09), wood, bevel=.02)
+        for r in range(4):
+            for c in range(3): box((.4, .9, .22), (x - .42 + c * .42, y, .3 + r * .24), br2 if (r + c) % 2 else br, bevel=0)
+    # Lehmhaufen und Schubkarre
+    ball(1.8, (-4.4, 1.6, .7), clay, scale=(1.2, 1, .6), sub=2, jitter=.18, seed=6, smooth=False)
+    ball(1.0, (-3.3, 2.8, .4), clay, scale=(1, 1, .6), sub=1, jitter=.1, seed=7, smooth=False)
+    # Presse (Kasten mit Kolben)
+    box((1.6, 1.6, 2.2), (4.2, 1.4, 1.1), metal, bevel=.08); box((.5, .5, 1.0), (4.2, 1.4, 2.7), mat('#94a3b8', .35, .8), bevel=.04); box((1.9, 1.9, .3), (4.2, 1.4, 3.3), metal, bevel=.05)
+    box((1.2, .4, .15), (4.2, 0.55, .6), mat('#facc15', .6), bevel=.02)
+
+# ---------------------------------------------------------------- Montagehalle
+@model
+def workshop():
+    wall = mat('#cbd5e1', .85); wall2 = mat('#94a3b8', .85); roof = mat('#b4432b', .8); st = mat(STONE2, .9); metal = mat('#475569', .45, .7); yel = mat('#facc15', .55)
+    dark = mat('#1e293b', .8); wood = mat(WOOD, .85); blue = mat('#3b82f6', .5, .2); spark = mat('#fde68a', .4, emit='#fbbf24', strength=3.)
+    box((8.0, 6.2, .5), (0, 0, .25), st, bevel=.05)
+    box((6.8, 5.0, 3.8), (0, 0, 2.4), wall, bevel=.1)
+    box((6.9, 5.1, .4), (0, 0, 1.0), wall2, bevel=.02)
+    # Satteldach
+    for s in (-1, 1): box((3.9, 5.7, .22), (s * 1.78, 0, 5.15), roof, rot=(0, s * math.radians(-24), 0), bevel=.03)
+    box((.35, 5.8, .35), (0, 0, 5.95), mat('#7a2a1a', .8), bevel=.03)
+    # Rolltor und Schild mit Zahnrad
+    box((3.0, .3, 2.8), (0, -2.55, 1.9), dark, bevel=.05)
+    for i in range(6): box((2.8, .12, .3), (0, -2.72, .7 + i * .46), mat('#64748b', .5, .5), bevel=.01)
+    box((3.6, .3, .35), (0, -2.55, 3.45), yel, bevel=.04)
+    cyl(.9, .25, (0, -2.7, 4.35), metal, rot=(math.radians(90), 0, 0), seg=14); cyl(.35, .3, (0, -2.72, 4.35), wall, rot=(math.radians(90), 0, 0), seg=10)
+    for i in range(8):
+        a = i * math.pi / 4; box((.3, .26, .4), (math.cos(a) * .98, -2.7, 4.35 + math.sin(a) * .98), metal, rot=(0, -a, 0), bevel=.02)
+    # Fenster
+    for x in (-2.4, 2.4): box((1.0, .15, .9), (x, -2.55, 3.0), mat('#93c5fd', .2, emit='#60a5fa', strength=.3), bevel=.02); box((1.2, .12, 1.1), (x, -2.5, 3.0), wall2, bevel=.02)
+    # Kran an der Seite
+    box((.35, .35, 5.0), (3.9, -1.6, 2.5), yel, bevel=.03); box((.3, 3.6, .3), (3.9, -3.2, 5.0), yel, bevel=.03); box((.08, .08, 1.4), (3.9, -4.4, 4.2), mat(DARK, .5), bevel=0); box((.4, .3, .35), (3.9, -4.4, 3.4), metal, bevel=.03)
+    # Maschinenteile draußen: Zahnrad-Kisten, Roboterarm
+    for k, (x, y) in enumerate([(-4.2, -3.4), (-3.2, -3.6)]):
+        box((1.0, 1.0, 1.0), (x, y, .5 + .0), wood if k == 0 else mat(WOOD2, .9), rot=(0, 0, .2 * k), bevel=.03)
+    cyl(.55, .3, (-4.1, -3.4, 1.15), metal, seg=12)
+    box((.9, .9, .3), (3.0, -3.7, .15), dark, bevel=.04); cyl(.25, 1.0, (3.0, -3.7, .8), blue, seg=8); cyl(.2, 1.0, (3.5, -3.7, 1.35), blue, rot=(0, math.radians(70), 0), seg=8); ball(.18, (3.95, -3.7, 1.7), spark, sub=1)
+    # Schornstein mit Rohr
+    cyl(.4, 2.6, (-2.4, 1.6, 5.2), metal, seg=8); cyl(.46, .2, (-2.4, 1.6, 6.55), dark, seg=8)
+
 # ---------------------------------------------------------------- Marktstand
 @model
 def market():

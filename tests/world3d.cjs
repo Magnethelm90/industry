@@ -33,8 +33,17 @@ let fail=0;const ok=(c,m)=>{console.log((c?'  ok  ':'  FEHLER ')+m);if(!c)fail++
   ok(await p.evaluate(()=>document.getElementById('w3b').disabled===false&&/Schmelzofen/.test(document.getElementById('w3b').textContent)),'Schmelzofen: Zutaten reichen, Knopf aktiv');
   await p.evaluate(()=>{S.stock.erz=0});await p.waitForFunction(()=>document.getElementById('w3b').disabled,null,{timeout:15000}).catch(()=>{});
   ok(await p.evaluate(()=>document.getElementById('w3b').disabled&&/fehlt/.test(document.getElementById('w3b').textContent)),'Schmelzofen: ohne Erz zeigt der Knopf, was fehlt');
+  // Neue Stationen: Ziegelei braucht Lehm, Montage Stahl und Ziegel
+  await p.evaluate(()=>{S.stock.lehm=0});await go('ziegel');await p.waitForFunction(()=>document.getElementById('w3b').disabled&&/Lehm/.test(document.getElementById('w3b').textContent),null,{timeout:15000});
+  ok(true,'Ziegelei ohne Lehm: Knopf zeigt, was fehlt');
+  await p.evaluate(()=>{S.stock.lehm=9});await p.waitForFunction(()=>!document.getElementById('w3b').disabled&&/Ziegel/.test(document.getElementById('w3b').textContent),null,{timeout:15000});
+  ok(true,'Ziegelei mit Lehm: Knopf aktiv');
+  await go('maschine');await p.waitForFunction(()=>/Stahl|Montage/.test(document.getElementById('w3b').textContent),null,{timeout:15000});ok(true,'Montage-Station erreichbar');
+  await go('lehm');await p.waitForFunction(()=>/Lehm/.test(document.getElementById('w3b').textContent),null,{timeout:15000});ok(true,'Lehmgrube erreichbar');
+  const tx0=await p.evaluate(()=>__w3dState().truck);await p.waitForFunction(x=>__w3dState().truck>x+1,tx0,{timeout:15000}).catch(()=>{});
+  ok(await p.evaluate(()=>__w3dState().truck)>tx0+1,'LKW fährt auf der Straße');
   // Markt
-  await p.evaluate(()=>{S.stock.erz=5;S.stock.stahl=2;S.stock.kohle=0});await go('markt');await p.waitForFunction(()=>/verkaufen/.test(document.getElementById('w3b').textContent),null,{timeout:15000});
+  await p.evaluate(()=>{S.stock.erz=5;S.stock.stahl=2;S.stock.kohle=0;S.stock.lehm=0;S.stock.ziegel=0;S.stock.maschine=0});await go('markt');await p.waitForFunction(()=>/verkaufen/.test(document.getElementById('w3b').textContent),null,{timeout:15000});
   const m0=await p.evaluate(()=>S.money),x0=await p.evaluate(()=>S.xp),s0=await p.evaluate(()=>S.st.sold);
   await p.click('#w3b');await p.waitForTimeout(300);
   const a=await p.evaluate(()=>({m:S.money,x:S.xp,s:S.st.sold,e:S.stock.erz,st:S.stock.stahl}));
