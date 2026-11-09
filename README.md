@@ -65,6 +65,12 @@ Neue Spieler folgen 23 Zielen (`src/features/goals.js`). Bereiche öffnen sich n
 - Sicherungscodes sind die einzige Eingabe von außen. `readCode` (`src/features/backup.js`) lehnt Codes ab, die HTML- oder Skript-Zeichen enthalten, zu lang sind oder beim Entpacken zu groß würden (Zip-Bombe). Tests dafür stehen in `tests/systems.cjs`.
 - Der Workflow nutzt auf Commits gepinnte Actions und pro Job nur die nötigen Rechte.
 
+## 3D-Modus (neu, Stufe 1)
+
+Der Knopf 🧊 in der Kopfzeile (oder `?3d` in der Adresse) öffnet eine begehbare 3D-Welt (`src/world3d/index.js`, Three.js, wird erst beim Öffnen geladen). Du steuerst einen Arbeiter von hinten: Daumenstick links (oder WASD / Pfeile), Kamera durch Wischen rechts. An vier Stationen leuchtet ein Ring: Eisenerz- und Kohlemine, Schmelzofen und Markt. Dort erscheint ein Knopf. Er öffnet das normale Minispiel (Spielstand, Lager, Level und XP sind dieselben wie im 2D-Spiel) oder verkauft alles auf dem Markt. Das 2D-Spiel bleibt unverändert; „Zurück“ führt dorthin.
+
+Die Modelle sind aus einfachen Formen im Code gebaut. Tageszeit färbt Himmel und Licht. Der Test `tests/world3d.cjs` läuft mit Software-WebGL (SwiftShader). Das Bündel wächst durch Three.js um etwa 0,5 MB (130 KB gepackt). Geplant für spätere Stufen: weitere Stationen und Gebäude, Farm, Laden, LKW in der Welt, Modelle aus Blender.
+
 ## Labor
 
 Ab Level 3, in der Werkstatt. Zwei Reiter:
