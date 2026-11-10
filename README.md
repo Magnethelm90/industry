@@ -100,6 +100,13 @@ Auch die Verwaltung hat Orte in der 3D-Welt: Auftragstafel, Bauamt (Betriebe), L
 
 Wer in der Welt am Logistikhof eine Lieferung startet, fährt die Strecke selbst in 3D (`src/world3d/drive3d.js`): eigene Szene mit Landstraße, Landschaft, Münzen, Hütchen, Sperren, Felsen, langsamen Autos und dem Stadttor am Ziel. Gelenkt wird durch Ziehen, Tippen links/rechts oder Pfeiltasten. In jeder Hindernisreihe bleibt eine Spur frei. Regeln und Abrechnung sind die der 2D-Fahrt (`startDrive` in `src/features/transport.js` wählt 3D, solange die Welt offen ist); Abbrechen auf der Startkarte lässt die Ladung auf dem LKW. Im Test fährt ein Bot und muss mit mindestens 85 % Ladung ankommen.
 
+### Angeln und alle Stationen in 3D
+
+- **Angeln am Steg** (`gFish3` in `src/world3d/games3d.js`): Schwimmer, Biss mit Ring-Welle, Einholen durch Halten, Spannungsbalken und Fortschritt in der Kopfleiste. Fische, Chancen, Nacht- und Sturmbonus und Rute sind die des 2D-Angelns (`FISH`), 3 Würfe, Abrechnung wie vorher.
+- **Ofen-Spiel** (`gBake`): Drei Öfen garen gleichzeitig, ein Tipp im grünen Bereich holt das Stück heraus. Gilt für Backstube, Fritteuse, Räucherofen und Glühofen.
+- **Themen:** Alle 3D-Spiele (Erzrausch, Abstich, Kran, Fließband, Ofen) lassen sich per Thema umbenennen und einfärben (`SET` in `games3d.js`): Wein ist lila, Glas hellblau, Öl schwarz, die Endmontage nennt Kamera, Akku, Display. So hat jede der 37 Stationen ein eigenes 3D-Spiel.
+- **Neue Orte:** Sandgrube, Kupfermine und Ölfeld mit Bohrturm; die Manufaktur (9 Stationen: Mühle, Bäckerei, Käserei, Chips, Räucherei, Kelterei, Brauerei, Weberei, Schneiderei) und das Elektronikwerk (8 Stationen: Glas bis Smartphone) mit je einem Ring pro Station vor dem Gebäude; die drei Untergrund-Werkstätten am Hinterhof; die geheimen Rezepte als Ringe vor dem Labor (erst sichtbar, wenn das Rezept entdeckt ist). Stationen unter ihrem Level zeigen ein Schloss. Neue Modelle: `hall`, `factory`, `derrick`.
+
 ## Labor
 
 Ab Level 3, in der Werkstatt. Zwei Reiter:

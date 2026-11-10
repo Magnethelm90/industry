@@ -7,10 +7,10 @@ import {goFish,harvest,pickCrop,waterPlot} from '../features/farm.js';
 import {openLab} from '../features/lab.js';
 import {applyResult,canStart,runStation} from '../features/workshop.js';
 import {claimAt,goalInfo} from '../features/goals.js';
-import {has3d,play3d} from './games3d.js';
+import {fish3d,has3d,play3d} from './games3d.js';
 import {drive3d} from './drive3d.js';
 import {SFX,toast} from '../fx.js';
-import {S,isOpen,lvl,sellP,sat,track} from '../state.js';
+import {S,cap,isOpen,lvl,sellP,sat,track} from '../state.js';
 import {OV} from '../ui.js';
 import {$,fmt,ic} from '../util.js';
 import {dayPhase} from '../world.js';
@@ -30,7 +30,15 @@ const STATIONS=[
   {id:'lehm',n:'Lehm',at:[-28,10],ry:1.0,model:'mine',tint:{rock:'#c98f5c',ore:'#e8955f'},zone:[2.7,8.4],h:6,
     col:[{x:0,z:-1.2,r:5.8},{x:-4.6,z:1.2,r:3.3},{x:4.8,z:.4,r:2.9}],lblY:8},
   {id:'ziegel',n:'Ziegelei',at:[-36,-30],ry:0,model:'brickworks',zone:[0,5.4],h:6,col:[{x:0,z:0,hw:3.8,hd:3.1}],lblY:9.4},
-  {id:'maschine',n:'Montage',at:[36,-30],ry:0,model:'workshop',zone:[0,5.4],h:6,col:[{x:0,z:0,hw:4,hd:3.2}],lblY:8.4}  ,
+  {id:'maschine',n:'Montage',at:[36,-30],ry:0,model:'workshop',zone:[0,5.4],h:6,col:[{x:0,z:0,hw:4,hd:3.2}],lblY:8.4},
+  {id:'sand',n:'Sand',at:[-64,-26],ry:Math.PI/2,model:'mine',tint:{rock:'#e9dca8',ore:'#f6e7a8'},zone:[2.7,8.4],h:6,
+    col:[{x:0,z:-1.2,r:5.8},{x:-4.6,z:1.2,r:3.3},{x:4.8,z:.4,r:2.9}],lblY:8},
+  {id:'kupfer',n:'Kupfer',at:[-34,-57],ry:0,model:'mine',tint:{rock:'#8d7a6a',ore:'#e8833a'},zone:[2.7,8.4],h:6,
+    col:[{x:0,z:-1.2,r:5.8},{x:-4.6,z:1.2,r:3.3},{x:4.8,z:.4,r:2.9}],lblY:8},
+  {id:'oel',n:'Ölfeld',at:[64,-46],ry:-Math.PI/2,model:'derrick',zone:[0,5.2],h:10,col:[{x:0,z:0,r:3.2}],lblY:12.5},
+  // Gebäude mit mehreren Stationen: die Ringe davor stehen in RINGS
+  {id:'h_hall',hub:true,n:'Manufaktur',sub:'9 Werkstätten: Brot, Käse, Wein, Stoff …',at:[-46,-4],ry:Math.PI/2,model:'hall',h:6,col:[{x:0,z:0,hw:4.6,hd:3.2}],lblY:8.4},
+  {id:'h_factory',hub:true,n:'Elektronikwerk',sub:'8 Fertigungen: Glas bis Smartphone',at:[0,-47],ry:0,model:'factory',h:6.5,col:[{x:0,z:0,hw:4.8,hd:3.4}],lblY:9},
   // Orte der Verwaltung: öffnen die jeweilige Ansicht als Blatt über der Welt (unl = Freischaltung)
   {id:'p_orders',place:'orders',n:'Aufträge',unl:'orders',at:[8.5,8],ry:-Math.PI/2,model:'board',zone:[0,2.4],h:3.4,col:[{x:0,z:0,r:1.1}],lblY:4.8,btn:'📋 Aufträge ansehen'},
   {id:'p_bld',place:'bld',n:'Bauamt',unl:'bld',at:[18,-25.5],ry:0,model:'office',zone:[0,5],h:6,col:[{x:0,z:0,hw:3.7,hd:2.9}],lblY:8,btn:'🏗️ Betriebe verwalten'},
@@ -41,6 +49,15 @@ const STATIONS=[
   {id:'p_fish',place:'fish',n:'Angelsteg',unl:'farm',at:[31.4,8],ry:0,model:'jetty',zone:[-1.6,0],h:0,col:[],lblY:4,btn:'🎣 Angeln'},
   {id:'p_under',place:'under',n:'Hinterhof',unl:'under',at:[46,-14],ry:-Math.PI/2,model:'shack',zone:[0,3.8],h:3.4,col:[{x:0,z:0,r:3}],lblY:5.2,btn:'🕶️ Hinterhof betreten'}
 ];
+// Stationen in Hubs: je ein Ring vor dem Gebäude. at = gedachter Ursprung 8,6 m hinter dem Ring, damit das 3D-Spiel genau am Ring aufgebaut wird.
+const RINGS=[];
+{const add=(hub,ids,rows)=>{const H=STATIONS.find(s=>s.id===hub);let k=0;
+    rows.forEach(([lz,xs])=>xs.forEach(lx=>{const id=ids[k++];if(!id)return;const [dx,dz]=rot(lx,lz,H.ry),ring=[H.at[0]+dx,H.at[1]+dz],f=[Math.sin(H.ry),Math.cos(H.ry)];
+      RINGS.push({id,hubOf:hub,ring,ry:H.ry,at:[ring[0]-8.6*f[0],ring[1]-8.6*f[1]],n:id,lblY:3.2,h:0,col:[],cw:[]})}))};
+  add('h_hall',['muehle','baeckerei','kaeserei','chipsfabrik','raeucherei','kelterei','brauerei','weberei','schneiderei'],[[5.6,[-4.6,-2.3,0,2.3,4.6]],[8.6,[-3.45,-1.15,1.15,3.45]]]);
+  add('h_factory',['glas','kunststoff','draht','platine','akku','display','gehaeuse','handy'],[[5.6,[-3.45,-1.15,1.15,3.45]],[8.6,[-3.45,-1.15,1.15,3.45]]]);
+  [['brennerei',-2.3],['faelscher',0],['kopierer',2.3]].forEach(([id,lx])=>{const ry=-Math.PI/2,[dx,dz]=rot(lx,5.2,ry),ring=[46+dx,-14+dz],f=[Math.sin(ry),Math.cos(ry)];RINGS.push({id,hubOf:'p_under',ring,ry,at:[ring[0]-8.6*f[0],ring[1]-8.6*f[1]],n:id,lblY:3.2,h:0,col:[],cw:[]})});
+  ['r_kamin','r_dampfmaschine','r_glasfaser','r_solar','r_ebike','r_smartwatch','r_drohne','r_roboter'].forEach((id,i)=>{const ring=[-30+i*2.3,-14.2];RINGS.push({id,hubOf:'p_lab',ring,ry:0,at:[ring[0],ring[1]-8.6],n:id,lblY:3.2,h:0,col:[],cw:[]})})}
 // Felder der Farm: Raster aus bis zu 12 Beeten
 const PLOT=i=>[-36+(i%4)*3.7,20+Math.floor(i/4)*3.7];
 // Kollisionen in Weltkoordinaten vorberechnen
@@ -96,7 +113,7 @@ export async function open3d(){
   catch(e){root.remove();toast('3D wird von diesem Gerät nicht unterstützt');return}
   window.__w3d=1;
   let alive=true;
-  const M=await loadAll(['worker','mine','furnace','market','brickworks','workshop','shop','lab','office','board','depot','barn','jetty','shack','truck','pine','oak','rock','bush','lamp','fence','signpost','crates']).catch(e=>{toast('3D-Modelle konnten nicht geladen werden');return null});
+  const M=await loadAll(['worker','mine','furnace','market','brickworks','workshop','shop','lab','office','board','depot','barn','jetty','shack','hall','factory','derrick','truck','pine','oak','rock','bush','lamp','fence','signpost','crates']).catch(e=>{toast('3D-Modelle konnten nicht geladen werden');return null});
   if(!M||!window.__w3d){renderer.dispose();root.remove();window.__w3d=0;return}
   $('w3l').remove();
   let pr=Math.min(devicePixelRatio||1,2);renderer.setPixelRatio(pr);renderer.shadowMap.enabled=true;renderer.shadowMap.type=PCFSoftShadowMap;
@@ -126,11 +143,19 @@ export async function open3d(){
     s.g=g;s.fade=1;
     g.position.set(s.at[0],0,s.at[1]);g.rotation.y=s.ry;scene.add(g);g.updateMatrixWorld(true);s.box=new Box3().setFromObject(g);
     s.lb=label();const [lx,lz]=[s.at[0],s.at[1]];s.lb.position.set(lx,s.lblY,lz);scene.add(s.lb);
+    if(s.hub)continue;
     const [zx,zz]=rot(s.zone[0],s.zone[1],s.ry),X=s.at[0]+zx,Z=s.at[1]+zz;
     const ring=new Mesh(new RingGeometry(1.7,2.1,40),new MeshBasicMaterial({color:'#22d3ee',side:DoubleSide,transparent:true,opacity:.85,depthWrite:false}));ring.rotation.x=-Math.PI/2;ring.position.set(X,.07,Z);scene.add(ring);
     const disc=new Mesh(new RingGeometry(0,1.7,40),new MeshBasicMaterial({color:'#22d3ee',side:DoubleSide,transparent:true,opacity:.14,depthWrite:false}));disc.rotation.x=-Math.PI/2;disc.position.set(X,.06,Z);scene.add(disc);
     zones.push({s,x:X,z:Z,ring,disc});
   }
+  // Ringe der Hub-Stationen (klein, mit kurzem Schild)
+  for(const s of RINGS){
+    const s1=ST.find(x=>x.id===s.id);s.n=s1.n;
+    s.lb=label();s.lb.scale.set(.3,.1,1);s.lb.position.set(s.ring[0],s.lblY,s.ring[1]);scene.add(s.lb);
+    const ring=new Mesh(new RingGeometry(.85,1.1,32),new MeshBasicMaterial({color:'#22d3ee',side:DoubleSide,transparent:true,opacity:.85,depthWrite:false}));ring.rotation.x=-Math.PI/2;ring.position.set(s.ring[0],.07,s.ring[1]);scene.add(ring);
+    const disc=new Mesh(new RingGeometry(0,.85,32),new MeshBasicMaterial({color:'#22d3ee',side:DoubleSide,transparent:true,opacity:.14,depthWrite:false}));disc.rotation.x=-Math.PI/2;disc.position.set(s.ring[0],.06,s.ring[1]);scene.add(disc);
+    zones.push({s,x:s.ring[0],z:s.ring[1],ring,disc,rad:1.2})}
   // Deko: LKW am Markt, Zaun, Laternen, Wegweiser, Kisten
   path(34,24.5,50,4.6);path(12,22,6,10);
   const truck=M.truck.clone(true);truck.position.set(14,0,24.5);truck.rotation.y=Math.PI/2;scene.add(truck);EXTRA.length=0;const tcol={x:14,z:24.5,r:2.2,h:3};EXTRA.push(tcol);
@@ -143,7 +168,7 @@ export async function open3d(){
   const cr=M.crates.clone(true);cr.position.set(-7,0,13.5);cr.rotation.y=.4;scene.add(cr);EXTRA.push({x:-7,z:13.5,r:1.3,h:2});
   // Wald, Felsen, Büsche
   const front=(x,z)=>STATIONS.some(s=>{if(!has3d(s.id))return false;const dx=x-s.at[0],dz=z-s.at[1],lx=dx*Math.cos(s.ry)-dz*Math.sin(s.ry),lz=dx*Math.sin(s.ry)+dz*Math.cos(s.ry);return Math.abs(lx)<6&&lz>-2&&lz<24});
-  const free=(x,z,pad=3)=>!front(x,z)&&!(x>-41&&x<-21&&z>16&&z<34)&&Math.hypot(x-38,z-8)>9&&!(Math.abs(x)<8&&z>-34&&z<26)&&!STATIONS.some(s=>Math.hypot(s.at[0]-x,s.at[1]-z)<10+pad)&&!(Math.abs(z-24.5)<5&&x>5)&&!(Math.hypot(x+28,z-10)<14)&&!(Math.abs(z+3)<4&&Math.abs(x)<26)&&!(Math.abs(z+17.5)<4&&Math.abs(x)<40)&&!(Math.abs(Math.abs(x)-17)<4&&z>0&&z<16);
+  const free=(x,z,pad=3)=>!front(x,z)&&!RINGS.some(r=>Math.hypot(r.ring[0]-x,r.ring[1]-z)<9)&&!(x>-41&&x<-21&&z>16&&z<34)&&Math.hypot(x-38,z-8)>9&&!(Math.abs(x)<8&&z>-34&&z<26)&&!STATIONS.some(s=>Math.hypot(s.at[0]-x,s.at[1]-z)<10+pad)&&!(Math.abs(z-24.5)<5&&x>5)&&!(Math.hypot(x+28,z-10)<14)&&!(Math.abs(z+3)<4&&Math.abs(x)<26)&&!(Math.abs(z+17.5)<4&&Math.abs(x)<40)&&!(Math.abs(Math.abs(x)-17)<4&&z>0&&z<16);
   const pines=[],oaks=[],rocks=[],bushes=[];
   for(let i=0;i<260&&pines.length+oaks.length<110;i++){const x=(rnd()-.5)*150,z=(rnd()-.5)*140;if(!free(x,z))continue;const k=.75+rnd()*.7;(rnd()<.55?pines:oaks).push(place(x,z,k,rnd()*6.28));EXTRA.push({x,z,r:.5*k,h:6})}
   for(let i=0;i<90&&rocks.length<22;i++){const x=(rnd()-.5)*110,z=(rnd()-.5)*100;if(!free(x,z,1))continue;rocks.push(place(x,z,.6+rnd()*1.0,rnd()*6.28))}
@@ -177,7 +202,7 @@ export async function open3d(){
   cam.position.set(P.x+Math.sin(C.yaw)*Math.cos(C.pitch)*C.dist,1.6+Math.sin(C.pitch)*C.dist,P.z+Math.cos(C.yaw)*Math.cos(C.pitch)*C.dist);
   const keys={};let stick={x:0,y:0},camDrag=null,stickId=null,near=null,tm=0,dustT=0,fps=60,slow=0,game=null,swingT=0,driveObj=null;
   const look=new Vector3(0,1.5,7);
-  const env={renderer,M,setDrive:d=>{driveObj=d;if(!d){hud();refreshLabels()}},scene,cam,root,hero,setGame:g=>{game=g;root.classList.toggle('ingame',!!g);hideInGame.forEach(o=>o.visible=!g);zones.forEach(z=>{z.ring.visible=z.disc.visible=!g});if(!g){cam.userData.d=null}},swing:()=>{swingT=.28}};
+  const env={renderer,M,setDrive:d=>{driveObj=d;if(!d){hud();refreshLabels()}},scene,cam,root,hero,setGame:g=>{game=g;root.classList.toggle('ingame',!!g);hideInGame.forEach(o=>o.visible=!g);zones.forEach(z=>{z.ring.visible=z.disc.visible=!g&&!hidden(z.s)});if(!g){cam.userData.d=null}},swing:()=>{swingT=.28}};
   const stickEl=$('w3s'),knob=$('w3k');
   const key=e=>{if(OV||sheetOn)return;keys[e.code]=e.type==='keydown'};addEventListener('keydown',key);addEventListener('keyup',key);
   const area=root;
@@ -200,7 +225,11 @@ export async function open3d(){
   $('w3h').addEventListener('click',e=>{if(e.target.closest('.w3goal.ready')){claimAt(e.clientX,e.clientY);hud()}});
   const hud=()=>{$('w3h').innerHTML=`<div class="w3r"><b>${fmt(Math.floor(S.money))} Cr</b><span>Level ${lvl()}</span></div><div class="w3r">${WARES.map(g=>`<span class="w3c">${ic(g,20)}${Math.floor(S.stock[g]||0)}</span>`).join('')}</div>${goalLine()}`};
   const need=s=>{const st=ST.find(x=>x.id===s.id);return Object.keys(st.in).filter(k=>S.stock[k]<st.in[k])};
-  const locked=s=>s.unl&&!isOpen(s.unl);
+  const locked=s=>(s.unl&&!isOpen(s.unl))||(s.hubOf==='p_under'&&!isOpen('under'));
+  const stOf=s=>ST.find(x=>x.id===s.id);
+  // Rezept-Stationen sind erst nach der Entdeckung im Labor da
+  const hidden=s=>s.hubOf&&stOf(s)&&stOf(s).secret&&!S.rec[stOf(s).out];
+  const lvLock=s=>{const st=s.id&&stOf(s);return st&&st.lv&&st.lv>lvl()?st.lv:0};
   // Zustand eines Beets: [Knopftext, aktiv?, Zeichen über dem Beet]
   const plotState=i=>{const p=S.farm.plots[i];if(!p)return ['',0,''];
     if(!p.c)return ['🌱 Feld '+(i+1)+' bestellen',1,'🌱'];
@@ -209,15 +238,18 @@ export async function open3d(){
     if(p.w<=0)return ['💧 Gießen',1,'💧'];
     return [G[p.c].n+' wächst … '+Math.round(p.p*100)+' %',0,'']};
   const stateOf=s=>{
-    if(locked(s))return ['🔒 ab Level '+UNL[s.unl].lv,0];
+    if(s.hub)return [s.sub,1];
+    if(lvLock(s))return ['🔒 ab Level '+lvLock(s),0];
+    if(locked(s))return ['🔒 ab Level '+(UNL[s.unl||'under'].lv),0];
     if(s.place)return [s.place==='orders'&&S.orders.length?S.orders.length+' laufende Aufträge':'Geöffnet',1];
     if(s.id==='markt'){const t=WARES.reduce((a,g)=>a+Math.floor(S.stock[g]||0),0);return t?[`${t} Waren verkaufen`,1]:['Nichts zu verkaufen',0]}
     const m=need(s);return m.length?['Fehlt: '+m.map(k=>G[k].n).join(', '),0]:['Bereit zum Arbeiten',1]};
-  const refreshLabels=()=>STATIONS.forEach(s=>{const [t,ok]=stateOf(s);s.lb.userData.set(s.n,t,ok)});
+  const refreshLabels=()=>[...STATIONS,...RINGS].forEach(s=>{if(!s.lb)return;const [t,ok]=stateOf(s);s.lb.userData.set(s.n,t,ok)});
   const refreshAct=()=>{
     if(!near){actBox.hidden=true;return}const s=near.s;actBox.hidden=false;
     if(s.plot!=null){const [txt,on]=plotState(s.plot);act.innerHTML=txt;act.disabled=!on}
-    else if(locked(s)){act.innerHTML='🔒 '+UNL[s.unl].n+' ab Level '+UNL[s.unl].lv;act.disabled=true}
+    else if(lvLock(s)){act.innerHTML='🔒 '+stOf(s).n+' ab Level '+lvLock(s);act.disabled=true}
+    else if(locked(s)){act.innerHTML='🔒 ab Level '+UNL[s.unl||'under'].lv;act.disabled=true}
     else if(s.place){act.innerHTML=s.btn;act.disabled=false}
     else if(s.id==='markt'){const total=WARES.reduce((a,g)=>a+Math.floor(S.stock[g]||0),0);act.innerHTML=total?`💰 Alles verkaufen (${total} Waren)`:'Nichts zu verkaufen';act.disabled=!total}
     else{const st=ST.find(x=>x.id===s.id),m=need(s);act.disabled=!!m.length;act.innerHTML=m.length?`Es fehlt: ${m.map(k=>G[k].n).join(', ')}`:`▶ ${st.n}`}};
@@ -233,12 +265,12 @@ export async function open3d(){
       if(!p.c)pickCrop(i);else if(p.pest){p.pest=0;SFX.good();toast('🐛 Erwischt!')}else if(p.ready)harvest(i,mid);else if(p.w<=0){waterPlot(p);SFX.water?SFX.water():SFX.good()}
       hud();refreshAct();updatePlots();return}
     if(locked(s)){SFX.err();return}
-    if(s.place){if(s.place==='lab')openLab();else if(s.place==='fish')await goFish();else sheet(s.place);hud();return}
+    if(s.place){if(s.place==='lab')openLab();else if(s.place==='fish'){if(!isOpen('farm'))return;actBox.hidden=true;stick={x:0,y:0};stickId=null;stickEl.style.opacity=0;const r=await fish3d(env,s);if(!alive)return;if(r){const ks=Object.keys(r);if(!ks.length)toast('Heute beißt nichts … versuch es nochmal!');else{ks.forEach(g=>{S.stock[g]=Math.min(cap(),S.stock[g]+r[g]);S.xp+=r[g]*2});track('fish');toast('Fang: '+ks.map(g=>r[g]+'× '+G[g].n).join(', '));SFX.win();render()}}}else sheet(s.place);hud();refreshAct();refreshLabels();return}
     if(s.id==='markt'){let sum=0,k=0;for(const g of WARES){const n=Math.floor(S.stock[g]||0);for(let i=0;i<n;i++){sum+=sellP(g);sat[g]+=1}if(n){S.stock[g]-=n;k+=n}}
       if(!k){SFX.err();return}S.money+=sum;S.xp+=Math.ceil(sum/12);track('sold',null,k);SFX.coin();toast('+'+fmt(sum)+' Cr · '+k+' Waren verkauft');hud();refreshAct();refreshLabels();return}
     const st=ST.find(x=>x.id===s.id);
     if(has3d(s.id)){if(!canStart(st))return;actBox.hidden=true;stick={x:0,y:0};stickId=null;stickEl.style.opacity=0;
-      const sc=await play3d(env,s);if(!alive)return;if(sc!=null)applyResult(st,sc)}
+      const sc=await play3d(env,s,st);if(!alive)return;if(sc!=null)applyResult(st,sc)}
     else await runStation(st);
     hud();refreshAct();refreshLabels()};
   // Beete: Erde, neun Pflanzen je Beet, Zeichen darüber. Wächst sichtbar mit dem Fortschritt.
@@ -267,7 +299,7 @@ export async function open3d(){
   $('w3x').onclick=exit;
   // Die Lieferung (Logistik) fährt in 3D, solange die Welt offen ist
   window.__w3dDrive=(route,load)=>{closeSheet();return drive3d(env,route,load)};
-  window.__w3dState=()=>({x:P.x,z:P.z,sheet:sheetOn,plots:plots.length,truck:T.x,zones:zones.map(z=>({id:z.s.id,x:z.x,z:z.z})),near:near&&near.s.id,alive,calls:renderer.info.render.calls,tri:renderer.info.render.triangles,pr});
+  window.__w3dState=()=>({x:P.x,z:P.z,sheet:sheetOn,plots:plots.length,truck:T.x,zones:zones.map(z=>({id:z.s.id,x:z.x,z:z.z,hidden:hidden(z.s)})),near:near&&near.s.id,alive,calls:renderer.info.render.calls,tri:renderer.info.render.triangles,pr});
   window.__w3dTeleport=(x,z)=>{P.x=x;P.z=z};
   hud();refreshLabels();updatePlots();
   // Kollision (Kreis gegen Kreise und Kästen)
@@ -286,7 +318,10 @@ export async function open3d(){
     // Anpassung an langsame Geräte: nach 2 s unter 30 Bildern/s Auflösung und Schatten senken
     fps+=((1/Math.max(dt,.001))-fps)*.05;if(fps<30&&tm>3&&pr>1){if((slow+=dt)>2){pr=1;renderer.setPixelRatio(1);resize();slow=0}}else slow=0;
     if(game){
-      game.update(dt);if(swingT>0){swingT-=dt;armR.rotation.x=-2.4*Math.sin(Math.PI*(1-swingT/.28))}else armR.rotation.x*=.8;
+      game.update(dt);
+    }
+    if(game){
+      if(swingT>0){swingT-=dt;armR.rotation.x=-2.4*Math.sin(Math.PI*(1-swingT/.28))}else armR.rotation.x*=.8;
       legL.rotation.x*=.8;legR.rotation.x*=.8;armL.rotation.x*=.8;
       cam.position.lerp(game.camPos,Math.min(1,dt*3.2));look.lerp(game.camLook,Math.min(1,dt*3.2));cam.lookAt(look);
       if(game.shake>.001){cam.position.x+=(Math.random()-.5)*game.shake;cam.position.y+=(Math.random()-.5)*game.shake;game.shake*=Math.pow(.02,dt)}
@@ -302,7 +337,7 @@ export async function open3d(){
       if((dustT-=dt)<=0){dustT=.22;const s=dust.find(d=>d.userData.t>=1);if(s){s.userData.t=0;s.position.set(P.x-wx*.3,.15,P.z-wz*.3);s.visible=true}}
     }else P.speed*=.8;
     for(const c of allCols)push(c);
-    P.x=MathUtils.clamp(P.x,-55,55);P.z=MathUtils.clamp(P.z,-50,50);
+    P.x=MathUtils.clamp(P.x,-70,70);P.z=MathUtils.clamp(P.z,-62,62);
     hero.position.set(P.x,Math.abs(Math.sin(tm*11))*.07*P.speed,P.z);hero.rotation.y=P.yaw;
     const sw=Math.sin(tm*11)*.75*P.speed,idle=Math.sin(tm*1.6)*.03;
     legL.rotation.x=sw;legR.rotation.x=-sw;armL.rotation.x=-sw*.9+idle;armR.rotation.x=sw*.9-idle;
@@ -323,7 +358,9 @@ export async function open3d(){
         const to=occ&&!game?.18:1;s.fade+=(to-s.fade)*Math.min(1,dt*9);
         if(Math.abs(s.fade-(s._f??1))>.01){s._f=s.fade;s.g.traverse(m=>{if(m.isMesh){m.material.transparent=s.fade<.99;m.material.opacity=s.fade;m.material.depthWrite=s.fade>.6;m.castShadow=s.fade>.6}})}}}
     // Standplätze und Beschriftungen
-    let nn=null;for(const z of zones){const d=Math.hypot(P.x-z.x,P.z-z.z);const on=d<(z.rad||2.6);z.ring.material.opacity=on?1:.5;z.disc.material.opacity=on?.3:.12;z.ring.scale.setScalar(1+Math.sin(tm*3)*.06);if(on)nn=z}
+    let nn=null;for(const z of zones){const hz=hidden(z.s);z.ring.visible=z.disc.visible=!hz&&!game;if(hz)continue;const d=Math.hypot(P.x-z.x,P.z-z.z);const on=d<(z.rad||2.6);z.ring.material.opacity=on?1:.5;z.disc.material.opacity=on?.3:.12;z.ring.scale.setScalar(1+Math.sin(tm*3)*.06);if(on)nn=z}
+    {let best=null,bd=7;for(const s of RINGS){const d=Math.hypot(P.x-s.ring[0],P.z-s.ring[1]);s.lb.material.opacity=0;if(!hidden(s)&&d<bd){bd=d;best=s}}
+      if(best&&!game)best.lb.material.opacity=MathUtils.clamp((bd-.2)/.8,0,1)*.0+1}
     for(const s of STATIONS){const d=Math.hypot(P.x-s.at[0],P.z-s.at[1]);s.lb.material.opacity=game?0:MathUtils.clamp((d-9)/6,0,1)*MathUtils.clamp(1.3-d/70,.35,1)}
     if(game)nn=near;
     if(nn!==near){near=nn;if(near)SFX.tick();refreshAct()}

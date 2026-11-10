@@ -363,6 +363,48 @@ def shack():
     cyl(.5, 1.0, (3.1, -1.4, .5), mat('#3f6212', .8), seg=10); cyl(.5, 1.0, (3.3, -.2, .5), mat('#7c2d12', .8), seg=10)
     box((.9, .9, .9), (-3.2, -1.2, .45), w2, rot=(0, 0, .3), bevel=.03)
 
+
+# ---------------------------------------------------------------- Manufaktur (Lebensmittel & Textil), Elektronikwerk, Bohrturm
+@model
+def hall():
+    house(8.4, 5.2, 3.8, '#fff1c9', '#16a34a', door='#14532d')
+    glass = mat('#93c5fd', .2, emit='#60a5fa', strength=.3); wood = mat(WOOD, .85)
+    for x in (-3.0, 3.0): box((1.5, .14, 1.4), (x, -2.66, 2.2), glass, bevel=.02)
+    box((4.4, .16, .8), (0, -2.72, 4.55), mat('#14532d', .7), bevel=.04); box((4.0, .08, .5), (0, -2.82, 4.55), mat('#fde047', .5, emit='#fde047', strength=.5), bevel=.02)
+    # Brot, Käse, Fass, Stoffballen vor der Tür
+    cyl(.55, 1.1, (-4.9, -2.9, .55), wood, seg=12); cyl(.57, .1, (-4.9, -2.9, .35), mat('#475569', .5, .6), seg=12); cyl(.57, .1, (-4.9, -2.9, .8), mat('#475569', .5, .6), seg=12)
+    cyl(.6, .35, (4.8, -3.0, .18), mat('#fbbf24', .6), seg=14); cyl(.5, .3, (4.9, -3.0, .5), mat('#fde68a', .6), seg=14)
+    for k, c in enumerate(['#93c5fd', '#f9a8d4', '#86efac']): cyl(.28, 1.2, (5.0, -1.6 + k * .1, .3 + k * .5), mat(c, .8), rot=(math.radians(90), 0, 0), seg=10)
+    cyl(.4, 2.4, (2.8, 1.2, 5.6), mat(BRICK, .9), seg=8); cyl(.48, .25, (2.8, 1.2, 6.9), mat(STONE2, .9), seg=8)
+
+@model
+def factory():
+    wall = mat('#dbeafe', .85); st = mat(STONE2, .9); blue = mat('#2563eb', .6); dark = mat('#1e293b', .8); glass = mat('#a5f3fc', .2, emit='#22d3ee', strength=.5)
+    box((9.4, 6.0, .4), (0, 0, .2), st, bevel=.04); box((8.6, 5.2, 3.6), (0, 0, 2.2), wall, bevel=.08)
+    for i in range(3):   # Sheddach
+        x = -2.87 + i * 2.87
+        box((2.9, 5.3, .2), (x - .3, 0, 4.75), blue, rot=(0, math.radians(-32), 0), bevel=.02); box((.2, 5.3, 1.5), (x + .95, 0, 4.7), glass, bevel=.02)
+    box((1.5, .2, 2.2), (0, -2.65, 1.5), dark, bevel=.04); box((3.8, .16, .6), (0, -2.7, 3.2), blue, bevel=.03)
+    for x in (-3.0, 3.0): box((1.6, .14, 1.0), (x, -2.66, 2.0), glass, bevel=.02)
+    # Antenne und Chip-Schild
+    cyl(.07, 3.0, (3.6, 1.6, 6.2), mat('#94a3b8', .4, .8), seg=6); ball(.2, (3.6, 1.6, 7.75), mat('#ef4444', .4, emit='#ef4444', strength=2.), sub=1)
+    box((1.0, .14, 1.0), (0, -2.74, 4.5), mat('#14532d', .6), bevel=.03); box((.5, .1, .5), (0, -2.82, 4.5), mat('#22c55e', .4, emit='#22c55e', strength=1.), bevel=.02)
+    box((1.1, .9, .8), (-5.0, -2.8, .4), mat('#64748b', .5, .5), bevel=.04); box((1.0, .8, .7), (5.1, -2.9, .35), mat('#fbbf24', .6), bevel=.04)
+
+@model
+def derrick():
+    steel = mat('#475569', .5, .7); red = mat('#dc2626', .6); dark = mat('#1c1917', .8)
+    box((5.0, 5.0, .3), (0, 0, .15), mat(STONE2, .9), bevel=.04)
+    for sx in (-1, 1):
+        for sy in (-1, 1): box((.22, .22, 9.4), (sx * 1.0, sy * 1.0, 4.9), steel, rot=(sy * math.radians(8), sx * math.radians(-8), 0), bevel=.02)
+    for z in (2.2, 4.4, 6.6):
+        w = 3.6 - z * .32
+        for a in (0, 1): box((w if a == 0 else .14, .14 if a == 0 else w, .14), (0, 0, z), steel, bevel=.01)
+    box((.9, .9, .6), (0, 0, 9.6), red, bevel=.05); cyl(.16, 9.0, (0, 0, 4.8), dark, seg=8)
+    # Pumpe und Fässer
+    box((1.8, .9, .9), (3.4, .6, .75), red, bevel=.06); cyl(.18, 2.2, (2.2, .6, .9), steel, rot=(0, math.radians(90), 0), seg=8)
+    for k, (x, y) in enumerate([(-3.2, -1.2), (-3.4, 0), (-2.9, 1.1)]): cyl(.5, 1.1, (x, y, .55), mat('#1f2937' if k != 1 else '#b45309', .6, .3), seg=12)
+
 # ---------------------------------------------------------------- LKW (Dekoration am Markt)
 @model
 def truck():

@@ -84,12 +84,12 @@ let fail=0;const ok=(c,m)=>{console.log((c?'  ok  ':'  FEHLER ')+m);if(!c)fail++
     const c=await p.evaluate(()=>cur);await p.click('.w3sx');await p.waitForFunction(()=>!__w3dState().sheet,null,{timeout:5000});ok(c===scr,'Ort '+id+' öffnet '+scr)}
   await go('p_lab');await p.waitForFunction(()=>/Labor/.test(document.getElementById('w3b').textContent),null,{timeout:15000});await p.click('#w3b');await p.waitForSelector('.flask',{timeout:5000});
   ok(true,'Labor öffnet aus der Welt');await p.evaluate(()=>closeOv());
-  await go('p_fish');await p.waitForFunction(()=>/Angeln/.test(document.getElementById('w3b').textContent),null,{timeout:15000});await p.click('#w3b');await p.waitForSelector('#gate',{timeout:5000});
-  ok(true,'Angelsteg startet das Angeln');await p.evaluate(()=>closeOv());
+  await go('p_fish');await p.waitForFunction(()=>/Angeln/.test(document.getElementById('w3b').textContent),null,{timeout:15000});await p.click('#w3b');await p.waitForSelector('#w3go',{timeout:10000});
+  ok(true,'Angelsteg startet das 3D-Angeln mit Startkarte');await p.click('#w3gb');await p.waitForTimeout(300);
   // Felder: säen, gießen, ernten direkt am Beet
   ok(await p.evaluate(()=>__w3dState().plots)===await p.evaluate(()=>S.farm.plots.length),'so viele Beete wie Felder ('+await p.evaluate(()=>__w3dState().plots)+')');
   const btn=async re=>{await p.waitForFunction(r=>new RegExp(r).test(document.getElementById('w3b').textContent),re,{timeout:15000})};
-  await p.evaluate(()=>{S.farm.plots[0]={c:null,p:0,w:0,pest:0,half:0,ready:0};S.money=500});await go('plot0');await btn('bestellen');await p.click('#w3b');
+  await p.evaluate(()=>{closeOv();S.farm.plots[0]={c:null,p:0,w:0,pest:0,half:0,ready:0};S.money=500});await go('plot0');await btn('bestellen');await p.click('#w3b');
   await p.waitForSelector('#ovbox [data-k="weizen"]',{timeout:5000});await p.click('#ovbox [data-k="weizen"]');
   ok(await p.evaluate(()=>S.farm.plots[0].c==='weizen'&&S.farm.plots[0].w>0),'Beet 1: Weizen gesät und angegossen');
   await btn('wächst');ok(await p.evaluate(()=>document.getElementById('w3b').disabled),'wachsendes Beet: Knopf zeigt den Fortschritt');
@@ -124,6 +124,34 @@ let fail=0;const ok=(c,m)=>{console.log((c?'  ok  ':'  FEHLER ')+m);if(!c)fail++
   await p.waitForFunction(()=>window.__ab==='fertig',null,{timeout:5000});
   ok(await p.evaluate(()=>S.stock.stahl===4&&cargo.stahl===4),'Zurück vor der Fahrt: nichts verloren');
   await p.evaluate(()=>{cargo.stahl=0;S.stock.stahl=0});
+  // Neue Stationen: Hubs, Sperren nach Level, Rezept-Stationen erst nach Entdeckung
+  await p.evaluate(()=>{S.xp=xpFor(2);S.rec={};render()});await p.evaluate(()=>document.querySelector('.lvlup')?.remove());
+  await go('handy');await p.waitForFunction(()=>/ab Level/.test(document.getElementById('w3b').textContent),null,{timeout:15000});
+  ok(await p.evaluate(()=>document.getElementById('w3b').disabled),'Smartphone-Station unter Level 4 gesperrt: '+await p.textContent('#w3b'));
+  ok(await p.evaluate(()=>{const z=__w3dState().zones.find(z=>z.id==='r_kamin');return z&&z.hidden===true}),'Rezept-Station ist unsichtbar, bis das Rezept entdeckt ist');
+  await p.evaluate(()=>{S.xp=xpFor(6);S.rec.kamin=1;Object.keys(S.stock).forEach(g=>S.stock[g]=20);render()});await p.evaluate(()=>document.querySelector('.lvlup')?.remove());
+  ok(await p.evaluate(()=>{const z=__w3dState().zones.find(z=>z.id==='r_kamin');return z&&z.hidden===false}),'entdecktes Rezept: Station erscheint');
+  // Ofen-Spiel (Backstube): Bot tippt im grünen Bereich
+  await p.evaluate(()=>closeOv());await begin('baeckerei');
+  for(let k=0;k<6000;k++){const g=await gi();if(!g||g.ended)break;const o=(g.info.ovens||[]).find(o=>o.on&&o.p>.76&&o.p<.9);if(o){await p.mouse.click(o.xy[0],o.xy[1]);await p.waitForTimeout(120)}await p.waitForTimeout(15)}
+  await result('Backstube','brot',2);
+  // Fließband mit Themenbezeichnung (Smartphone-Endmontage)
+  await begin('handy');
+  ok(await p.evaluate(()=>/Kamera|Akku|Display|Schraube/.test(document.querySelector('.w3gs').textContent)),'Endmontage zeigt eigene Teilenamen');
+  for(let k=0;k<6000;k++){const g=await gi();if(!g||g.ended)break;const it=g.info.items.find(o=>o.k===g.info.need&&o.p[0]>40&&o.p[0]<350);if(it){await p.mouse.click(it.p[0],it.p[1]);await p.waitForTimeout(150)}await p.waitForTimeout(30)}
+  await result('Endmontage','handy',2);
+  // Angeln am Steg in 3D
+  await p.evaluate(()=>{S.stock.hering=0;S.stock.lachs=0;S.stock.thunfisch=0});
+  await go('p_fish');await p.waitForFunction(()=>!document.getElementById('w3b').disabled&&/Angeln/.test(document.getElementById('w3b').textContent),null,{timeout:15000});await p.click('#w3b');await p.waitForSelector('#w3go',{timeout:10000});
+  await p.click('#w3go');await p.waitForFunction(()=>__w3dGame().running,null,{timeout:30000});
+  {let down=false;for(let k=0;k<40000;k++){const g=await gi();if(!g||g.ended||g.info.over)break;const i=g.info;
+      if(i.phase==='bite'){await p.mouse.move(195,500);await p.mouse.down();down=true;await p.waitForTimeout(80)}
+      else if(i.phase==='reel'){const want=down?i.T<68:i.T<46;if(want&&!down){await p.mouse.down();down=true}else if(!want&&down){await p.mouse.up();down=false}}
+      else if(down){await p.mouse.up();down=false}
+      await p.waitForTimeout(18)}
+    if(down)await p.mouse.up()}
+  await p.waitForFunction(()=>!document.querySelector('.w3g'),null,{timeout:60000});
+  ok(await p.evaluate(()=>S.stock.hering+S.stock.lachs+S.stock.thunfisch>0&&S.st.fish>0),'Angeln in 3D: Fang im Lager ('+await p.evaluate(()=>S.stock.hering+'/'+S.stock.lachs+'/'+S.stock.thunfisch)+'), Fangzähler erhöht');
   // Markt
   await p.evaluate(()=>{S.stock.erz=5;S.stock.stahl=2;S.stock.kohle=0;S.stock.lehm=0;S.stock.ziegel=0;S.stock.maschine=0});await go('markt');await p.waitForFunction(()=>/verkaufen/.test(document.getElementById('w3b').textContent),null,{timeout:15000});
   const m0=await p.evaluate(()=>S.money),x0=await p.evaluate(()=>S.xp),s0=await p.evaluate(()=>S.st.sold);
