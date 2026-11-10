@@ -43,9 +43,9 @@ export function gStack(s){return new Promise(res=>{
     if(!done){cur.x+=cur.dir*speed*dt;if(cur.x<0){cur.x=0;cur.dir=1}if(cur.x>W-cur.w){cur.x=W-cur.w;cur.dir=-1}}
     cam+=(camT-cam)*Math.min(1,dt*6);msgT=Math.max(0,msgT-dt);
     falls.forEach(f=>{f.vy+=900*dt;f.y+=f.vy*dt});falls=falls.filter(f=>f.y<H+40);
-    let g=c.createLinearGradient(0,0,0,H);g.addColorStop(0,'#24305e');g.addColorStop(1,'#0c1020');c.fillStyle=g;c.fillRect(0,0,W,H);
+    let g=c.createLinearGradient(0,0,0,H);g.addColorStop(0,'#9ad4ff');g.addColorStop(1,'#e6f5ff');c.fillStyle=g;c.fillRect(0,0,W,H);
     c.fillStyle='rgba(255,255,255,.05)';for(let i=0;i<N;i++){const y=yOf(i);c.fillRect(0,y+BH-1,W,1)}
-    c.fillStyle='#3a3f4c';c.fillRect(0,H-30+cam,W,30);
+    c.fillStyle='#7bbf5a';c.fillRect(0,H-30+cam,W,30);
     c.fillStyle='#f5b82e';c.fillRect(0,8,W,10);c.strokeStyle='#b7791f';c.lineWidth=2;for(let x=0;x<W;x+=18){c.beginPath();c.moveTo(x,8);c.lineTo(x+9,18);c.lineTo(x+18,8);c.stroke()}
     stack.forEach((b,i)=>brick(b.x,yOf(i),b.w,i));
     if(!done){

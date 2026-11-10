@@ -21,7 +21,7 @@ let fail=0;const ok=(c,m)=>{console.log((c?'  ok  ':'  FEHLER ')+m);if(!c)fail++
   const z0=st.z;await p.keyboard.down('KeyW');await p.waitForFunction(z=>__w3dState().z<z-2,z0,{timeout:15000}).catch(()=>{});await p.keyboard.up('KeyW');
   ok((await p.evaluate(()=>__w3dState().z))<z0-2,'W läuft nach vorn');
   // Gebäude sind fest
-  await p.evaluate(()=>__w3dTeleport(-17,-6));await p.waitForTimeout(200);
+  await p.evaluate(()=>__w3dTeleport(-17,-6));await p.waitForFunction(()=>{const s=__w3dState();return Math.hypot(s.x+17,s.z+6)>3},null,{timeout:15000}).catch(()=>{});
   const col=await p.evaluate(()=>{const s=__w3dState();return Math.hypot(s.x+17,s.z+6)});ok(col>3,'Erzmine ist ein Hindernis ('+col.toFixed(1)+' m)');
   const go=async id=>{await p.evaluate(id=>{const z=__w3dState().zones.find(z=>z.id===id);__w3dTeleport(z.x,z.z)},id);await p.waitForFunction(id=>__w3dState().near===id,id,{timeout:3000})};
   await go('erz');await p.waitForSelector('#w3b:visible');

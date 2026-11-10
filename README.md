@@ -65,6 +65,10 @@ Neue Spieler folgen 23 Zielen (`src/features/goals.js`). Bereiche öffnen sich n
 - Sicherungscodes sind die einzige Eingabe von außen. `readCode` (`src/features/backup.js`) lehnt Codes ab, die HTML- oder Skript-Zeichen enthalten, zu lang sind oder beim Entpacken zu groß würden (Zip-Bombe). Tests dafür stehen in `tests/systems.cjs`.
 - Der Workflow nutzt auf Commits gepinnte Actions und pro Job nur die nötigen Rechte.
 
+## Aussehen
+
+Die Minispiele sind hell und freundlich: Das Fenster bekommt beim Start die Klasse `game` (`src/games/gate.js`, `ui.js`) und wechselt auf einen hellen Verlauf mit dunkler Schrift; die Bühnen und Canvas-Spiele haben helle Hintergründe (Block „Helles, freundliches Aussehen“ am Ende von `src/style.css`). Die 3D-Welt nutzt kräftige Farben (Neutral-Tonemapping), Hügel am Horizont, einen Teich, eine höhere Kamera und Beschriftungen in fester Bildschirmgröße.
+
 ## Übersicht
 
 Die Werkstatt zeigt oben drei kleine Kacheln (Aufgaben, Labor, Erfolge) statt großer Karten. Darunter filtern Chips nach „Bereit“ (nur Stationen, die gerade laufen können) oder nach Gruppe, und jede Gruppe lässt sich einklappen (gemerkt im Browser unter `ia_fold`). Der Markt zeigt eine Zeile pro Ware. Das Ziel oben erscheint außerhalb der Werkstatt ohne Beschreibung. Der Systemtest prüft Kacheln, Filter und Einklappen.

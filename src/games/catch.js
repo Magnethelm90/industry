@@ -39,13 +39,13 @@ export function gCatch(s){return new Promise(res=>{
       return o.y<H+20});
     parts.forEach(p=>{p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=300*dt;p.l-=dt});parts=parts.filter(p=>p.l>0);
     flash=Math.max(0,flash-dt*3);
-    let g=c.createLinearGradient(0,0,0,H);g.addColorStop(0,'#2a2230');g.addColorStop(1,'#120e14');c.fillStyle=g;c.fillRect(0,0,W,H);
+    let g=c.createLinearGradient(0,0,0,H);g.addColorStop(0,'#bfe6ff');g.addColorStop(1,'#f6e3b4');c.fillStyle=g;c.fillRect(0,0,W,H);
     // Stollen: Holzstützen links/rechts, Querbalken, Lampe
-    c.fillStyle='#5b3a1f';c.fillRect(0,0,16,H);c.fillRect(W-16,0,16,H);c.fillStyle='#7a4f2a';c.fillRect(0,40,W,12);
-    const lg=c.createRadialGradient(W/2,60,4,W/2,60,150);lg.addColorStop(0,'rgba(255,200,120,.25)');lg.addColorStop(1,'rgba(255,200,120,0)');c.fillStyle=lg;c.fillRect(0,0,W,H);
+    c.fillStyle='#b9824a';c.fillRect(0,0,16,H);c.fillRect(W-16,0,16,H);c.fillStyle='#d79a5c';c.fillRect(0,40,W,12);
+    const lg=c.createRadialGradient(W/2,60,4,W/2,60,150);lg.addColorStop(0,'rgba(255,255,255,.55)');lg.addColorStop(1,'rgba(255,255,255,0)');c.fillStyle=lg;c.fillRect(0,0,W,H);
     c.fillStyle='#ffd27a';c.beginPath();c.arc(W/2,58,5,0,7);c.fill();
     // Schienen
-    c.fillStyle='#3a2a1c';for(let x=-((t*40)%28);x<W;x+=28)c.fillRect(x,H-14,14,8);
+    c.fillStyle='#a8743f';for(let x=-((t*40)%28);x<W;x+=28)c.fillRect(x,H-14,14,8);
     c.fillStyle='#9aa3b2';c.fillRect(0,H-18,W,3);c.fillRect(0,H-9,W,3);
     items.forEach(o=>{c.save();c.translate(o.x,o.y);c.rotate(o.rot);const im=o.st?ROCK:GOOD,sz=o.r*3.2;
       if(im.complete&&im.naturalWidth)c.drawImage(im,-sz/2,-sz/2,sz,sz);c.restore()});
@@ -56,9 +56,9 @@ export function gCatch(s){return new Promise(res=>{
       c.fillStyle=pg;c.beginPath();c.ellipse(bx,y+3,34*Math.min(1,.3+caught/14),12*Math.min(1,.3+caught/16),0,Math.PI,0);c.fill()}
     parts.forEach(p=>{c.globalAlpha=Math.max(0,p.l*2);c.fillStyle=col;c.beginPath();c.arc(p.x,p.y,3,0,7);c.fill()});c.globalAlpha=1;
     if(flash>0){c.fillStyle=`rgba(255,40,60,${flash*.35})`;c.fillRect(0,0,W,H)}
-    c.fillStyle='rgba(8,12,24,.65)';c.beginPath();c.roundRect(10,10,W-20,28,14);c.fill();
-    c.fillStyle='#fff';c.font='800 13px system-ui,sans-serif';c.textAlign='left';c.fillText(caught+' gefangen'+(stones?' · '+stones+(stones>1?' Steine':' Stein'):''),22,29);
-    c.fillStyle='rgba(255,255,255,.15)';c.fillRect(W-112,21,88,6);c.fillStyle='#fbbf24';c.fillRect(W-112,21,88*Math.max(0,1-t/D),6);
+    c.fillStyle='rgba(255,255,255,.8)';c.beginPath();c.roundRect(10,10,W-20,28,14);c.fill();
+    c.fillStyle='#1d2b4a';c.font='800 13px system-ui,sans-serif';c.textAlign='left';c.fillText(caught+' gefangen'+(stones?' · '+stones+(stones>1?' Steine':' Stein'):''),22,29);
+    c.fillStyle='rgba(29,43,74,.18)';c.fillRect(W-112,21,88,6);c.fillStyle='#fbbf24';c.fillRect(W-112,21,88*Math.max(0,1-t/D),6);
     if(t>=D){ended=true;removeEventListener('keydown',key);SFX.win();
       setTimeout(()=>ov.alive&&res(Math.max(0,Math.min(1,caught/Math.max(1,good*.75)-stones*.1))),500);return}
     requestAnimationFrame(frame)}

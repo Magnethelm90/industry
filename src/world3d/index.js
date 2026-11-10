@@ -1,5 +1,5 @@
 /* 3D-Modus: begehbare Welt (Three.js, Modelle aus Blender). Nutzt denselben Spielstand und dieselben Minispiele wie das 2D-Spiel. */
-import {ACESFilmicToneMapping,BackSide,Box3,Ray,Vector3,CanvasTexture,Color,DirectionalLight,DoubleSide,Fog,Group,HemisphereLight,InstancedMesh,MathUtils,Mesh,MeshBasicMaterial,MeshLambertMaterial,
+import {NeutralToneMapping,CircleGeometry,BackSide,Box3,Ray,Vector3,CanvasTexture,Color,DirectionalLight,DoubleSide,Fog,Group,HemisphereLight,InstancedMesh,MathUtils,Mesh,MeshBasicMaterial,MeshLambertMaterial,
   Object3D,PCFSoftShadowMap,PerspectiveCamera,PlaneGeometry,PointLight,RepeatWrapping,RingGeometry,Scene,SphereGeometry,Sprite,SpriteMaterial,SRGBColorSpace,WebGLRenderer,Float32BufferAttribute} from 'three';
 import {G,ST} from '../data.js';
 import {runStation} from '../features/workshop.js';
@@ -15,13 +15,13 @@ const WARES=['erz','kohle','lehm','ziegel','stahl','maschine'];
 const rot=(x,z,a)=>[x*Math.cos(a)+z*Math.sin(a),-x*Math.sin(a)+z*Math.cos(a)];
 // colliders: Kreise oder achsenparallele Kästen (nur bei Drehung 0 oder π), lokal zur Station; h = Höhe (für die Kamera)
 const STATIONS=[
-  {id:'erz',n:'Eisenerz',at:[-17,-6],ry:.5,model:'mine',tint:{rock:'#868f9e',ore:'#c2603a'},zone:[2.7,8.4],h:6,
+  {id:'erz',n:'Eisenerz',at:[-17,-6],ry:.5,model:'mine',tint:{rock:'#9ba6bc',ore:'#d9683a'},zone:[2.7,8.4],h:6,
     col:[{x:0,z:-1.2,r:5.8},{x:-4.6,z:1.2,r:3.3},{x:4.8,z:.4,r:2.9}],lblY:8},
-  {id:'kohle',n:'Kohle',at:[17,-6],ry:-.5,model:'mine',tint:{rock:'#4b5563',ore:'#15161c'},zone:[-2.7,8.4],h:6,
+  {id:'kohle',n:'Kohle',at:[17,-6],ry:-.5,model:'mine',tint:{rock:'#707b92',ore:'#1d1f2a'},zone:[-2.7,8.4],h:6,
     col:[{x:0,z:-1.2,r:5.8},{x:-4.6,z:1.2,r:3.3},{x:4.8,z:.4,r:2.9}],lblY:8},
   {id:'stahl',n:'Schmelzofen',at:[0,-24],ry:0,model:'furnace',zone:[0,5.4],h:6,col:[{x:0,z:0,hw:3.8,hd:3.2}],lblY:12.8},
   {id:'markt',n:'Markt',at:[0,17],ry:Math.PI,model:'market',zone:[0,3.9],h:4.2,col:[{x:0,z:0,hw:3.3,hd:1.6},{x:-4.4,z:.4,hw:1.1,hd:1.2},{x:4.3,z:-.4,hw:.8,hd:.9}],lblY:6.6},
-  {id:'lehm',n:'Lehm',at:[-28,10],ry:1.0,model:'mine',tint:{rock:'#a5714a',ore:'#d98a5a'},zone:[2.7,8.4],h:6,
+  {id:'lehm',n:'Lehm',at:[-28,10],ry:1.0,model:'mine',tint:{rock:'#c98f5c',ore:'#e8955f'},zone:[2.7,8.4],h:6,
     col:[{x:0,z:-1.2,r:5.8},{x:-4.6,z:1.2,r:3.3},{x:4.8,z:.4,r:2.9}],lblY:8},
   {id:'ziegel',n:'Ziegelei',at:[-22,-25],ry:0,model:'brickworks',zone:[0,5.4],h:6,col:[{x:0,z:0,hw:3.8,hd:3.1}],lblY:9.4},
   {id:'maschine',n:'Montage',at:[22,-25],ry:0,model:'workshop',zone:[0,5.4],h:6,col:[{x:0,z:0,hw:4,hd:3.2}],lblY:8.4}
@@ -30,17 +30,17 @@ const STATIONS=[
 for(const s of STATIONS)s.cw=s.col.map(c=>{const [dx,dz]=rot(c.x,c.z,s.ry);return {...c,x:s.at[0]+dx,z:s.at[1]+dz,h:s.h}});
 const EXTRA=[]; // zusätzliche Hindernisse (Bäume, Laternen, Truck)
 
-let seed=11;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;
+let pond=null;let seed=11;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;
 
 function softTex(inner='rgba(255,255,255,.9)'){
   const c=document.createElement('canvas');c.width=c.height=64;const x=c.getContext('2d'),g=x.createRadialGradient(32,32,2,32,32,30);
   g.addColorStop(0,inner);g.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=g;x.fillRect(0,0,64,64);return new CanvasTexture(c)}
 function grassTex(){
-  const c=document.createElement('canvas');c.width=c.height=256;const x=c.getContext('2d');x.fillStyle='#62a84c';x.fillRect(0,0,256,256);
-  for(let i=0;i<900;i++){x.fillStyle=`hsla(${95+Math.random()*30},${40+Math.random()*25}%,${38+Math.random()*20}%,.35)`;const r=2+Math.random()*9;x.beginPath();x.arc(Math.random()*256,Math.random()*256,r,0,7);x.fill()}
+  const c=document.createElement('canvas');c.width=c.height=256;const x=c.getContext('2d');x.fillStyle='#74c653';x.fillRect(0,0,256,256);
+  for(let i=0;i<900;i++){x.fillStyle=`hsla(${88+Math.random()*30},${50+Math.random()*25}%,${42+Math.random()*20}%,.32)`;const r=2+Math.random()*9;x.beginPath();x.arc(Math.random()*256,Math.random()*256,r,0,7);x.fill()}
   const t=new CanvasTexture(c);t.wrapS=t.wrapT=RepeatWrapping;t.repeat.set(40,40);t.colorSpace=SRGBColorSpace;t.anisotropy=4;return t}
 function pathTex(){
-  const c=document.createElement('canvas');c.width=c.height=128;const x=c.getContext('2d');x.fillStyle='#c9ab7c';x.fillRect(0,0,128,128);
+  const c=document.createElement('canvas');c.width=c.height=128;const x=c.getContext('2d');x.fillStyle='#e6c88f';x.fillRect(0,0,128,128);
   for(let i=0;i<260;i++){x.fillStyle=`hsla(${32+Math.random()*10},${30+Math.random()*20}%,${48+Math.random()*22}%,.5)`;x.beginPath();x.arc(Math.random()*128,Math.random()*128,1+Math.random()*4,0,7);x.fill()}
   const t=new CanvasTexture(c);t.wrapS=t.wrapT=RepeatWrapping;t.colorSpace=SRGBColorSpace;t.anisotropy=8;return t}
 function skyDome(top,mid,bot){
@@ -51,7 +51,7 @@ function skyDome(top,mid,bot){
 // Beschriftung über einem Gebäude (Name + Zustand)
 function label(){
   const c=document.createElement('canvas');c.width=512;c.height=170;const t=new CanvasTexture(c);t.colorSpace=SRGBColorSpace;
-  const s=new Sprite(new SpriteMaterial({map:t,depthTest:false,transparent:true,fog:false}));s.scale.set(5.6,1.86,1);s.renderOrder=5;
+  const s=new Sprite(new SpriteMaterial({map:t,depthTest:false,transparent:true,fog:false,sizeAttenuation:false}));s.scale.set(.46,.153,1);s.renderOrder=5;
   s.userData.set=(name,sub,ok)=>{const key=name+'|'+sub;if(s.userData.key===key)return;s.userData.key=key;const x=c.getContext('2d');x.clearRect(0,0,512,170);
     x.fillStyle='rgba(10,16,40,.82)';x.beginPath();x.roundRect(8,8,496,154,30);x.fill();x.strokeStyle=ok?'#34d399':'#fbbf24';x.lineWidth=5;x.stroke();
     x.fillStyle='#fff';x.font='800 58px system-ui,sans-serif';x.textAlign='center';x.fillText(name,256,78);
@@ -83,14 +83,14 @@ export async function open3d(){
   if(!M||!window.__w3d){renderer.dispose();root.remove();window.__w3d=0;return}
   $('w3l').remove();
   let pr=Math.min(devicePixelRatio||1,2);renderer.setPixelRatio(pr);renderer.shadowMap.enabled=true;renderer.shadowMap.type=PCFSoftShadowMap;
-  renderer.toneMapping=ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;
+  renderer.toneMapping=NeutralToneMapping;renderer.toneMappingExposure=1.12;
   const ph=dayPhase(),night=ph==='night';
-  const SK={night:['#050a24','#16224a','#0b1230'],dawn:['#4d77c4','#f7b98d','#f0d8b8'],day:['#2f86e0','#9fd3ff','#cfe9ff'],dusk:['#3b4a96','#f08c5c','#f4c28f']}[ph];
-  const LI={night:.28,dawn:.75,day:1,dusk:.78}[ph],FOG=SK[1];
-  const scene=new Scene();scene.background=new Color(FOG);scene.fog=new Fog(FOG,40,125);
+  const SK={night:['#16245a','#3a4f9a','#26356e'],dawn:['#5b8be0','#ffc59a','#f7e2c4'],day:['#2a8cf0','#8fd0ff','#d8f0ff'],dusk:['#4a5cc0','#ff9a66','#ffd2a0']}[ph];
+  const LI={night:.62,dawn:.85,day:1,dusk:.85}[ph],FOG=SK[1];
+  const scene=new Scene();scene.background=new Color(FOG);scene.fog=new Fog(FOG,55,170);
   scene.add(skyDome(...SK));
-  scene.add(new HemisphereLight(night?'#6d7fc4':'#ffffff',night?'#1c2a1c':'#6b8e4e',.62*LI+.18));
-  const sun=new DirectionalLight(night?'#9db4ff':ph==='day'?'#fff2d4':'#ffc891',1.25*LI+.15);sun.position.set(-20,32,16);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.bias=-.0004;sun.shadow.normalBias=.04;
+  scene.add(new HemisphereLight(night?'#8fa3e8':'#ffffff',night?'#34503a':'#8fcf6a',.95*LI+.3));
+  const sun=new DirectionalLight(night?'#aebfff':ph==='day'?'#fff4dc':'#ffc891',1.5*LI+.2);sun.position.set(-20,32,16);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.bias=-.0004;sun.shadow.normalBias=.04;
   Object.assign(sun.shadow.camera,{left:-32,right:32,top:32,bottom:-32,near:1,far:100});scene.add(sun,sun.target);
   const cam=new PerspectiveCamera(55,1,.1,260);
   // Boden, Wege
@@ -124,7 +124,7 @@ export async function open3d(){
   const sp=M.signpost.clone(true);sp.position.set(4.2,0,0);sp.rotation.y=-.5;scene.add(sp);
   const cr=M.crates.clone(true);cr.position.set(-7,0,13.5);cr.rotation.y=.4;scene.add(cr);EXTRA.push({x:-7,z:13.5,r:1.3,h:2});
   // Wald, Felsen, Büsche
-  const free=(x,z,pad=3)=>!(Math.abs(x)<8&&z>-34&&z<26)&&!STATIONS.some(s=>Math.hypot(s.at[0]-x,s.at[1]-z)<10+pad)&&!(Math.abs(z-24.5)<5&&x>5)&&!(Math.hypot(x+28,z-10)<14)&&!(Math.abs(z+3)<4&&Math.abs(x)<26)&&!(Math.abs(Math.abs(x)-17)<4&&z>0&&z<16);
+  const free=(x,z,pad=3)=>Math.hypot(x-38,z-8)>9&&!(Math.abs(x)<8&&z>-34&&z<26)&&!STATIONS.some(s=>Math.hypot(s.at[0]-x,s.at[1]-z)<10+pad)&&!(Math.abs(z-24.5)<5&&x>5)&&!(Math.hypot(x+28,z-10)<14)&&!(Math.abs(z+3)<4&&Math.abs(x)<26)&&!(Math.abs(Math.abs(x)-17)<4&&z>0&&z<16);
   const pines=[],oaks=[],rocks=[],bushes=[];
   for(let i=0;i<260&&pines.length+oaks.length<110;i++){const x=(rnd()-.5)*150,z=(rnd()-.5)*140;if(!free(x,z))continue;const k=.75+rnd()*.7;(rnd()<.55?pines:oaks).push(place(x,z,k,rnd()*6.28));EXTRA.push({x,z,r:.5*k,h:6})}
   for(let i=0;i<90&&rocks.length<22;i++){const x=(rnd()-.5)*110,z=(rnd()-.5)*100;if(!free(x,z,1))continue;rocks.push(place(x,z,.6+rnd()*1.0,rnd()*6.28))}
@@ -133,6 +133,13 @@ export async function open3d(){
   // Blumen
   {const fl=new InstancedMesh(new SphereGeometry(.09,5,4),new MeshLambertMaterial({color:'#ffffff'}),180),m=new Object3D(),cs=['#f472b6','#fde047','#f8fafc','#fb923c','#a78bfa'];
     let n=0;while(n<180){const x=(rnd()-.5)*100,z=(rnd()-.5)*90;if(!free(x,z,0))continue;m.position.set(x,.1,z);m.updateMatrix();fl.setMatrixAt(n,m.matrix);fl.setColorAt(n,new Color(cs[n%5]));n++}scene.add(fl)}
+  // Hügel am Horizont
+  {const hc=['#6fbf5a','#5fae52','#7ccd62','#58a84e'];for(let i=0;i<16;i++){const a=i/16*Math.PI*2+rnd()*.3,r=105+rnd()*25,s=14+rnd()*16;
+    const h=new Mesh(new SphereGeometry(s,14,8),new MeshLambertMaterial({color:hc[i%4]}));h.scale.y=.45;h.position.set(Math.cos(a)*r,-s*.12,Math.sin(a)*r);scene.add(h)}}
+  // Teich
+  {const px=38,pz=8,wm=new MeshBasicMaterial({color:'#4cc3f0',transparent:true,opacity:.92});const w=new Mesh(new CircleGeometry(6.5,32),wm);w.rotation.x=-Math.PI/2;w.position.set(px,.05,pz);scene.add(w);
+    const rim=new Mesh(new RingGeometry(6.4,7.6,32),new MeshLambertMaterial({color:'#e6c88f',side:DoubleSide}));rim.rotation.x=-Math.PI/2;rim.position.set(px,.04,pz);scene.add(rim);
+    EXTRA.push({x:px,z:pz,r:6.6,h:.5});pond=w}
   // Wolken
   const clouds=[],cm=new MeshBasicMaterial({color:night?'#3a4570':'#ffffff',transparent:true,opacity:night?.5:.92,fog:false});
   for(let i=0;i<9;i++){const g=new Group();for(let k=0;k<4;k++){const b=new Mesh(new SphereGeometry(2+rnd()*2,8,6),cm);b.scale.y=.55;b.position.set(k*2.6-4,rnd(),rnd()*1.5);g.add(b)}
@@ -145,9 +152,9 @@ export async function open3d(){
   const dust=[];for(let i=0;i<8;i++){const s=mkSprite('#d9c7a0',.5);s.visible=false;s.userData.t=1;dust.push(s)}
   const glow=new PointLight('#ff8a3d',night?60:26,16,1.6);glow.position.set(fz[0],2.2,fz[1]+3.6);scene.add(glow);
   // Spielfigur
-  const hero=M.worker.clone(true);scene.add(hero);
+  const hero=M.worker.clone(true);hero.scale.setScalar(1.18);scene.add(hero);
   const lg=n=>hero.getObjectByName(n),legL=lg('!legL'),legR=lg('!legR'),armL=lg('!armL'),armR=lg('!armR');
-  const P={x:0,z:7,yaw:Math.PI,speed:0},C={yaw:0,pitch:.42,dist:10.5};
+  const P={x:0,z:7,yaw:Math.PI,speed:0},C={yaw:0,pitch:.52,dist:12.5};
   cam.position.set(P.x+Math.sin(C.yaw)*Math.cos(C.pitch)*C.dist,1.6+Math.sin(C.pitch)*C.dist,P.z+Math.cos(C.yaw)*Math.cos(C.pitch)*C.dist);
   const keys={};let stick={x:0,y:0},camDrag=null,stickId=null,near=null,tm=0,dustT=0,fps=60,slow=0;
   const stickEl=$('w3s'),knob=$('w3k');
@@ -230,7 +237,7 @@ export async function open3d(){
         if(Math.abs(s.fade-(s._f??1))>.01){s._f=s.fade;s.g.traverse(m=>{if(m.isMesh){m.material.transparent=s.fade<.99;m.material.opacity=s.fade;m.material.depthWrite=s.fade>.6;m.castShadow=s.fade>.6}})}}}
     // Standplätze und Beschriftungen
     let nn=null;for(const z of zones){const d=Math.hypot(P.x-z.x,P.z-z.z);const on=d<2.6;z.ring.material.opacity=on?1:.5;z.disc.material.opacity=on?.3:.12;z.ring.scale.setScalar(1+Math.sin(tm*3)*.06);if(on)nn=z}
-    for(const s of STATIONS){const d=Math.hypot(P.x-s.at[0],P.z-s.at[1]);s.lb.material.opacity=MathUtils.clamp((d-4)/6,.0,1)*.0+MathUtils.clamp(1.15-d/60,.45,1)}
+    for(const s of STATIONS){const d=Math.hypot(P.x-s.at[0],P.z-s.at[1]);s.lb.material.opacity=MathUtils.clamp((d-9)/6,0,1)*MathUtils.clamp(1.3-d/70,.35,1)}
     if(nn!==near){near=nn;if(near)SFX.tick();refreshAct()}
     // Rauch, Staub, Glut, Wolken
     sm.forEach(s=>{const u=s.userData;u.t=(u.t+dt*.16)%1;const t=u.t;s.position.set(chim[0]+Math.sin(t*5+u.t*3)*.5+t*2.2,chim[1]+t*9,chim[2]-t*.8);s.scale.setScalar(1.4+t*4.5);s.material.opacity=Math.sin(Math.PI*Math.min(1,t*1.15))*.42});
@@ -239,6 +246,7 @@ export async function open3d(){
     {if(T.wait>0)T.wait-=dt;else if(T.turn>0){T.turn-=dt;truck.rotation.y+=T.dir*Math.PI*dt/1.2*-1;if(T.turn<=0){T.dir*=-1;truck.rotation.y=T.dir>0?Math.PI/2:-Math.PI/2;T.wait=.6}}
       else{T.x+=T.dir*6*dt;if(T.x>52&&T.dir>0||T.x<14&&T.dir<0)T.turn=1.2}
       truck.position.x=T.x;tcol.x=T.x}
+    if(pond)pond.material.opacity=.86+Math.sin(tm*2)*.05;
     glow.intensity=(night?56:24)+Math.sin(tm*17)*3+Math.sin(tm*5.3)*2.5;
     clouds.forEach(c=>{c.position.x+=dt*.9;if(c.position.x>140)c.position.x=-140});
     if((hudT-=dt)<=0){hudT=.5;hud();refreshAct();refreshLabels();const t=$('w3t');if(t&&tm>9)t.style.opacity=0}

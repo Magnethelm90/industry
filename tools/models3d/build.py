@@ -102,8 +102,8 @@ GRASS = '#5fa84a'
 # ---------------------------------------------------------------- Figur: Teile mit Drehpunkt am Gelenk
 @model
 def worker():
-    skin = mat('#f2c9a0', .7); vest = mat('#f97316', .65); vest2 = mat('#fde047', .5, emit='#fde047', strength=.4); pants = mat('#2f3b52', .8)
-    helm = mat('#facc15', .4); boot = mat('#3b2a1c', .9); belt = mat('#5b3a1f', .8); dk = mat('#222222', .5)
+    skin = mat('#f2c9a0', .7); vest = mat('#f97316', .65); vest2 = mat('#fde047', .5, emit='#fde047', strength=.4); pants = mat('#3a6fe0', .8)
+    helm = mat('#facc15', .4); boot = mat('#8a4f27', .9); belt = mat('#5b3a1f', .8); dk = mat('#222222', .5)
     body = [box((.62, .36, .72), (0, 0, 1.18), vest, bevel=.12), box((.64, .38, .1), (0, 0, 1.0), vest2), box((.64, .38, .1), (0, 0, 1.3), vest2), box((.66, .4, .12), (0, 0, .86), belt),
             ball(.27, (0, 0, 1.84), skin, scale=(1, .95, 1.05)), ball(.31, (0, 0, 1.93), helm, scale=(1.05, 1.1, .8)), box((.7, .34, .06), (0, -.2, 1.9), helm, bevel=.03),
             box((.08, .5, .08), (0, 0, 2.18), helm, bevel=.02), ball(.045, (-.1, -.25, 1.82), dk, sub=1), ball(.045, (.1, -.25, 1.82), dk, sub=1), ball(.07, (0, -.27, 1.78), skin, sub=1),

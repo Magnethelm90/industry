@@ -17,7 +17,7 @@ function gate(icon){
   const g=document.createElement('div');g.className='gate';g.id='gate';
   g.innerHTML=`${icon?`<div class="gi">${icon}</div>`:''}<div class="gt">${title}</div><div class="gh">${how}</div>
     <button class="btn a big" id="gogo">▶ Los!</button><button class="btn sm ghost" id="goback">Zurück</button>`;
-  box.scrollTop=0;box.classList.add('gated');box.appendChild(g);
+  box.scrollTop=0;box.classList.add('gated','game');box.appendChild(g);
   const key=e=>{if(!ov.alive)return removeEventListener('keydown',key,true);if(e.key==='Enter'||e.key===' '){e.preventDefault();go()}e.stopPropagation()};
   addEventListener('keydown',key,true);
   $('goback').onclick=closeOv;
