@@ -79,6 +79,19 @@ Der Knopf 🧊 in der Kopfzeile (oder `?3d` in der Adresse) öffnet eine begehba
 
 Die Modelle stammen aus Blender: `python3 tools/models3d/build.py src/assets/models` baut Figur, Minen, Schmelzofen, Marktstand, LKW, Bäume, Felsen, Laternen und Zaun und exportiert sie als GLB (`src/assets/models`, eingebettet; `src/world3d/models.js` lädt sie). Die Minen sind ein Modell, das Spiel färbt Gestein und Erz je Mine um. Dazu kommen Schatten, Himmel, Wolken, Rauch am Schornstein, flackerndes Ofenlicht, Staub beim Laufen und Tag/Nacht je nach Uhrzeit. Gebäude zwischen Kamera und Figur werden durchsichtig. Auf langsamen Geräten senkt das Spiel selbst die Auflösung. Der Test `tests/world3d.cjs` läuft mit Software-WebGL (SwiftShader). Das Bündel wächst dadurch auf etwa 2,4 MB (1 MB gepackt). Stufe 2: Lehmgrube, Ziegelei und Montagehalle (mit eigenen Blender-Modellen) und ein LKW, der auf der Straße hin und her fährt und wendet; der Markt verkauft jetzt alle sechs Waren. Geplant für spätere Stufen: Farm, Laden, Tiere, mehr Rezept-Stationen.
 
+### 3D-Minispiele und Start in 3D
+
+Das Spiel beginnt in der 3D-Welt (Ausnahmen: `?2d` in der Adresse und automatische Tests). Der Knopf „📋 Firma“ führt zur 2D-Verwaltung (Betriebe, Farm, Laden, Aufträge, Labor), 🧊 zurück in die Welt. Oben in der 3D-Anzeige steht das aktuelle Einstiegsziel; ist es geschafft, lässt sich die Belohnung dort abholen.
+
+An den sechs Stationen laufen eigene 3D-Spiele direkt in der Welt (`src/world3d/games3d.js`), jeweils mit Startkarte, „Los!“ und 3-2-1:
+
+- **Erzrausch** (Erz, Kohle, Lehm): Adern leuchten im Fels auf, antippen, bevor sie verschwinden. Gold zählt dreifach, Dynamit kostet Punkte, Serien geben Bonus.
+- **Abstich** (Schmelzofen): Formen fahren unter der Gießpfanne durch; halten = gießen, bis zur grünen Marke füllen, nichts verschütten.
+- **Ziegelkran** (Ziegelei): Die Ziegellage pendelt am Kran, tippen legt sie ab; was übersteht, bricht ab.
+- **Fließband** (Montage): Tippe immer das Teil an, das der Bauplan gerade verlangt.
+
+Die Kamera fährt dafür vor die Station und rückt im Hochformat so weit zurück, dass das Spielfeld ins Bild passt. Ertrag, Combo, XP, Tagesaufgaben und Erfolge laufen über dieselbe Abrechnung wie die 2D-Spiele (`applyResult` in `src/features/workshop.js`). `tests/world3d.cjs` spielt alle vier mit Bots.
+
 ## Labor
 
 Ab Level 3, in der Werkstatt. Zwei Reiter:

@@ -11,15 +11,14 @@ import {S,cap,isOpen,lvl,mult,track} from '../state.js';
 import {addSec,closeOv,lockLine} from '../ui.js';
 import {$,ic} from '../util.js';
 
-export async function runStation(s,srcEl){
-  if(s.lv&&s.lv>lvl()){SFX.err();toast('Wird mit Level '+s.lv+' freigeschaltet');return}
-  for(const k in s.in)if(S.stock[k]<s.in[k]){SFX.err();toast('Es fehlt: '+(s.in[k]-Math.floor(S.stock[k]))+'× '+G[k].n);return}
-  if(S.stock[s.out]>=cap()){SFX.err();toast('Lager für '+G[s.out].n+' ist voll – bring Ware zum Markt!');return}
-  const pool=s.games.length>1?s.games.filter(g=>g!==s.lastG):s.games,gname=pool[Math.floor(Math.random()*pool.length)];
-  s.lastG=gname;
-  const score=await GAMES[gname]({...s,th:(TH[s.id]||{})[gname]});
-  if(score==null)return;
-  closeOv();
+// Prüft, ob die Station starten kann (Level, Zutaten, Lagerplatz) und meldet sonst den Grund
+export function canStart(s){
+  if(s.lv&&s.lv>lvl()){SFX.err();toast('Wird mit Level '+s.lv+' freigeschaltet');return false}
+  for(const k in s.in)if(S.stock[k]<s.in[k]){SFX.err();toast('Es fehlt: '+(s.in[k]-Math.floor(S.stock[k]))+'× '+G[k].n);return false}
+  if(S.stock[s.out]>=cap()){SFX.err();toast('Lager für '+G[s.out].n+' ist voll – bring Ware zum Markt!');return false}
+  return true}
+// Bucht das Ergebnis einer Runde (Score 0..1): Zutaten, Ertrag, Combo, XP, Anzeige. Gilt für 2D- und 3D-Minispiele.
+export function applyResult(s,score){
   for(const k in s.in)S.stock[k]-=s.in[k];
   let out=Math.round(score*s.max*mult(s.mult));
   if(score>=0.3&&out<1)out=1;
@@ -34,6 +33,15 @@ export async function runStation(s,srcEl){
   else SFX.crash();
   showResult({score,out,good:s.out,gname:G[s.out].n,color:G[s.out].c,combo:S.combo,xp:gain});
   render();
+}
+export async function runStation(s,srcEl){
+  if(!canStart(s))return;
+  const pool=s.games.length>1?s.games.filter(g=>g!==s.lastG):s.games,gname=pool[Math.floor(Math.random()*pool.length)];
+  s.lastG=gname;
+  const score=await GAMES[gname]({...s,th:(TH[s.id]||{})[gname]});
+  if(score==null)return;
+  closeOv();
+  applyResult(s,score);
 }
 // Anzeige-Zustand: Filter und eingeklappte Bereiche (nur für diese Sitzung bzw. im Browser gemerkt)
 let wFilter='alle';

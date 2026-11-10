@@ -61,6 +61,9 @@ function claim(e){
   SFX.win();vib([30,40,80]);burst(e.clientX,e.clientY,'#34d399',24);fx('+'+fmt(g.r)+' Cr','#34d399',e.clientX,e.clientY-30);render();
 }
 
+// Für den 3D-Modus: aktuelles Ziel als kurze Auskunft und Abholen ohne Karte
+export function goalInfo(){const g=GOALS[S.goal];if(!g)return null;return {t:g.t,d:g.d,r:g.r,wait:(g.lv||1)>lvl(),ready:ready(g),lv:g.lv||1}}
+export const claimAt=(x,y)=>claim({clientX:x,clientY:y});
 export function goalCard(){
   const g=GOALS[S.goal];if(!g)return null;
   const d=document.createElement('div'),L=lvl(),n=`Ziel ${S.goal+1} / ${GOALS.length}`;

@@ -26,9 +26,9 @@ let fail=0;const ok=(c,m)=>{console.log((c?'  ok  ':'  FEHLER ')+m);if(!c)fail++
   const go=async id=>{await p.evaluate(id=>{const z=__w3dState().zones.find(z=>z.id===id);__w3dTeleport(z.x,z.z)},id);await p.waitForFunction(id=>__w3dState().near===id,id,{timeout:3000})};
   await go('erz');await p.waitForSelector('#w3b:visible');
   ok(/Eisenerz/.test(await p.textContent('#w3b')),'Knopf an der Erzmine: '+await p.textContent('#w3b'));
-  await p.click('#w3b');await p.waitForSelector('#gate',{timeout:3000});
-  ok(true,'Minispiel öffnet sich über dem 3D-Bild');
-  await p.evaluate(()=>closeOv());
+  await p.click('#w3b');await p.waitForSelector('#w3go',{timeout:5000});
+  ok(true,'Stationsknopf öffnet das 3D-Minispiel mit Startkarte');
+  await p.click('#w3gb');await p.waitForTimeout(200);
   await go('stahl');await p.waitForTimeout(700);
   ok(await p.evaluate(()=>document.getElementById('w3b').disabled===false&&/Schmelzofen/.test(document.getElementById('w3b').textContent)),'Schmelzofen: Zutaten reichen, Knopf aktiv');
   await p.evaluate(()=>{S.stock.erz=0});await p.waitForFunction(()=>document.getElementById('w3b').disabled,null,{timeout:15000}).catch(()=>{});
@@ -42,6 +42,33 @@ let fail=0;const ok=(c,m)=>{console.log((c?'  ok  ':'  FEHLER ')+m);if(!c)fail++
   await go('lehm');await p.waitForFunction(()=>/Lehm/.test(document.getElementById('w3b').textContent),null,{timeout:15000});ok(true,'Lehmgrube erreichbar');
   const tx0=await p.evaluate(()=>__w3dState().truck);await p.waitForFunction(x=>__w3dState().truck>x+1,tx0,{timeout:15000}).catch(()=>{});
   ok(await p.evaluate(()=>__w3dState().truck)>tx0+1,'LKW fährt auf der Straße');
+  // 3D-Minispiele: Start über den Stationsknopf, Startkarte mit „Los!“, Bots spielen mit echten Klicks
+  const begin=async id=>{await go(id);await p.waitForFunction(()=>!document.getElementById('w3b').disabled,null,{timeout:20000});await p.click('#w3b');await p.waitForSelector('#w3go',{timeout:10000});
+    const before=await p.evaluate(()=>__w3dGame().running);await p.click('#w3go');await p.waitForFunction(()=>__w3dGame().running,null,{timeout:30000});return before};
+  const gi=()=>p.evaluate(()=>window.__w3dGame?__w3dGame():null);
+  const result=async(id,out,min)=>{await p.waitForFunction(()=>__w3dGame().ended,null,{timeout:240000});await p.waitForSelector('.rescard',{timeout:10000});
+    const st=await p.evaluate(()=>document.querySelectorAll('.rescard .rs .on').length),n=await p.evaluate(o=>S.stock[o],out);
+    ok(st>=min,'3D-Spiel '+id+': '+st+' Sterne, Lager '+out+' = '+n);await p.evaluate(()=>document.querySelector('.rescard')?.remove())};
+  await p.evaluate(()=>{Object.keys(S.stock).forEach(g=>S.stock[g]=20);S.stock.erz=0;S.combo=0});
+  ok(await begin('erz')===false,'Erzrausch: Zeit läuft erst nach „Los!“');
+  ok(await p.evaluate(()=>getComputedStyle(document.querySelector('.w3top')).display==='none'),'im Spiel sind Anzeige und Laufknopf ausgeblendet');
+  for(let k=0;k<4000;k++){const g=await gi();if(!g||g.ended)break;const n=(g.info.nodes||[]).find(n=>n.k!=='tnt'&&n.p[1]>90);if(n)await p.mouse.click(n.p[0],n.p[1]);await p.waitForTimeout(40)}
+  await result('Erzrausch','erz',2);
+  ok(await p.evaluate(()=>S.stock.erz>0&&S.st.make.erz>0),'Erz gutgeschrieben und gezählt');
+  await begin('stahl');{let down=false;
+    for(let k=0;k<6000;k++){const g=await gi();if(!g||g.ended)break;const u=g.info.moulds.find(o=>o.q==null&&Math.abs(o.x)<.72),want=!!u&&u.f<.9;
+      if(want&&!down){await p.mouse.move(195,600);await p.mouse.down();down=true}else if(!want&&down){await p.mouse.up();down=false}await p.waitForTimeout(25)}
+    if(down)await p.mouse.up()}
+  await result('Abstich','stahl',2);
+  await begin('ziegel');
+  for(let k=0;k<8000;k++){const g=await gi();if(!g||g.ended)break;if(!g.info.drop&&!g.info.over&&Math.abs(g.info.x-g.info.tx)<.13){await p.mouse.click(195,600);await p.waitForTimeout(120)}await p.waitForTimeout(12)}
+  await result('Ziegelkran','ziegel',2);
+  await begin('maschine');
+  for(let k=0;k<6000;k++){const g=await gi();if(!g||g.ended)break;const it=g.info.items.find(o=>o.k===g.info.need&&o.p[0]>40&&o.p[0]<350);if(it){await p.mouse.click(it.p[0],it.p[1]);await p.waitForTimeout(150)}await p.waitForTimeout(30)}
+  await result('Fließband','maschine',2);
+  // Abbrechen kostet nichts
+  const e0=await p.evaluate(()=>S.stock.erz);await go('stahl');await p.click('#w3b');await p.waitForSelector('#w3gb');await p.click('#w3gb');await p.waitForTimeout(300);
+  ok(await p.evaluate(()=>!document.querySelector('.w3g'))&&await p.evaluate(()=>S.stock.erz)===e0,'Zurück auf der Startkarte bricht ab, ohne Material zu verbrauchen');
   // Markt
   await p.evaluate(()=>{S.stock.erz=5;S.stock.stahl=2;S.stock.kohle=0;S.stock.lehm=0;S.stock.ziegel=0;S.stock.maschine=0});await go('markt');await p.waitForFunction(()=>/verkaufen/.test(document.getElementById('w3b').textContent),null,{timeout:15000});
   const m0=await p.evaluate(()=>S.money),x0=await p.evaluate(()=>S.xp),s0=await p.evaluate(()=>S.st.sold);

@@ -29,7 +29,8 @@ initMusic();
 // 3D-Modus (neu): wird erst beim Öffnen geladen
 {const b=document.createElement('button');b.className='iconbtn';b.id='d3';b.setAttribute('aria-label','3D-Modus');b.textContent='🧊';$('snd').after(b);
   const open3=()=>import('./world3d/index.js').then(m=>m.open3d()).catch(()=>toast('3D konnte nicht geladen werden'));b.onclick=open3;
-  if(/[?&]3d\b/.test(location.search))setTimeout(open3,300)}
+  // Das Spiel beginnt in der 3D-Welt. Ausnahmen: ?2d in der Adresse und automatische Tests (die öffnen 3D selbst).
+  if(/[?&]3d\b/.test(location.search)||(!/[?&]2d\b/.test(location.search)&&!navigator.webdriver))setTimeout(open3,300)}
 $('snd').textContent=S.mute?'🔇':'🔊';
 if(!S.rivals)S.rivals=RIVALS.map(r=>({...r}));
 syncSlots();
