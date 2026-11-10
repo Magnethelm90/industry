@@ -97,6 +97,33 @@ let fail=0;const ok=(c,m)=>{console.log((c?'  ok  ':'  FEHLER ')+m);if(!c)fail++
   await p.evaluate(()=>{S.farm.plots[0].pest=Date.now()+60000});await btn('Schädlinge');await p.click('#w3b');ok(await p.evaluate(()=>!S.farm.plots[0].pest),'Schädlinge vertrieben');
   const w0=await p.evaluate(()=>{S.farm.plots[0].p=1;S.farm.plots[0].ready=1;return S.stock.weizen});await btn('ernten');await p.click('#w3b');
   ok(await p.evaluate(w=>S.stock.weizen>w&&!S.farm.plots[0].c,w0),'reifes Beet geerntet, Weizen im Lager');
+  // Lieferfahrt in 3D: am Logistikhof laden, „Fahren“, selbst lenken, Abrechnung wie in 2D
+  await p.evaluate(()=>{Object.keys(S.stock).forEach(g=>S.stock[g]=0);S.stock.stahl=8;render()});
+  await go('p_log');await p.waitForFunction(()=>/Lieferung/.test(document.getElementById('w3b').textContent),null,{timeout:15000});await p.click('#w3b');await p.waitForFunction(()=>__w3dState().sheet,null,{timeout:5000});
+  await p.click('#s-logistics [data-d="max"]');
+  const dm0=await p.evaluate(()=>({m:S.money,d:S.st.drives}));
+  await p.locator('#s-logistics .card',{hasText:'Stadtmarkt'}).locator('button').click();
+  await p.waitForSelector('#d3go',{timeout:10000});
+  ok(await p.evaluate(()=>!__w3dState().sheet&&S.stock.stahl===0&&!__w3dDriveState().running),'Fahren schließt das Blatt, Ware ist verladen, Fahrt wartet auf „Los!“');
+  await p.click('#d3go');await p.waitForFunction(()=>__w3dDriveState().running,null,{timeout:30000});
+  // Fahr-Bot: immer die Spur mit der weitesten freien Strecke, Münzen als Zugabe
+  for(let k=0;k<20000;k++){const s=await p.evaluate(()=>window.__w3dDriveState?__w3dDriveState():null);if(!s||s.over||s.ended)break;
+    const L=s.lane,lanes=[-L,0,L],cur=lanes.reduce((a,b)=>Math.abs(b-s.tx)<Math.abs(a-s.tx)?b:a);
+    const free=x=>Math.min(999,...s.objs.filter(o=>o.k!=='coin'&&Math.abs(o.lx-x)<1.6&&o.dz>-5&&o.dz<95).map(o=>o.dz));
+    const coins=x=>s.objs.filter(o=>o.k==='coin'&&Math.abs(o.lx-x)<1&&o.dz>0&&o.dz<50).length;
+    const best=lanes.map(x=>({x,f:Math.min(70,free(x)),c:coins(x),d:Math.abs(x-cur)})).sort((a,b)=>b.f-a.f||b.c-a.c||a.d-b.d)[0];
+    if(best.x<cur-.1)await p.keyboard.press('ArrowLeft');else if(best.x>cur+.1)await p.keyboard.press('ArrowRight');await p.waitForTimeout(30)}
+  await p.waitForSelector('#ovbox #ok',{timeout:60000});
+  const dr=await p.evaluate(()=>({m:S.money,d:S.st.drives,txt:document.getElementById('ovbox').textContent}));
+  const integ=+(dr.txt.match(/× (\d+)%/)||[0,0])[1];
+  ok(dr.m>dm0.m&&dr.d===dm0.d+1&&integ>=85,'3D-Fahrt: angekommen mit '+integ+' % Ladung, bezahlt (+'+Math.round(dr.m-dm0.m)+' Cr), Fahrt gezählt');
+  await p.click('#ovbox #ok');
+  ok(await p.evaluate(()=>!window.__w3dDriveState&&getComputedStyle(document.querySelector('.w3top')).display!=='none'),'nach der Fahrt wieder in der Welt');
+  // Abbruch auf der Startkarte: Ladung bleibt auf dem LKW, Lager bekommt die Ware zurück
+  await p.evaluate(()=>{S.stock.stahl=4;window.__ab='offen';cargo.stahl=4;startDrive(ROUTES[0]).then(()=>window.__ab='fertig')});await p.waitForSelector('#d3b',{timeout:10000});await p.click('#d3b');
+  await p.waitForFunction(()=>window.__ab==='fertig',null,{timeout:5000});
+  ok(await p.evaluate(()=>S.stock.stahl===4&&cargo.stahl===4),'Zurück vor der Fahrt: nichts verloren');
+  await p.evaluate(()=>{cargo.stahl=0;S.stock.stahl=0});
   // Markt
   await p.evaluate(()=>{S.stock.erz=5;S.stock.stahl=2;S.stock.kohle=0;S.stock.lehm=0;S.stock.ziegel=0;S.stock.maschine=0});await go('markt');await p.waitForFunction(()=>/verkaufen/.test(document.getElementById('w3b').textContent),null,{timeout:15000});
   const m0=await p.evaluate(()=>S.money),x0=await p.evaluate(()=>S.xp),s0=await p.evaluate(()=>S.st.sold);

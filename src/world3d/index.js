@@ -8,6 +8,7 @@ import {openLab} from '../features/lab.js';
 import {applyResult,canStart,runStation} from '../features/workshop.js';
 import {claimAt,goalInfo} from '../features/goals.js';
 import {has3d,play3d} from './games3d.js';
+import {drive3d} from './drive3d.js';
 import {SFX,toast} from '../fx.js';
 import {S,isOpen,lvl,sellP,sat,track} from '../state.js';
 import {OV} from '../ui.js';
@@ -174,20 +175,22 @@ export async function open3d(){
   const lg=n=>hero.getObjectByName(n),legL=lg('!legL'),legR=lg('!legR'),armL=lg('!armL'),armR=lg('!armR');
   const P={x:0,z:7,yaw:Math.PI,speed:0},C={yaw:0,pitch:.52,dist:12.5};
   cam.position.set(P.x+Math.sin(C.yaw)*Math.cos(C.pitch)*C.dist,1.6+Math.sin(C.pitch)*C.dist,P.z+Math.cos(C.yaw)*Math.cos(C.pitch)*C.dist);
-  const keys={};let stick={x:0,y:0},camDrag=null,stickId=null,near=null,tm=0,dustT=0,fps=60,slow=0,game=null,swingT=0;
+  const keys={};let stick={x:0,y:0},camDrag=null,stickId=null,near=null,tm=0,dustT=0,fps=60,slow=0,game=null,swingT=0,driveObj=null;
   const look=new Vector3(0,1.5,7);
-  const env={scene,cam,root,hero,setGame:g=>{game=g;root.classList.toggle('ingame',!!g);hideInGame.forEach(o=>o.visible=!g);zones.forEach(z=>{z.ring.visible=z.disc.visible=!g});if(!g){cam.userData.d=null}},swing:()=>{swingT=.28}};
+  const env={renderer,M,setDrive:d=>{driveObj=d;if(!d){hud();refreshLabels()}},scene,cam,root,hero,setGame:g=>{game=g;root.classList.toggle('ingame',!!g);hideInGame.forEach(o=>o.visible=!g);zones.forEach(z=>{z.ring.visible=z.disc.visible=!g});if(!g){cam.userData.d=null}},swing:()=>{swingT=.28}};
   const stickEl=$('w3s'),knob=$('w3k');
   const key=e=>{if(OV||sheetOn)return;keys[e.code]=e.type==='keydown'};addEventListener('keydown',key);addEventListener('keyup',key);
   const area=root;
   area.addEventListener('pointerdown',e=>{if(e.target.closest('button')||OV||sheetOn)return;
+    if(driveObj){driveObj.down(e);return}
     if(game){game.down(e);return}
     if(e.clientX<innerWidth*.45&&stickId==null){stickId=e.pointerId;stickEl.dataset.ox=e.clientX;stickEl.dataset.oy=e.clientY;stickEl.style.cssText=`left:${e.clientX-60}px;top:${e.clientY-60}px;opacity:1`;stick={x:0,y:0}}
     else if(camDrag==null)camDrag={id:e.pointerId,x:e.clientX,y:e.clientY};try{area.setPointerCapture(e.pointerId)}catch(_){}});
   area.addEventListener('pointermove',e=>{
+    if(driveObj){driveObj.move(e);return}
     if(e.pointerId===stickId){let dx=e.clientX-+stickEl.dataset.ox,dy=e.clientY-+stickEl.dataset.oy;const l=Math.hypot(dx,dy),m=52;if(l>m){dx*=m/l;dy*=m/l}stick={x:dx/m,y:dy/m};knob.style.transform=`translate(${dx}px,${dy}px)`}
     else if(camDrag&&e.pointerId===camDrag.id){C.yaw-=(e.clientX-camDrag.x)*.008;C.pitch=MathUtils.clamp(C.pitch+(e.clientY-camDrag.y)*.005,.14,1.1);camDrag.x=e.clientX;camDrag.y=e.clientY}});
-  const up=e=>{if(game)game.up(e);if(e.pointerId===stickId){stickId=null;stick={x:0,y:0};knob.style.transform='';stickEl.style.opacity=0}if(camDrag&&e.pointerId===camDrag.id)camDrag=null};
+  const up=e=>{if(driveObj)driveObj.up(e);if(game)game.up(e);if(e.pointerId===stickId){stickId=null;stick={x:0,y:0};knob.style.transform='';stickEl.style.opacity=0}if(camDrag&&e.pointerId===camDrag.id)camDrag=null};
   area.addEventListener('pointerup',up);area.addEventListener('pointercancel',up);
   const resize=()=>{const w=innerWidth,h=innerHeight;renderer.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix()};resize();addEventListener('resize',resize);
   // Aktionsknopf und Anzeige
@@ -260,8 +263,10 @@ export async function open3d(){
       o.sp.visible=!!ch;if(ch){o.sp.material.map=emoji(ch);o.sp.material.needsUpdate=true}})}
   const exit=()=>{closeSheet();alive=false;removeEventListener('keydown',key);removeEventListener('keyup',key);removeEventListener('resize',resize);
     scene.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material){(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>{m.map&&m.map.dispose();m.dispose()})}});
-    renderer.dispose();root.remove();window.__w3d=0;delete window.__w3dState};
+    renderer.dispose();root.remove();window.__w3d=0;delete window.__w3dState;delete window.__w3dDrive};
   $('w3x').onclick=exit;
+  // Die Lieferung (Logistik) fährt in 3D, solange die Welt offen ist
+  window.__w3dDrive=(route,load)=>{closeSheet();return drive3d(env,route,load)};
   window.__w3dState=()=>({x:P.x,z:P.z,sheet:sheetOn,plots:plots.length,truck:T.x,zones:zones.map(z=>({id:z.s.id,x:z.x,z:z.z})),near:near&&near.s.id,alive,calls:renderer.info.render.calls,tri:renderer.info.render.triangles,pr});
   window.__w3dTeleport=(x,z)=>{P.x=x;P.z=z};
   hud();refreshLabels();updatePlots();
@@ -276,6 +281,8 @@ export async function open3d(){
   (function frame(now){
     if(!alive)return;requestAnimationFrame(frame);
     const dt=Math.min(.05,(now-last)/1000);last=now;tm+=dt;
+    // Lieferfahrt: eigene Szene statt der Welt
+    if(driveObj){driveObj.update(dt);if(driveObj)renderer.render(driveObj.scene,driveObj.cam);return}
     // Anpassung an langsame Geräte: nach 2 s unter 30 Bildern/s Auflösung und Schatten senken
     fps+=((1/Math.max(dt,.001))-fps)*.05;if(fps<30&&tm>3&&pr>1){if((slow+=dt)>2){pr=1;renderer.setPixelRatio(1);resize();slow=0}}else slow=0;
     if(game){

@@ -471,3 +471,5 @@ button.w3goal.ready{background:#16a34a;border-radius:10px;padding:5px 9px;animat
 body.w3sheet main{position:fixed;left:0;right:0;top:16vh;bottom:0;z-index:41;background:linear-gradient(#18204a,#0b1020);border-radius:26px 26px 0 0;box-shadow:0 -12px 40px rgba(0,0,0,.6);padding-top:16px;padding-bottom:40px}
 .w3sb{position:fixed;inset:0;z-index:40;background:rgba(5,10,30,.35)}
 .w3sx{position:fixed;top:calc(16vh - 46px);right:12px;z-index:42;flex:none;padding:9px 14px}
+.d3flash{position:absolute;inset:0;background:rgba(255,40,60,.4);opacity:0;pointer-events:none}
+.d3flash.on{animation:d3f .45s ease-out}@keyframes d3f{from{opacity:1}to{opacity:0}}

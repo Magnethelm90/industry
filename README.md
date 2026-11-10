@@ -96,6 +96,10 @@ Die Kamera fährt dafür vor die Station und rückt im Hochformat so weit zurüc
 
 Auch die Verwaltung hat Orte in der 3D-Welt: Auftragstafel, Bauamt (Betriebe), Labor, Laden, Logistikhof, Scheune (Farm und Reifekeller), Angelsteg und Hinterhof. Wer davor steht, öffnet die jeweilige Ansicht als Blatt über der Welt (`sheet()` in `src/world3d/index.js`, Klasse `w3sheet`), Labor und Angeln als Fenster. Orte unter dem nötigen Level zeigen ein Schloss. Die Felder der Farm sind begehbare Beete: säen, gießen, Schädlinge vertreiben und ernten direkt am Beet, die Pflanzen wachsen sichtbar. Modelle: `shop`, `lab`, `office`, `board`, `depot`, `barn`, `jetty`, `shack` in `tools/models3d/build.py`.
 
+### Lieferfahrt in 3D
+
+Wer in der Welt am Logistikhof eine Lieferung startet, fährt die Strecke selbst in 3D (`src/world3d/drive3d.js`): eigene Szene mit Landstraße, Landschaft, Münzen, Hütchen, Sperren, Felsen, langsamen Autos und dem Stadttor am Ziel. Gelenkt wird durch Ziehen, Tippen links/rechts oder Pfeiltasten. In jeder Hindernisreihe bleibt eine Spur frei. Regeln und Abrechnung sind die der 2D-Fahrt (`startDrive` in `src/features/transport.js` wählt 3D, solange die Welt offen ist); Abbrechen auf der Startkarte lässt die Ladung auf dem LKW. Im Test fährt ein Bot und muss mit mindestens 85 % Ladung ankommen.
+
 ## Labor
 
 Ab Level 3, in der Werkstatt. Zwei Reiter:

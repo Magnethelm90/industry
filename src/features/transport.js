@@ -11,7 +11,8 @@ export let cargo={};
 export async function startDrive(route){
   const total=Object.values(cargo).reduce((a,b)=>a+b,0);if(!total){toast('Lade zuerst Ware auf!');return}
   const load={...cargo};cargo={};GK.forEach(g=>{if(load[g])S.stock[g]-=load[g]});
-  const r=await drive(route,load);
+  // In der 3D-Welt fährt man die Strecke in 3D, sonst im 2D-Fahrspiel – Ergebnis und Abrechnung sind gleich
+  const r=await (window.__w3dDrive?window.__w3dDrive(route,load):drive(route,load));
   if(!r){GK.forEach(g=>{if(load[g])S.stock[g]+=load[g]});cargo=load;render();return} // vor dem Start abgebrochen: Ladung bleibt auf dem LKW
   let val=0;for(const g in load){for(let i=0;i<load[g];i++){val+=price(g);sat[g]+=1}}
   val*=route.mult;const pay=Math.floor(val*r.integ/100)+r.coins*5;
