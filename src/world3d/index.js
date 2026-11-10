@@ -1,12 +1,15 @@
 /* 3D-Modus: begehbare Welt (Three.js, Modelle aus Blender). Nutzt denselben Spielstand und dieselben Minispiele wie das 2D-Spiel. */
 import {NeutralToneMapping,CircleGeometry,BackSide,Box3,Ray,Vector3,CanvasTexture,Color,DirectionalLight,DoubleSide,Fog,Group,HemisphereLight,InstancedMesh,MathUtils,Mesh,MeshBasicMaterial,MeshLambertMaterial,
   Object3D,PCFSoftShadowMap,PerspectiveCamera,PlaneGeometry,PointLight,RepeatWrapping,RingGeometry,Scene,SphereGeometry,Sprite,SpriteMaterial,SRGBColorSpace,WebGLRenderer,Float32BufferAttribute} from 'three';
-import {G,ST} from '../data.js';
+import {CROPS,G,ST,UNL} from '../data.js';
+import {go} from '../app.js';
+import {goFish,harvest,pickCrop,waterPlot} from '../features/farm.js';
+import {openLab} from '../features/lab.js';
 import {applyResult,canStart,runStation} from '../features/workshop.js';
 import {claimAt,goalInfo} from '../features/goals.js';
 import {has3d,play3d} from './games3d.js';
 import {SFX,toast} from '../fx.js';
-import {S,lvl,sellP,sat,track} from '../state.js';
+import {S,isOpen,lvl,sellP,sat,track} from '../state.js';
 import {OV} from '../ui.js';
 import {$,fmt,ic} from '../util.js';
 import {dayPhase} from '../world.js';
@@ -26,8 +29,19 @@ const STATIONS=[
   {id:'lehm',n:'Lehm',at:[-28,10],ry:1.0,model:'mine',tint:{rock:'#c98f5c',ore:'#e8955f'},zone:[2.7,8.4],h:6,
     col:[{x:0,z:-1.2,r:5.8},{x:-4.6,z:1.2,r:3.3},{x:4.8,z:.4,r:2.9}],lblY:8},
   {id:'ziegel',n:'Ziegelei',at:[-36,-30],ry:0,model:'brickworks',zone:[0,5.4],h:6,col:[{x:0,z:0,hw:3.8,hd:3.1}],lblY:9.4},
-  {id:'maschine',n:'Montage',at:[36,-30],ry:0,model:'workshop',zone:[0,5.4],h:6,col:[{x:0,z:0,hw:4,hd:3.2}],lblY:8.4}
+  {id:'maschine',n:'Montage',at:[36,-30],ry:0,model:'workshop',zone:[0,5.4],h:6,col:[{x:0,z:0,hw:4,hd:3.2}],lblY:8.4}  ,
+  // Orte der Verwaltung: öffnen die jeweilige Ansicht als Blatt über der Welt (unl = Freischaltung)
+  {id:'p_orders',place:'orders',n:'Aufträge',unl:'orders',at:[8.5,8],ry:-Math.PI/2,model:'board',zone:[0,2.4],h:3.4,col:[{x:0,z:0,r:1.1}],lblY:4.8,btn:'📋 Aufträge ansehen'},
+  {id:'p_bld',place:'bld',n:'Bauamt',unl:'bld',at:[18,-25.5],ry:0,model:'office',zone:[0,5],h:6,col:[{x:0,z:0,hw:3.7,hd:2.9}],lblY:8,btn:'🏗️ Betriebe verwalten'},
+  {id:'p_lab',place:'lab',n:'Labor',unl:'lab',at:[-18,-25.5],ry:0,model:'lab',zone:[0,5],h:6,col:[{x:0,z:0,hw:3.5,hd:2.8}],lblY:8,btn:'🧪 Labor betreten'},
+  {id:'p_shop',place:'shop',n:'Laden',unl:'shop',at:[-13,19.5],ry:0,model:'shop',zone:[0,5.2],h:6,col:[{x:0,z:0,hw:3.7,hd:2.8}],lblY:7.4,btn:'🛍️ Laden öffnen'},
+  {id:'p_log',place:'logistics',n:'Logistik',at:[24,17.5],ry:0,model:'depot',zone:[0,4.3],h:5,col:[{x:0,z:0,hw:4.6,hd:3}],lblY:6.6,btn:'🚚 Lieferung planen'},
+  {id:'p_farm',place:'farm',n:'Scheune',unl:'farm',at:[-46,24],ry:Math.PI/2,model:'barn',zone:[0,5.8],h:7,col:[{x:0,z:0,r:4.3}],lblY:8.6,btn:'🌾 Farm & Reifekeller'},
+  {id:'p_fish',place:'fish',n:'Angelsteg',unl:'farm',at:[31.4,8],ry:0,model:'jetty',zone:[-1.6,0],h:0,col:[],lblY:4,btn:'🎣 Angeln'},
+  {id:'p_under',place:'under',n:'Hinterhof',unl:'under',at:[46,-14],ry:-Math.PI/2,model:'shack',zone:[0,3.8],h:3.4,col:[{x:0,z:0,r:3}],lblY:5.2,btn:'🕶️ Hinterhof betreten'}
 ];
+// Felder der Farm: Raster aus bis zu 12 Beeten
+const PLOT=i=>[-36+(i%4)*3.7,20+Math.floor(i/4)*3.7];
 // Kollisionen in Weltkoordinaten vorberechnen
 for(const s of STATIONS)s.cw=s.col.map(c=>{const [dx,dz]=rot(c.x,c.z,s.ry);return {...c,x:s.at[0]+dx,z:s.at[1]+dz,h:s.h}});
 const EXTRA=[]; // zusätzliche Hindernisse (Bäume, Laternen, Truck)
@@ -81,7 +95,7 @@ export async function open3d(){
   catch(e){root.remove();toast('3D wird von diesem Gerät nicht unterstützt');return}
   window.__w3d=1;
   let alive=true;
-  const M=await loadAll(['worker','mine','furnace','market','brickworks','workshop','truck','pine','oak','rock','bush','lamp','fence','signpost','crates']).catch(e=>{toast('3D-Modelle konnten nicht geladen werden');return null});
+  const M=await loadAll(['worker','mine','furnace','market','brickworks','workshop','shop','lab','office','board','depot','barn','jetty','shack','truck','pine','oak','rock','bush','lamp','fence','signpost','crates']).catch(e=>{toast('3D-Modelle konnten nicht geladen werden');return null});
   if(!M||!window.__w3d){renderer.dispose();root.remove();window.__w3d=0;return}
   $('w3l').remove();
   let pr=Math.min(devicePixelRatio||1,2);renderer.setPixelRatio(pr);renderer.shadowMap.enabled=true;renderer.shadowMap.type=PCFSoftShadowMap;
@@ -128,7 +142,7 @@ export async function open3d(){
   const cr=M.crates.clone(true);cr.position.set(-7,0,13.5);cr.rotation.y=.4;scene.add(cr);EXTRA.push({x:-7,z:13.5,r:1.3,h:2});
   // Wald, Felsen, Büsche
   const front=(x,z)=>STATIONS.some(s=>{if(!has3d(s.id))return false;const dx=x-s.at[0],dz=z-s.at[1],lx=dx*Math.cos(s.ry)-dz*Math.sin(s.ry),lz=dx*Math.sin(s.ry)+dz*Math.cos(s.ry);return Math.abs(lx)<6&&lz>-2&&lz<24});
-  const free=(x,z,pad=3)=>!front(x,z)&&Math.hypot(x-38,z-8)>9&&!(Math.abs(x)<8&&z>-34&&z<26)&&!STATIONS.some(s=>Math.hypot(s.at[0]-x,s.at[1]-z)<10+pad)&&!(Math.abs(z-24.5)<5&&x>5)&&!(Math.hypot(x+28,z-10)<14)&&!(Math.abs(z+3)<4&&Math.abs(x)<26)&&!(Math.abs(z+17.5)<4&&Math.abs(x)<40)&&!(Math.abs(Math.abs(x)-17)<4&&z>0&&z<16);
+  const free=(x,z,pad=3)=>!front(x,z)&&!(x>-41&&x<-21&&z>16&&z<34)&&Math.hypot(x-38,z-8)>9&&!(Math.abs(x)<8&&z>-34&&z<26)&&!STATIONS.some(s=>Math.hypot(s.at[0]-x,s.at[1]-z)<10+pad)&&!(Math.abs(z-24.5)<5&&x>5)&&!(Math.hypot(x+28,z-10)<14)&&!(Math.abs(z+3)<4&&Math.abs(x)<26)&&!(Math.abs(z+17.5)<4&&Math.abs(x)<40)&&!(Math.abs(Math.abs(x)-17)<4&&z>0&&z<16);
   const pines=[],oaks=[],rocks=[],bushes=[];
   for(let i=0;i<260&&pines.length+oaks.length<110;i++){const x=(rnd()-.5)*150,z=(rnd()-.5)*140;if(!free(x,z))continue;const k=.75+rnd()*.7;(rnd()<.55?pines:oaks).push(place(x,z,k,rnd()*6.28));EXTRA.push({x,z,r:.5*k,h:6})}
   for(let i=0;i<90&&rocks.length<22;i++){const x=(rnd()-.5)*110,z=(rnd()-.5)*100;if(!free(x,z,1))continue;rocks.push(place(x,z,.6+rnd()*1.0,rnd()*6.28))}
@@ -164,9 +178,9 @@ export async function open3d(){
   const look=new Vector3(0,1.5,7);
   const env={scene,cam,root,hero,setGame:g=>{game=g;root.classList.toggle('ingame',!!g);hideInGame.forEach(o=>o.visible=!g);zones.forEach(z=>{z.ring.visible=z.disc.visible=!g});if(!g){cam.userData.d=null}},swing:()=>{swingT=.28}};
   const stickEl=$('w3s'),knob=$('w3k');
-  const key=e=>{if(OV)return;keys[e.code]=e.type==='keydown'};addEventListener('keydown',key);addEventListener('keyup',key);
+  const key=e=>{if(OV||sheetOn)return;keys[e.code]=e.type==='keydown'};addEventListener('keydown',key);addEventListener('keyup',key);
   const area=root;
-  area.addEventListener('pointerdown',e=>{if(e.target.closest('button')||OV)return;
+  area.addEventListener('pointerdown',e=>{if(e.target.closest('button')||OV||sheetOn)return;
     if(game){game.down(e);return}
     if(e.clientX<innerWidth*.45&&stickId==null){stickId=e.pointerId;stickEl.dataset.ox=e.clientX;stickEl.dataset.oy=e.clientY;stickEl.style.cssText=`left:${e.clientX-60}px;top:${e.clientY-60}px;opacity:1`;stick={x:0,y:0}}
     else if(camDrag==null)camDrag={id:e.pointerId,x:e.clientX,y:e.clientY};try{area.setPointerCapture(e.pointerId)}catch(_){}});
@@ -183,15 +197,40 @@ export async function open3d(){
   $('w3h').addEventListener('click',e=>{if(e.target.closest('.w3goal.ready')){claimAt(e.clientX,e.clientY);hud()}});
   const hud=()=>{$('w3h').innerHTML=`<div class="w3r"><b>${fmt(Math.floor(S.money))} Cr</b><span>Level ${lvl()}</span></div><div class="w3r">${WARES.map(g=>`<span class="w3c">${ic(g,20)}${Math.floor(S.stock[g]||0)}</span>`).join('')}</div>${goalLine()}`};
   const need=s=>{const st=ST.find(x=>x.id===s.id);return Object.keys(st.in).filter(k=>S.stock[k]<st.in[k])};
+  const locked=s=>s.unl&&!isOpen(s.unl);
+  // Zustand eines Beets: [Knopftext, aktiv?, Zeichen über dem Beet]
+  const plotState=i=>{const p=S.farm.plots[i];if(!p)return ['',0,''];
+    if(!p.c)return ['🌱 Feld '+(i+1)+' bestellen',1,'🌱'];
+    if(p.pest)return ['🐛 Schädlinge vertreiben',1,'🐛'];
+    if(p.ready)return ['🌾 '+G[p.c].n+' ernten',1,'✨'];
+    if(p.w<=0)return ['💧 Gießen',1,'💧'];
+    return [G[p.c].n+' wächst … '+Math.round(p.p*100)+' %',0,'']};
   const stateOf=s=>{
+    if(locked(s))return ['🔒 ab Level '+UNL[s.unl].lv,0];
+    if(s.place)return [s.place==='orders'&&S.orders.length?S.orders.length+' laufende Aufträge':'Geöffnet',1];
     if(s.id==='markt'){const t=WARES.reduce((a,g)=>a+Math.floor(S.stock[g]||0),0);return t?[`${t} Waren verkaufen`,1]:['Nichts zu verkaufen',0]}
     const m=need(s);return m.length?['Fehlt: '+m.map(k=>G[k].n).join(', '),0]:['Bereit zum Arbeiten',1]};
   const refreshLabels=()=>STATIONS.forEach(s=>{const [t,ok]=stateOf(s);s.lb.userData.set(s.n,t,ok)});
   const refreshAct=()=>{
     if(!near){actBox.hidden=true;return}const s=near.s;actBox.hidden=false;
-    if(s.id==='markt'){const total=WARES.reduce((a,g)=>a+Math.floor(S.stock[g]||0),0);act.innerHTML=total?`💰 Alles verkaufen (${total} Waren)`:'Nichts zu verkaufen';act.disabled=!total}
+    if(s.plot!=null){const [txt,on]=plotState(s.plot);act.innerHTML=txt;act.disabled=!on}
+    else if(locked(s)){act.innerHTML='🔒 '+UNL[s.unl].n+' ab Level '+UNL[s.unl].lv;act.disabled=true}
+    else if(s.place){act.innerHTML=s.btn;act.disabled=false}
+    else if(s.id==='markt'){const total=WARES.reduce((a,g)=>a+Math.floor(S.stock[g]||0),0);act.innerHTML=total?`💰 Alles verkaufen (${total} Waren)`:'Nichts zu verkaufen';act.disabled=!total}
     else{const st=ST.find(x=>x.id===s.id),m=need(s);act.disabled=!!m.length;act.innerHTML=m.length?`Es fehlt: ${m.map(k=>G[k].n).join(', ')}`:`▶ ${st.n}`}};
-  act.onclick=async()=>{if(!near||OV)return;const s=near.s;
+  // Blatt: eine 2D-Ansicht (Laden, Aufträge …) liegt über der Welt, die Welt bleibt dahinter sichtbar
+  let sheetOn=false;
+  const closeSheet=()=>{if(!sheetOn)return;sheetOn=false;document.body.classList.remove('w3sheet');document.querySelectorAll('.w3sx,.w3sb').forEach(e=>e.remove());go('work');hud();refreshLabels();refreshAct()};
+  const sheet=k=>{go(k);sheetOn=true;document.body.classList.add('w3sheet');stick={x:0,y:0};stickId=null;stickEl.style.opacity=0;
+    const b=document.createElement('div');b.className='w3sb';b.onclick=closeSheet;document.body.appendChild(b);
+    const x=document.createElement('button');x.className='w3sx btn sm';x.textContent='✕ Zurück in die Welt';x.onclick=closeSheet;document.body.appendChild(x);
+    document.querySelector('main').scrollTop=0};
+  act.onclick=async()=>{if(!near||OV||sheetOn)return;const s=near.s,mid={clientX:innerWidth/2,clientY:innerHeight*.6};
+    if(s.plot!=null){const i=s.plot,p=S.farm.plots[i];if(!p)return;
+      if(!p.c)pickCrop(i);else if(p.pest){p.pest=0;SFX.good();toast('🐛 Erwischt!')}else if(p.ready)harvest(i,mid);else if(p.w<=0){waterPlot(p);SFX.water?SFX.water():SFX.good()}
+      hud();refreshAct();updatePlots();return}
+    if(locked(s)){SFX.err();return}
+    if(s.place){if(s.place==='lab')openLab();else if(s.place==='fish')await goFish();else sheet(s.place);hud();return}
     if(s.id==='markt'){let sum=0,k=0;for(const g of WARES){const n=Math.floor(S.stock[g]||0);for(let i=0;i<n;i++){sum+=sellP(g);sat[g]+=1}if(n){S.stock[g]-=n;k+=n}}
       if(!k){SFX.err();return}S.money+=sum;S.xp+=Math.ceil(sum/12);track('sold',null,k);SFX.coin();toast('+'+fmt(sum)+' Cr · '+k+' Waren verkauft');hud();refreshAct();refreshLabels();return}
     const st=ST.find(x=>x.id===s.id);
@@ -199,13 +238,33 @@ export async function open3d(){
       const sc=await play3d(env,s);if(!alive)return;if(sc!=null)applyResult(st,sc)}
     else await runStation(st);
     hud();refreshAct();refreshLabels()};
-  const exit=()=>{alive=false;removeEventListener('keydown',key);removeEventListener('keyup',key);removeEventListener('resize',resize);
+  // Beete: Erde, neun Pflanzen je Beet, Zeichen darüber. Wächst sichtbar mit dem Fortschritt.
+  const plots=[],emo={};
+  const emoji=ch=>{if(emo[ch])return emo[ch];const c=document.createElement('canvas');c.width=c.height=96;const x=c.getContext('2d');x.font='72px system-ui,sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText(ch,48,52);const tx=new CanvasTexture(c);tx.colorSpace=SRGBColorSpace;return emo[ch]=tx};
+  const plantGeo=new SphereGeometry(.28,7,6),soilGeo=new PlaneGeometry(3.1,3.1);
+  function updatePlots(){
+    if(!isOpen('farm'))return;
+    while(plots.length<Math.min(12,S.farm.plots.length)){const i=plots.length,[x,z]=PLOT(i),g=new Group();g.position.set(x,0,z);
+      const rim=new Mesh(new PlaneGeometry(3.4,3.4),new MeshLambertMaterial({color:'#8a5a2b'}));rim.rotation.x=-Math.PI/2;rim.position.y=.035;rim.receiveShadow=true;g.add(rim);
+      const soil=new Mesh(soilGeo,new MeshLambertMaterial({color:'#6b4423'}));soil.rotation.x=-Math.PI/2;soil.position.y=.05;soil.receiveShadow=true;g.add(soil);
+      const pm=new MeshLambertMaterial({color:'#65a30d'}),pl=[];for(let k=0;k<9;k++){const m=new Mesh(plantGeo,pm);m.position.set((k%3-1)*.95,.2,(Math.floor(k/3)-1)*.95);m.castShadow=true;m.visible=false;g.add(m);pl.push(m)}
+      const sp=new Sprite(new SpriteMaterial({transparent:true,depthTest:false}));sp.scale.set(1.3,1.3,1);sp.position.y=2.4;sp.visible=false;g.add(sp);
+      scene.add(g);plots.push({g,soil,pm,pl,sp});
+      const ring=new Mesh(new RingGeometry(1.25,1.5,28),new MeshBasicMaterial({color:'#a3e635',side:DoubleSide,transparent:true,opacity:.6,depthWrite:false}));ring.rotation.x=-Math.PI/2;ring.position.set(x,.07,z);scene.add(ring);
+      const disc=new Mesh(new RingGeometry(0,.01,3),new MeshBasicMaterial({transparent:true,opacity:0}));scene.add(disc);
+      zones.push({s:{id:'plot'+i,plot:i},x,z,ring,disc,rad:1.75})}
+    plots.forEach((o,i)=>{const p=S.farm.plots[i];if(!p)return;const [, ,ch]=plotState(i);
+      o.soil.material.color.set(p.c&&p.w<=0&&!p.ready?'#a98058':'#5b3a1f');
+      o.pl.forEach(m=>{m.visible=!!p.c});
+      if(p.c){o.pm.color.set(p.ready?G[p.c].c:new Color('#4d9a2a').lerp(new Color(G[p.c].c),p.p*.7));const sc=.35+p.p*1.25;o.pl.forEach(m=>{m.scale.set(sc*.8,sc*1.5,sc*.8);m.position.y=.05+.28*sc*1.5})}
+      o.sp.visible=!!ch;if(ch){o.sp.material.map=emoji(ch);o.sp.material.needsUpdate=true}})}
+  const exit=()=>{closeSheet();alive=false;removeEventListener('keydown',key);removeEventListener('keyup',key);removeEventListener('resize',resize);
     scene.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material){(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>{m.map&&m.map.dispose();m.dispose()})}});
     renderer.dispose();root.remove();window.__w3d=0;delete window.__w3dState};
   $('w3x').onclick=exit;
-  window.__w3dState=()=>({x:P.x,z:P.z,truck:T.x,zones:zones.map(z=>({id:z.s.id,x:z.x,z:z.z})),near:near&&near.s.id,alive,calls:renderer.info.render.calls,tri:renderer.info.render.triangles,pr});
+  window.__w3dState=()=>({x:P.x,z:P.z,sheet:sheetOn,plots:plots.length,truck:T.x,zones:zones.map(z=>({id:z.s.id,x:z.x,z:z.z})),near:near&&near.s.id,alive,calls:renderer.info.render.calls,tri:renderer.info.render.triangles,pr});
   window.__w3dTeleport=(x,z)=>{P.x=x;P.z=z};
-  hud();refreshLabels();
+  hud();refreshLabels();updatePlots();
   // Kollision (Kreis gegen Kreise und Kästen)
   const R=.55;
   const push=(c)=>{
@@ -226,8 +285,8 @@ export async function open3d(){
       if(game.shake>.001){cam.position.x+=(Math.random()-.5)*game.shake;cam.position.y+=(Math.random()-.5)*game.shake;game.shake*=Math.pow(.02,dt)}
     }else{
     let ix=stick.x,iz=stick.y;
-    if(!OV){if(keys.KeyA||keys.ArrowLeft)ix-=1;if(keys.KeyD||keys.ArrowRight)ix+=1;if(keys.KeyW||keys.ArrowUp)iz-=1;if(keys.KeyS||keys.ArrowDown)iz+=1}
-    const il=Math.hypot(ix,iz);if(il>1){ix/=il;iz/=il}if(OV){ix=iz=0}
+    if(!OV&&!sheetOn){if(keys.KeyA||keys.ArrowLeft)ix-=1;if(keys.KeyD||keys.ArrowRight)ix+=1;if(keys.KeyW||keys.ArrowUp)iz-=1;if(keys.KeyS||keys.ArrowDown)iz+=1}
+    const il=Math.hypot(ix,iz);if(il>1){ix/=il;iz/=il}if(OV||sheetOn){ix=iz=0}
     const mv=Math.min(1,il);
     if(mv>.08){
       const sy=Math.sin(C.yaw),cy=Math.cos(C.yaw),wx=ix*cy+iz*sy,wz=-ix*sy+iz*cy;
@@ -257,7 +316,7 @@ export async function open3d(){
         const to=occ&&!game?.18:1;s.fade+=(to-s.fade)*Math.min(1,dt*9);
         if(Math.abs(s.fade-(s._f??1))>.01){s._f=s.fade;s.g.traverse(m=>{if(m.isMesh){m.material.transparent=s.fade<.99;m.material.opacity=s.fade;m.material.depthWrite=s.fade>.6;m.castShadow=s.fade>.6}})}}}
     // Standplätze und Beschriftungen
-    let nn=null;for(const z of zones){const d=Math.hypot(P.x-z.x,P.z-z.z);const on=d<2.6;z.ring.material.opacity=on?1:.5;z.disc.material.opacity=on?.3:.12;z.ring.scale.setScalar(1+Math.sin(tm*3)*.06);if(on)nn=z}
+    let nn=null;for(const z of zones){const d=Math.hypot(P.x-z.x,P.z-z.z);const on=d<(z.rad||2.6);z.ring.material.opacity=on?1:.5;z.disc.material.opacity=on?.3:.12;z.ring.scale.setScalar(1+Math.sin(tm*3)*.06);if(on)nn=z}
     for(const s of STATIONS){const d=Math.hypot(P.x-s.at[0],P.z-s.at[1]);s.lb.material.opacity=game?0:MathUtils.clamp((d-9)/6,0,1)*MathUtils.clamp(1.3-d/70,.35,1)}
     if(game)nn=near;
     if(nn!==near){near=nn;if(near)SFX.tick();refreshAct()}
@@ -271,7 +330,7 @@ export async function open3d(){
     if(pond)pond.material.opacity=.86+Math.sin(tm*2)*.05;
     glow.intensity=(night?56:24)+Math.sin(tm*17)*3+Math.sin(tm*5.3)*2.5;
     clouds.forEach(c=>{c.position.x+=dt*.9;if(c.position.x>140)c.position.x=-140});
-    if((hudT-=dt)<=0){hudT=.5;hud();if(!game)refreshAct();refreshLabels();const t=$('w3t');if(t&&tm>9)t.style.opacity=0}
+    if((hudT-=dt)<=0){hudT=.5;hud();if(!game)refreshAct();refreshLabels();updatePlots();const t=$('w3t');if(t&&tm>9)t.style.opacity=0}
     renderer.render(scene,cam);
   })(performance.now());
 }

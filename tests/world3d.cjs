@@ -69,6 +69,34 @@ let fail=0;const ok=(c,m)=>{console.log((c?'  ok  ':'  FEHLER ')+m);if(!c)fail++
   // Abbrechen kostet nichts
   const e0=await p.evaluate(()=>S.stock.erz);await go('stahl');await p.click('#w3b');await p.waitForSelector('#w3gb');await p.click('#w3gb');await p.waitForTimeout(300);
   ok(await p.evaluate(()=>!document.querySelector('.w3g'))&&await p.evaluate(()=>S.stock.erz)===e0,'Zurück auf der Startkarte bricht ab, ohne Material zu verbrauchen');
+  // Orte der Verwaltung: gesperrt unter dem nötigen Level, sonst Blatt über der Welt
+  await p.evaluate(()=>{S.xp=xpFor(2)});await go('p_shop');await p.waitForFunction(()=>/Level 3/.test(document.getElementById('w3b').textContent),null,{timeout:15000});
+  ok(await p.evaluate(()=>document.getElementById('w3b').disabled),'Laden unter Level 3 gesperrt: '+await p.textContent('#w3b'));
+  await p.evaluate(()=>{S.xp=xpFor(5);render()});await p.evaluate(()=>document.querySelector('.lvlup')?.remove());
+  await p.waitForFunction(()=>!document.getElementById('w3b').disabled,null,{timeout:15000});await p.click('#w3b');await p.waitForFunction(()=>__w3dState().sheet,null,{timeout:5000});
+  ok(await p.evaluate(()=>cur==='shop'&&document.body.classList.contains('w3sheet')&&/Laden/.test(document.getElementById('s-shop').textContent)),'Laden öffnet als Blatt über der Welt');
+  const zb=await p.evaluate(()=>__w3dState().z);await p.keyboard.down('KeyW');await p.waitForTimeout(600);await p.keyboard.up('KeyW');
+  ok(Math.abs(await p.evaluate(()=>__w3dState().z)-zb)<.01,'bei offenem Blatt läuft die Figur nicht');
+  await p.click('.w3sx');await p.waitForFunction(()=>!__w3dState().sheet,null,{timeout:5000});
+  ok(await p.evaluate(()=>!document.body.classList.contains('w3sheet')&&cur==='work'),'Blatt schließt zurück in die Welt');
+  for(const [id,scr] of [['p_orders','orders'],['p_bld','bld'],['p_log','logistics'],['p_farm','farm'],['p_under','under']]){
+    await go(id);await p.waitForFunction(()=>!document.getElementById('w3b').disabled,null,{timeout:15000});await p.click('#w3b');await p.waitForFunction(()=>__w3dState().sheet,null,{timeout:5000});
+    const c=await p.evaluate(()=>cur);await p.click('.w3sx');await p.waitForFunction(()=>!__w3dState().sheet,null,{timeout:5000});ok(c===scr,'Ort '+id+' öffnet '+scr)}
+  await go('p_lab');await p.waitForFunction(()=>/Labor/.test(document.getElementById('w3b').textContent),null,{timeout:15000});await p.click('#w3b');await p.waitForSelector('.flask',{timeout:5000});
+  ok(true,'Labor öffnet aus der Welt');await p.evaluate(()=>closeOv());
+  await go('p_fish');await p.waitForFunction(()=>/Angeln/.test(document.getElementById('w3b').textContent),null,{timeout:15000});await p.click('#w3b');await p.waitForSelector('#gate',{timeout:5000});
+  ok(true,'Angelsteg startet das Angeln');await p.evaluate(()=>closeOv());
+  // Felder: säen, gießen, ernten direkt am Beet
+  ok(await p.evaluate(()=>__w3dState().plots)===await p.evaluate(()=>S.farm.plots.length),'so viele Beete wie Felder ('+await p.evaluate(()=>__w3dState().plots)+')');
+  const btn=async re=>{await p.waitForFunction(r=>new RegExp(r).test(document.getElementById('w3b').textContent),re,{timeout:15000})};
+  await p.evaluate(()=>{S.farm.plots[0]={c:null,p:0,w:0,pest:0,half:0,ready:0};S.money=500});await go('plot0');await btn('bestellen');await p.click('#w3b');
+  await p.waitForSelector('#ovbox [data-k="weizen"]',{timeout:5000});await p.click('#ovbox [data-k="weizen"]');
+  ok(await p.evaluate(()=>S.farm.plots[0].c==='weizen'&&S.farm.plots[0].w>0),'Beet 1: Weizen gesät und angegossen');
+  await btn('wächst');ok(await p.evaluate(()=>document.getElementById('w3b').disabled),'wachsendes Beet: Knopf zeigt den Fortschritt');
+  await p.evaluate(()=>{S.farm.plots[0].w=0});await btn('Gießen');await p.click('#w3b');ok(await p.evaluate(()=>S.farm.plots[0].w>0),'trockenes Beet gegossen');
+  await p.evaluate(()=>{S.farm.plots[0].pest=Date.now()+60000});await btn('Schädlinge');await p.click('#w3b');ok(await p.evaluate(()=>!S.farm.plots[0].pest),'Schädlinge vertrieben');
+  const w0=await p.evaluate(()=>{S.farm.plots[0].p=1;S.farm.plots[0].ready=1;return S.stock.weizen});await btn('ernten');await p.click('#w3b');
+  ok(await p.evaluate(w=>S.stock.weizen>w&&!S.farm.plots[0].c,w0),'reifes Beet geerntet, Weizen im Lager');
   // Markt
   await p.evaluate(()=>{S.stock.erz=5;S.stock.stahl=2;S.stock.kohle=0;S.stock.lehm=0;S.stock.ziegel=0;S.stock.maschine=0});await go('markt');await p.waitForFunction(()=>/verkaufen/.test(document.getElementById('w3b').textContent),null,{timeout:15000});
   const m0=await p.evaluate(()=>S.money),x0=await p.evaluate(()=>S.xp),s0=await p.evaluate(()=>S.st.sold);

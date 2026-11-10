@@ -92,6 +92,10 @@ An den sechs Stationen laufen eigene 3D-Spiele direkt in der Welt (`src/world3d/
 
 Die Kamera fährt dafür vor die Station und rückt im Hochformat so weit zurück, dass das Spielfeld ins Bild passt. Ertrag, Combo, XP, Tagesaufgaben und Erfolge laufen über dieselbe Abrechnung wie die 2D-Spiele (`applyResult` in `src/features/workshop.js`). `tests/world3d.cjs` spielt alle vier mit Bots.
 
+### Alles in der Welt
+
+Auch die Verwaltung hat Orte in der 3D-Welt: Auftragstafel, Bauamt (Betriebe), Labor, Laden, Logistikhof, Scheune (Farm und Reifekeller), Angelsteg und Hinterhof. Wer davor steht, öffnet die jeweilige Ansicht als Blatt über der Welt (`sheet()` in `src/world3d/index.js`, Klasse `w3sheet`), Labor und Angeln als Fenster. Orte unter dem nötigen Level zeigen ein Schloss. Die Felder der Farm sind begehbare Beete: säen, gießen, Schädlinge vertreiben und ernten direkt am Beet, die Pflanzen wachsen sichtbar. Modelle: `shop`, `lab`, `office`, `board`, `depot`, `barn`, `jetty`, `shack` in `tools/models3d/build.py`.
+
 ## Labor
 
 Ab Level 3, in der Werkstatt. Zwei Reiter:

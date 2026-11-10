@@ -218,7 +218,7 @@ def workshop():
     box((6.8, 5.0, 3.8), (0, 0, 2.4), wall, bevel=.1)
     box((6.9, 5.1, .4), (0, 0, 1.0), wall2, bevel=.02)
     # Satteldach
-    for s in (-1, 1): box((3.9, 5.7, .22), (s * 1.78, 0, 5.15), roof, rot=(0, s * math.radians(-24), 0), bevel=.03)
+    for s in (-1, 1): box((3.9, 5.7, .22), (s * 1.78, 0, 5.15), roof, rot=(0, s * math.radians(24), 0), bevel=.03)
     box((.35, 5.8, .35), (0, 0, 5.95), mat('#7a2a1a', .8), bevel=.03)
     # Rolltor und Schild mit Zahnrad
     box((3.0, .3, 2.8), (0, -2.55, 1.9), dark, bevel=.05)
@@ -264,6 +264,104 @@ def market():
     box((3.2, .16, .8), (0, -1.1, 4.25), wood2, bevel=.04); box((2.9, .08, .55), (0, -1.2, 4.25), mat('#fbbf24', .6, emit='#fbbf24', strength=.35), bevel=.02)
     # Laterne
     box((.3, .3, .4), (2.4, -1.15, 3.1), mat('#fde68a', .4, emit='#fbbf24', strength=2.5), bevel=.05)
+
+
+# ---------------------------------------------------------------- Orte der Verwaltung (Laden, Labor, Bauamt, Tafel, Hof, Scheune, Steg, Schuppen)
+def house(w, d, h, wall, roofc, door='#7a4f2a', trim='#f8fafc'):
+    """Einfaches Haus mit Satteldach, Tür vorn (−Y) und Sockel."""
+    st = mat(STONE2, .9)
+    box((w + .8, d + .8, .4), (0, 0, .2), st, bevel=.04)
+    box((w, d, h), (0, 0, .4 + h / 2), mat(wall, .85), bevel=.08)
+    ang = math.atan2(1.6, w / 2); L = math.hypot(w / 2 + .4, 1.6 + .3)
+    for s in (-1, 1): box((L, d + .6, .2), (s * (w / 4 + .1), 0, .4 + h + .8), mat(roofc, .8), rot=(0, s * ang, 0), bevel=.02)
+    box((1.3, .2, 2.1), (0, -d / 2 - .05, 1.45), mat(door, .8), bevel=.04)
+    box((1.6, .16, .2), (0, -d / 2 - .06, 2.6), mat(trim, .7), bevel=.02)
+
+@model
+def shop():
+    house(6.4, 4.6, 3.4, '#fde68a', '#e11d48')
+    red = mat('#e11d48', .8); white = mat('#f8fafc', .85); glass = mat('#93c5fd', .2, emit='#60a5fa', strength=.3)
+    for x in (-2.1, 2.1): box((1.5, .14, 1.3), (x, -2.36, 2.0), glass, bevel=.02)
+    for i in range(8): box((.8, 1.3, .1), (-2.8 + i * .8, -2.9, 3.2), red if i % 2 == 0 else white, rot=(math.radians(-18), 0, 0), bevel=.01)
+    box((3.4, .16, .7), (0, -2.42, 4.25), mat('#7c3aed', .6), bevel=.04); box((3.0, .08, .4), (0, -2.52, 4.25), mat('#fde047', .5, emit='#fde047', strength=.5), bevel=.02)
+    box((1.0, .8, .9), (-3.9, -2.6, .45), mat(WOOD, .85), bevel=.03)
+    for k, c in enumerate(['#ef4444', '#84cc16', '#f97316']): ball(.22, (-4.15 + k * .25, -2.6, 1.05), mat(c, .6), sub=1)
+
+@model
+def lab():
+    house(6.0, 4.6, 3.6, '#e0f2fe', '#0ea5e9', door='#0369a1')
+    glassm = mat('#a5f3fc', .15, emit='#22d3ee', strength=.6); metal = mat('#64748b', .4, .7)
+    ball(1.5, (1.6, .3, 4.6), glassm, scale=(1, 1, .8), sub=2)                 # Kuppel
+    cyl(.35, 2.6, (-2.0, .8, 5.2), metal, seg=8); cyl(.42, .2, (-2.0, .8, 6.55), mat(DARK, .6), seg=8)
+    # Kolben-Schild
+    cyl(.5, .1, (0, -2.42, 4.3), mat('#f8fafc', .6), rot=(math.radians(90), 0, 0), seg=14)
+    cyl(.28, .14, (0, -2.5, 4.2), mat('#22c55e', .4, emit='#22c55e', strength=1.2), rot=(math.radians(90), 0, 0), seg=10)
+    box((.14, .14, .4), (0, -2.5, 4.55), mat('#22c55e', .4, emit='#22c55e', strength=1.2), bevel=.02)
+    for x in (-2.0, 2.0): box((1.2, .14, 1.2), (x, -2.36, 2.2), glassm, bevel=.02)
+    for i, c in enumerate(['#a78bfa', '#22c55e', '#f472b6']):
+        cyl(.3, .8, (-3.9 + i * .0, -2.7 - i * .7, .4), mat(c, .3, emit=c, strength=.5), seg=10)
+
+@model
+def office():
+    house(6.4, 4.8, 4.2, '#fef3c7', '#b45309', door='#92400e')
+    glass = mat('#93c5fd', .2, emit='#60a5fa', strength=.3); yel = mat('#facc15', .55)
+    for x in (-2.1, 2.1):
+        for z in (2.0, 3.6): box((1.1, .14, 1.0), (x, -2.46, z), glass, bevel=.02)
+    box((3.2, .16, .6), (0, -2.52, 3.3), yel, bevel=.03)
+    # Baukran-Modell und Bauhelm-Schild vor dem Amt
+    box((.25, .25, 3.4), (4.2, -2.4, 1.7), yel, bevel=.02); box((2.4, .2, .2), (3.4, -2.4, 3.3), yel, bevel=.02); box((.5, .5, .5), (4.2, -2.4, .25), mat(STONE2, .9), bevel=.03)
+    box((1.0, .7, .6), (-3.9, -2.8, .3), mat(BRICK, .9), bevel=.02); box((.9, .7, .5), (-3.8, -2.7, .85), mat(BRICK2, .9), bevel=.02)
+
+@model
+def board():
+    w = mat(WOOD, .9); w2 = mat(WOOD2, .9)
+    for x in (-1.5, 1.5): box((.22, .22, 3.0), (x, 0, 1.5), w2, bevel=.03)
+    box((3.4, .16, 2.0), (0, 0, 2.1), w, bevel=.04); box((3.8, .5, .2), (0, 0, 3.25), mat('#b4432b', .8), bevel=.03)
+    for k, (x, z, c) in enumerate([(-1.0, 2.5, '#f8fafc'), (0, 2.6, '#fde68a'), (1.0, 2.4, '#f8fafc'), (-.6, 1.6, '#bfdbfe'), (.7, 1.6, '#fecaca')]):
+        box((.7, .04, .75), (x, -.1, z), mat(c, .9), rot=(0, (k % 3 - 1) * .08, 0), bevel=0); ball(.05, (x, -.14, z + .3), mat('#ef4444', .5), sub=1)
+
+@model
+def depot():
+    wall = mat('#cbd5e1', .85); st = mat(STONE2, .9); blue = mat('#2563eb', .6); dark = mat('#1e293b', .8)
+    box((9.0, 5.6, .4), (0, 0, .2), st, bevel=.04); box((8.2, 4.8, 3.6), (0, 0, 2.2), wall, bevel=.08); box((8.6, 5.2, .4), (0, 0, 4.2), blue, bevel=.05)
+    for x in (-2.1, 2.1):
+        box((3.0, .2, 2.8), (x, -2.45, 1.8), dark, bevel=.04)
+        for i in range(5): box((2.8, .1, .34), (x, -2.58, .7 + i * .52), mat('#64748b', .5, .5), bevel=.01)
+    box((3.4, .16, .6), (0, -2.5, 3.75), mat('#facc15', .55), bevel=.03)
+    for k, (x, y) in enumerate([(5.2, -2.2), (5.4, -1.0)]): cyl(.5, 1.1, (x, y, .55), mat('#ef4444' if k else '#2563eb', .6), seg=12)
+    for k in range(3): cyl(.5, .3, (-5.3, -1.6, .15 + k * .3), mat('#16181d', .9), seg=12)
+
+@model
+def barn():
+    red = mat('#c0392b', .85); white = mat('#f8fafc', .85); roof = mat('#5b3a2a', .85)
+    box((7.4, 6.4, .3), (0, 0, .15), mat(STONE2, .9), bevel=.04); box((6.6, 5.6, 3.6), (0, 0, 2.1), red, bevel=.08)
+    for s in (-1, 1):
+        box((2.2, 6.2, .2), (s * 2.6, 0, 4.5), roof, rot=(0, s * math.radians(48), 0), bevel=.02); box((2.4, 6.2, .2), (s * 1.1, 0, 5.75), roof, rot=(0, s * math.radians(22), 0), bevel=.02)
+    box((6.0, 5.6, 1.3), (0, 0, 4.4), red, bevel=.06); box((3.6, 5.6, .9), (0, 0, 5.4), red, bevel=.06)
+    box((2.6, .2, 2.8), (0, -2.85, 1.7), mat('#7a2a1a', .85), bevel=.04)
+    for a in (-1, 1): box((3.4, .1, .18), (0, -2.98, 1.7), white, rot=(0, a * .82, 0), bevel=.01)
+    box((2.9, .12, .2), (0, -2.95, 3.15), white, bevel=.01); box((1.0, .12, 1.0), (0, -2.9, 4.6), white, bevel=.02)
+    for k, (x, y) in enumerate([(-4.4, -2.4), (-4.6, -1.2), (-4.3, -1.9)]): cyl(.6, .9, (x, y, .45 + (k == 2) * .9), mat('#e6c35c', .95), rot=(math.radians(90), 0, k * .6), seg=10)
+    cyl(.9, 4.6, (4.6, 1.4, 2.3), mat('#cbd5e1', .6, .4), seg=12); cyl(.95, .9, (4.6, 1.4, 5.0), mat('#94a3b8', .6, .4), seg=12, r2=.1)
+
+@model
+def jetty():
+    w = mat(WOOD, .9); w2 = mat(WOOD2, .9)
+    for i in range(7): box((.8, 2.0, .14), (i * .86, 0, .62), w if i % 2 else w2, bevel=.02)
+    for x in (.3, 2.9, 5.3):
+        for y in (-.9, .9): cyl(.13, 1.4, (x, y, .3), w2, seg=6)
+    cyl(.05, 2.4, (5.4, .7, 1.8), mat('#3f2a17', .8), rot=(0, math.radians(35), 0), seg=5)       # Angel
+    box((.6, .5, .5), (4.6, -.6, .95), mat('#38bdf8', .6), bevel=.04)                                # Eimer/Kiste
+    box((.1, .1, 1.3), (-.2, -1.0, .65), w2, bevel=0); box((1.0, .08, .55), (-.2, -1.05, 1.35), mat('#f8fafc', .8), bevel=.02)
+
+@model
+def shack():
+    w = mat('#5b4a3a', .95); w2 = mat('#3f3328', .95); tin = mat('#6b7280', .6, .5)
+    box((5.0, 4.0, 2.8), (0, 0, 1.4), w, bevel=.05); box((5.6, 4.6, .16), (0, 0, 2.95), tin, rot=(math.radians(6), 0, 0), bevel=.01)
+    box((1.2, .16, 2.0), (-.9, -2.02, 1.0), w2, bevel=.03); box((1.0, .12, .7), (1.3, -2.02, 1.7), mat('#fde68a', .4, emit='#f59e0b', strength=1.2), bevel=.02)
+    for i in range(3): box((1.0, .08, .14), (1.3, -2.08, 1.45 + i * .25), w2, bevel=0)
+    cyl(.5, 1.0, (3.1, -1.4, .5), mat('#3f6212', .8), seg=10); cyl(.5, 1.0, (3.3, -.2, .5), mat('#7c2d12', .8), seg=10)
+    box((.9, .9, .9), (-3.2, -1.2, .45), w2, rot=(0, 0, .3), bevel=.03)
 
 # ---------------------------------------------------------------- LKW (Dekoration am Markt)
 @model
