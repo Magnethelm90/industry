@@ -149,6 +149,29 @@ let fail=0;const ok=(c,m)=>{console.log((c?'  ok  ':'  FEHLER ')+m);if(!c)fail++
   ok(await p.evaluate(()=>/Kamera|Akku|Display|Schraube/.test(document.querySelector('.w3gs').textContent)),'Endmontage zeigt eigene Teilenamen');
   for(let k=0;k<6000;k++){const g=await gi();if(!g||g.ended)break;const it=g.info.items.find(o=>o.k===g.info.need&&o.p[0]>40&&o.p[0]<350);if(it){await p.mouse.click(it.p[0],it.p[1]);await p.waitForTimeout(150)}await p.waitForTimeout(30)}
   await result('Endmontage','handy',2);
+  // Eigene Spielregeln: Weben, Löten, Zuschneiden, Rühren (Bots mit echten Mausklicks)
+  await p.evaluate(()=>{Object.assign(S.stock,{baumwolle:9,draht:9,kunststoff:9,stoff:9,milch:9})});
+  await begin('weberei');
+  for(let k=0;k<9000;k++){const g=await gi();if(!g||g.ended||g.info.over)break;const i=g.info;const r=i.rows.filter(r=>r.z+.5>i.zc-3.2&&r.z<=i.zc+.2).sort((a,b)=>b.z-a.z)[0];
+    if(r&&r.z>i.zc-1.6){await p.mouse.click(i.lanes[r.gap][0],i.lanes[r.gap][1]);await p.waitForTimeout(60)}await p.waitForTimeout(25)}
+  await result('Weben','stoff',2);
+  await begin('platine');
+  for(let k=0;k<9000;k++){const g=await gi();if(!g||g.ended||g.info.over)break;const i=g.info;if(i.state==='input'){const pp=i.pads[i.seq[i.idx]];await p.mouse.click(pp[0],pp[1]);await p.waitForTimeout(150)}await p.waitForTimeout(40)}
+  await result('Löten','platine',2);
+  await begin('schneiderei');
+  for(let k=0;k<400;k++){const g=await gi();if(!g||g.ended||g.info.over)break;const r0=g.info.round,path=g.info.fz.map(f=>f[2]);
+    await p.mouse.move(path[0][0],path[0][1]);await p.mouse.down();
+    for(let j=1;j<path.length;j++){await p.mouse.move(path[j][0],path[j][1],{steps:3});await p.waitForTimeout(60)}
+    await p.mouse.move(path[path.length-1][0]+20,path[path.length-1][1]);await p.mouse.up();
+    await p.waitForFunction(r=>{const g=__w3dGame();return g.ended||g.info.over||g.info.round>r},r0,{timeout:20000}).catch(()=>{})}
+  await result('Zuschneiden','kleidung',1);
+  await begin('kaeserei');
+  {let a=0,step=.22;for(let k=0;k<20000;k++){const g=await gi();if(!g||g.ended||g.info.done)break;const i=g.info;
+    if(k===0){await p.mouse.move(i.center[0]+90,i.center[1]);await p.mouse.down()}
+    if(i.started){if(i.w<5)step=Math.min(.9,step*1.15);else if(i.w>7)step=Math.max(.05,step*.85)}
+    a+=step;await p.mouse.move(i.center[0]+90*Math.cos(a),i.center[1]+90*Math.sin(a));await p.waitForTimeout(20)}
+    await p.mouse.up()}
+  await result('Rühren','kaese',2);
   // Angeln am Steg in 3D
   await p.evaluate(()=>{S.stock.hering=0;S.stock.lachs=0;S.stock.thunfisch=0});
   await go('p_fish');await p.waitForFunction(()=>!document.getElementById('w3b').disabled&&/Angeln/.test(document.getElementById('w3b').textContent),null,{timeout:15000});await p.evaluate(()=>{document.querySelector('.rescard')?.remove();closeOv()});await p.click('#w3b');await p.waitForSelector('#w3go',{timeout:10000});

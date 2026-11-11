@@ -1,6 +1,6 @@
 /* 3D-Minispiele: laufen direkt in der Welt an der jeweiligen Station (statt des 2D-Fensters).
    Jedes Spiel bekommt einen Kontext c (Szene, Kamera, Hilfen) und meldet am Ende c.finish(Score 0..1). */
-import {BoxGeometry,Color,CylinderGeometry,Group,IcosahedronGeometry,Mesh,MeshBasicMaterial,MeshLambertMaterial,PointLight,Raycaster,Vector2,Vector3} from 'three';
+import {BoxGeometry,Color,CylinderGeometry,Group,IcosahedronGeometry,Mesh,MeshBasicMaterial,MeshLambertMaterial,Plane,PointLight,Raycaster,SphereGeometry,Vector2,Vector3} from 'three';
 import {SFX,tone,vib} from '../fx.js';
 import {G} from '../data.js';
 import {S,diff,unl} from '../state.js';
@@ -277,28 +277,179 @@ function gFish3(c){
     dispose(){}
   }}
 
+
+/* ---------- Rühren (Käserei, Brauerei, Brennerei, Kunststoff): im Kreis wischen; das Tempo muss im grünen Bereich bleiben. */
+function gStir(c){
+  const Z=8.6,LO=3.6,HI=8.5,NEED=6,DUR=16,liq=c.th.liq||'#f59e0b';
+  c.view(c.L(0,6.8,Z+9),c.L(0,1.6,Z),3.8);
+  c.hero.position.copy(c.L(-4.8,0,Z+1.4));c.hero.rotation.y=c.s.ry+1.1;
+  const g=c.group;
+  g.add(box(5.4,.5,5.4,'#3f3f46',0,.25,Z));
+  g.add(mk(new CylinderGeometry(2.3,2,1.7,28),lam('#64748b'),0,1.35,Z));
+  const surf=mk(new CylinderGeometry(2.05,2.05,.1,28),new MeshBasicMaterial({color:liq}),0,2.17,Z);surf.castShadow=false;g.add(surf);
+  const swirl=new Group();swirl.position.set(0,2.24,Z);g.add(swirl);
+  const light=new Color(liq).lerp(new Color('#ffffff'),.55);
+  for(let i=0;i<3;i++){const b=mk(new BoxGeometry(1.7,.04,.22),new MeshBasicMaterial({color:light}),0,0,0);b.rotation.y=i*Math.PI/3;b.castShadow=false;swirl.add(b)}
+  const spoon=new Group();spoon.add(mk(new CylinderGeometry(.09,.09,3.2,6),lam('#92400e'),0,1.6,0),mk(new SphereGeometry(.4,10,8),lam('#b45309'),0,.1,0));spoon.position.set(1.2,2.2,Z);g.add(spoon);
+  const bars=()=>`<div class="f3"><small>Tempo – im grünen Bereich bleiben</small><div class="f3t"><i class="f3z" style="left:${LO/12*100}%;width:${(HI-LO)/12*100}%"></i><b id="f3k"></b></div><small>Verrührt</small><div class="f3p"><i id="f3g"></i></div></div>`;
+  c.status('<b>Im Kreis wischen!</b>'+bars(),true);
+  let w=0,acc=0,okT=0,t=0,t0=null,done=false,down=false,a0=null,ang=0,rot=0,msgT=0;
+  const center=()=>c.project(g.localToWorld(new Vector3(0,2.2,Z)));
+  const world=(x,y,z)=>g.localToWorld(new Vector3(x,y,z));
+  return {
+    update(dt){
+      if(done)return;t+=dt;
+      w=w*.75+(acc/Math.max(dt,.001))*.25;acc=0;if(!down)w*=.9;
+      const inZ=w>=LO&&w<=HI;
+      if(t0!=null){if(inZ)okT+=dt;else if(w>HI*1.25)okT=Math.max(0,okT-dt*.5);
+        c.time(1-(t-t0)/DUR)}
+      rot+=w*dt*(Math.sign(rotDir)||1);swirl.rotation.y=-rot;
+      spoon.position.set(Math.cos(ang)*1.15,2.2+Math.sin(t*14)*.02*Math.min(1,w/4),Z+Math.sin(ang)*1.15);
+      const k=c.ui('f3k'),gb=c.ui('f3g');if(k){k.style.left=Math.min(100,w/12*100)+'%';k.style.background=inZ?'#16a34a':w>HI?'#ef4444':'#1d2b4a'}if(gb)gb.style.width=Math.min(1,okT/NEED)*100+'%';
+      if(w>HI*1.25&&(msgT-=dt)<=0){msgT=.5;c.burst(world(Math.cos(ang)*1.4,2.4,Math.sin(ang)*1.4+Z-Z+0),liq,3,3)}
+      if(okT>=NEED||(t0!=null&&t-t0>=DUR)){done=true;const v=Math.min(1,okT/NEED);c.say(v>=1?'Perfekt verrührt! ✨':Math.round(v*100)+' % verrührt');(v>=1?SFX.win:SFX.good)();vib(20);setTimeout(()=>c.finish(v),700)}},
+    down(e){if(done)return;down=true;a0=null;SFX.tick()},
+    move(e){if(!down||done)return;const [cx,cy]=center(),dx=e.clientX-cx,dy=e.clientY-cy;if(Math.hypot(dx,dy)<22)return;
+      const a=Math.atan2(dy,dx);if(a0!=null){let da=a-a0;if(da>Math.PI)da-=2*Math.PI;if(da<-Math.PI)da+=2*Math.PI;acc+=Math.abs(da);rotDir=Math.sign(da)||rotDir;if(t0==null)t0=t}ang=a;a0=a},
+    up(){down=false;a0=null},
+    info:()=>({w,okT,center:center(),done,started:t0!=null}),
+    dispose(){}
+  }}
+let rotDir=1;
+
+/* ---------- Weben (Weberei): Fadenreihen laufen auf den Webkamm zu, in jeder fehlt ein Faden. Tippe die Spur mit der Lücke, bevor die Reihe den Kamm erreicht. */
+function gWeave(c){
+  const LANES=5,ROWS=12,Z=8.6,LW=1.9,ZS=Z-5.4,ZC=Z+1.8,COL=['#ef4444','#f59e0b','#22c55e','#38bdf8','#a78bfa'];
+  c.view(c.L(0,7.2,Z+9),c.L(0,.6,Z-1.6),5.4);
+  c.hero.position.copy(c.L(-6.4,0,Z+2));c.hero.rotation.y=c.s.ry+1.2;
+  const g=c.group,X=i=>(i-2)*LW;
+  g.add(box(10.4,.2,9.6,'#8b5a2b',0,.1,Z-2.6));
+  for(let i=0;i<=LANES;i++)g.add(box(.08,.22,9.6,'#5b3a1b',(i-2.5)*LW,.2,Z-2.6));
+  g.add(box(10.6,.6,.45,'#f8fafc',0,.55,ZC+.5));for(let i=0;i<=LANES*3;i++)g.add(box(.08,.7,.5,'#cbd5e1',(i/3-2.5)*LW,.6,ZC+.5));
+  const cloth=box(10.2,.16,1,'#fde68a',0,.28,ZC+1.5);cloth.scale.z=.01;g.add(cloth);
+  const rows=[];let spawned=0,good=0,bad=0,miss=0,t=0,next=.4,over=false;
+  const world=(x,y,z)=>g.localToWorld(new Vector3(x,y,z));
+  const stat=()=>c.status(good+' gewebt'+(bad+miss?' · '+(bad+miss)+' Fehler':'')+` · Reihe ${Math.min(ROWS,spawned)} von ${ROWS}`);stat();
+  const mkRow=()=>{const gap=Math.floor(Math.random()*LANES),r=new Group();
+    for(let i=0;i<LANES;i++){if(i===gap){const m=mk(new BoxGeometry(LW-.3,.06,1),new MeshBasicMaterial({color:'#fde047',transparent:true,opacity:.4}),X(i),.3,0);m.castShadow=false;r.add(m)}else r.add(box(LW-.3,.3,1,COL[i],X(i),.4,0))}
+    r.position.z=ZS;g.add(r);rows.push({g:r,gap,z:ZS,done:false})};
+  const settle=(r,ok)=>{r.done=true;if(ok){good++;SFX.good();vib(8);c.burst(world(X(r.gap),.8,ZC),COL[r.gap],6,4);c.pop('✓',world(X(r.gap),1.6,ZC),'#34d399');cloth.scale.z=Math.min(3.2,good*.27);cloth.position.z=ZC+1+cloth.scale.z/2;setTimeout(()=>{g.remove(r.g)},0)}else r.g.traverse(o=>{if(o.material){o.material.transparent=true;o.material.opacity=.3}});stat()};
+  const laneXY=()=>Array.from({length:LANES},(_,i)=>c.project(world(X(i),.6,ZC)));
+  return {
+    update(dt){
+      if(over)return;t+=dt;c.time(1-(spawned-rows.filter(r=>!r.done).length)/ROWS);
+      const v=(1.75+spawned*.07)*diff();
+      next-=dt;if(next<=0&&spawned<ROWS){mkRow();spawned++;next=Math.max(.6,1.25-spawned*.04)}
+      for(const r of rows){r.z+=v*dt;r.g.position.z=r.z;if(!r.done&&r.z>ZC+.6){miss++;r.done=true;SFX.miss();c.pop('Durchgerutscht',world(0,1.6,ZC),'#ef4444');r.g.traverse(o=>{if(o.material){o.material.transparent=true;o.material.opacity=.3}});stat()}
+        if(r.done&&r.z>ZC+7){g.remove(r.g)}}
+      if(spawned>=ROWS&&!rows.some(r=>!r.done)){over=true;const sc=clamp((good-.5*bad)/ROWS);c.say(good+' von '+ROWS+' Reihen');if(sc>=.85)SFX.win();setTimeout(()=>c.finish(sc),700)}},
+    down(e){
+      if(over)return;const xy=laneXY();let lane=0,bd=1e9;xy.forEach((p,i)=>{const d=Math.abs(p[0]-e.clientX);if(d<bd){bd=d;lane=i}});
+      const r=rows.filter(x=>!x.done&&x.z+.5>ZC-3.2).sort((a,b)=>b.z-a.z)[0];
+      if(!r){bad++;SFX.miss();c.pop('Zu früh',world(X(lane),1.6,ZC),'#fbbf24');stat();return}
+      c.swing();if(lane===r.gap)settle(r,true);else{bad++;r.done=true;SFX.err();vib([40,30,40]);c.shake(.15);c.pop('Falsche Spur!',world(X(lane),1.6,ZC),'#ef4444');r.g.traverse(o=>{if(o.material){o.material.transparent=true;o.material.opacity=.3}});stat()}},
+    info:()=>({rows:rows.filter(r=>!r.done).map(r=>({z:r.z,gap:r.gap})),zc:ZC,lanes:laneXY(),spawned,good,over}),
+    dispose(){}
+  }}
+
+/* ---------- Zuschneiden (Schneiderei): Mit dem Finger der gestrichelten Linie von links nach rechts folgen. 3 Schnitte. */
+function gCut(c){
+  const Z=8.6,CUTS=3,X0=-3.7,X1=3.7,TOL=.6,CY=1.0,MAXP=170;
+  c.view(c.L(0,8.4,Z+7.2),c.L(0,CY,Z),5.2);
+  c.hero.position.copy(c.L(-6.4,0,Z+2));c.hero.rotation.y=c.s.ry+1.2;
+  const g=c.group;
+  g.add(box(10.4,.9,6.2,'#a16207',0,.45,Z));
+  const cloth=box(9.4,.1,5.2,'#e9d5ff',0,CY-.05,Z);g.add(cloth);
+  const dashGeo=new BoxGeometry(.16,.04,.16),dashMat=new MeshBasicMaterial({color:'#7c3aed'}),dots=[];
+  for(let i=0;i<48;i++){const d=new Mesh(dashGeo,dashMat);d.position.y=CY+.03;g.add(d);dots.push(d)}
+  const trGeo=new SphereGeometry(.12,6,5),trMat=new MeshBasicMaterial({color:'#22c55e'}),tr=[];
+  for(let i=0;i<MAXP;i++){const d=new Mesh(trGeo,trMat);d.visible=false;d.position.y=CY+.08;g.add(d);tr.push(d)}
+  const sc=new Group();for(const r of [.35,-.35]){const b=box(.18,.08,1.1,'#cbd5e1',0,0,0);b.rotation.y=r;sc.add(b)}sc.add(box(.4,.12,.4,'#ef4444',0,0,.7));sc.position.set(X0,CY+.25,Z);sc.scale.setScalar(1.5);g.add(sc);
+  let round=0,fz=()=>0,pts=[],down=false,total=0,over=false,wait=0,rawT=0,t=0;
+  const newPath=()=>{const a=.8+round*.5+Math.random()*.4,b=.9+Math.random()*.8+round*.35,ph=Math.random()*6,a2=.35,b2=2.2+Math.random(),ph2=Math.random()*6;
+    fz=x=>a*Math.sin((x-X0)/(X1-X0)*Math.PI*b+ph)*(1-.35*Math.abs(x/3.7))+a2*Math.sin((x-X0)/(X1-X0)*Math.PI*b2+ph2)*.5;
+    dots.forEach((d,i)=>{const x=X0+(X1-X0)*i/(dots.length-1);d.position.set(x,CY+.03,Z+fz(x));d.visible=i%2===0});
+    tr.forEach(d=>d.visible=false);pts=[];sc.position.set(X0,CY+.25,Z+fz(X0));c.status('Schnitt '+(round+1)+' von '+CUTS)};
+  newPath();
+  const plane=new Plane(new Vector3(0,1,0),-CY),rc=new Raycaster(),hit=new Vector3();
+  const local=e=>{rc.setFromCamera(new Vector2(e.clientX/innerWidth*2-1,-(e.clientY/innerHeight*2-1)),c.cam);if(!rc.ray.intersectPlane(plane,hit))return null;const l=g.worldToLocal(hit.clone());return [l.x,l.z-Z]};
+  const score=()=>{if(!pts.length)return 0;const mx=Math.max(...pts.map(p=>p[0])),reach=clamp((mx-X0)/(X1-X0-.3));let sum=0,k=0;
+    for(let x=X0;x<=X1;x+=.3){if(x>mx)break;const d=Math.min(...pts.map(p=>Math.hypot(p[0]-x,p[1]-fz(x))));sum+=Math.max(0,1-d/TOL);k++}return reach*(k?sum/k:0)};
+  const finish=()=>{down=false;if(wait>0||over)return;const v=score();total+=v;wait=.9;
+    const txt=v>=.9?'Sauber geschnitten! ✂️':v>=.6?'Ganz gut':'Schief…';c.say(txt);(v>=.6?SFX.good:SFX.miss)();vib(v>=.6?10:[40,30,40]);c.burst(sc.position.clone().applyMatrix4(g.matrixWorld),'#e9d5ff',8,4)};
+  return {
+    update(dt){
+      if(over)return;t+=dt;c.time(1-(round+(down?.5:0))/CUTS);
+      if(wait>0){wait-=dt;if(wait<=0){round++;if(round>=CUTS){over=true;const r=total/CUTS;c.say(Math.round(r*100)+' % Genauigkeit');if(r>=.85)SFX.win();setTimeout(()=>c.finish(clamp(r)),600)}else newPath()}}},
+    down(e){if(over||wait>0)return;const p=local(e);if(!p)return;if(Math.hypot(p[0]-X0,p[1]-fz(X0))>1.5){c.pop('Starte links an der Schere',g.localToWorld(new Vector3(X0,CY+1,Z)),'#fbbf24');return}down=true;pts=[p];SFX.tick()},
+    move(e){if(!down||wait>0||over)return;const p=local(e);if(!p)return;
+      const l=pts[pts.length-1];if(Math.hypot(p[0]-l[0],p[1]-l[1])<.12)return;pts.push(p);sc.position.set(p[0],CY+.25,Z+p[1]);
+      const k=Math.min(pts.length-1,MAXP-1),d=tr[k];if(d){d.position.set(p[0],CY+.08,Z+p[1]);d.visible=true}
+      if(p[0]>=X1)finish()},
+    up(){if(down)finish()},
+    info:()=>({round,pts:pts.length,fz:Array.from({length:21},(_,i)=>{const x=X0+(X1-X0)*i/20;return [x,fz(x),c.project(g.localToWorld(new Vector3(x,CY,Z+fz(x))))]}),over}),
+    dispose(){}
+  }}
+
+/* ---------- Löten (Platine, Fälscherwerkstatt): Lötpunkte leuchten in einer Reihenfolge auf; merke sie dir und tippe sie nach. */
+function gSolder(c){
+  const Z=8.6,ROUNDS=4,LEN=[3,4,5,6],MAXS=3,COL=['#ef4444','#fbbf24','#22c55e','#38bdf8'],FQ=[392,523,659,784];
+  c.view(c.L(0,8.6,Z+8.2),c.L(0,1.1,Z),5.2);
+  c.hero.position.copy(c.L(-6,0,Z+1.8));c.hero.rotation.y=c.s.ry+1.2;
+  const g=c.group;
+  g.add(box(9,.3,6.6,'#14532d',0,1,Z),box(9.4,.5,7,'#334155',0,.5,Z-.05));
+  for(let i=0;i<10;i++){const l=box(.12,.04,3+Math.random()*2,'#86efac',-4+i*.9,1.17,Z+(Math.random()-.5)*1);l.castShadow=false;g.add(l)}
+  const pads=[[-2.2,-1.5],[2.2,-1.5],[-2.2,1.6],[2.2,1.6]].map(([x,z],i)=>{const m=mk(new CylinderGeometry(1.1,1.1,.3,20),new MeshLambertMaterial({color:COL[i],emissive:'#000000'}),x,1.35,Z+z);g.add(m);return {m,x,z,i,glow:0}});
+  const iron=new Group();iron.add(mk(new CylinderGeometry(.1,.1,2.4,6),lam('#475569'),0,1.2,0),mk(new CylinderGeometry(.18,.04,.5,6),lam('#fbbf24'),0,-.1,0));iron.position.set(0,2.2,Z);g.add(iron);
+  let state='pause',seq=[],idx=0,rnd=0,strikes=0,done=0,t=0,tm=.8,showI=0,over=false;
+  const world=(x,y,z)=>g.localToWorld(new Vector3(x,y,z));
+  const chips=()=>c.status(`<i class="w3chip" style="--c:#fbbf24">Runde ${Math.min(rnd+1,ROUNDS)} von ${ROUNDS}</i>`+(state==='input'?`<i class="w3chip cur" style="--c:#22c55e">${idx} / ${seq.length}</i>`:`<i class="w3chip" style="--c:#94a3b8">Merken …</i>`)+`<i class="w3chip" style="--c:#ef4444">${'❤️'.repeat(MAXS-strikes)}${'🖤'.repeat(strikes)}</i>`,true);
+  const flash=(p)=>{p.glow=.45;tone(FQ[p.i],.28,'square',.07)};
+  const startRound=()=>{seq=Array.from({length:LEN[rnd]},()=>Math.floor(Math.random()*4));idx=0;showI=0;state='show';tm=.7;chips()};
+  const fail=()=>{strikes++;SFX.err();c.shake(.25);vib([40,30,40]);if(strikes>=MAXS)return end();c.say('Falsch – nochmal ansehen');idx=0;showI=0;state='show';tm=1.0;chips()};
+  const end=()=>{if(over)return;over=true;state='done';const sc=clamp((done-strikes*.2)/ROUNDS);c.say(done>=ROUNDS?'Alles verlötet! 🔧':done+' von '+ROUNDS+' Runden');setTimeout(()=>c.finish(sc),800)};
+  startRound();
+  return {
+    update(dt){
+      if(over)return;t+=dt;c.time(1-done/ROUNDS);
+      for(const p of pads){p.glow=Math.max(0,p.glow-dt);p.m.material.emissive.set(p.glow>0?COL[p.i]:'#000000');p.m.material.emissiveIntensity=p.glow>0?1:0;p.m.position.y=1.35+(p.glow>0?.12:0)}
+      if(state==='show'){tm-=dt;if(tm<=0){if(showI<seq.length){flash(pads[seq[showI]]);iron.position.set(pads[seq[showI]].x,2.2,Z+pads[seq[showI]].z);showI++;tm=.6}else{state='input';chips();c.say('Jetzt du!')}}}},
+    down(e){
+      if(over||state!=='input')return;let hit=null,bd=70;
+      for(const p of pads){const [x,y]=c.project(world(p.x,1.5,Z+p.z)),d=Math.hypot(x-e.clientX,y-e.clientY);if(d<bd){bd=d;hit=p}}
+      if(!hit)return;c.swing();flash(hit);iron.position.set(hit.x,2.2,Z+hit.z);c.burst(world(hit.x,1.7,Z+hit.z),COL[hit.i],5,3);
+      if(hit.i===seq[idx]){idx++;SFX.good();if(idx>=seq.length){done++;rnd++;SFX.perfect();c.pop('✓ Runde '+done,world(0,2.6,Z),'#34d399');if(rnd>=ROUNDS)return end();state='pause';tm=1;setTimeout(()=>{if(!over)startRound()},900)}else chips()}
+      else fail()},
+    info:()=>({state,seq,idx,done,strikes,pads:pads.map(p=>c.project(world(p.x,1.5,Z+p.z))),over}),
+    dispose(){}
+  }}
+
 // Welches 3D-Spiel eine Station nutzt: [Spiel, Titel, Thema]. Die Themen färben und benennen dasselbe Spiel passend zur Station.
 const HOW={
+  stir:w=>`Wisch mit dem Finger <b>im Kreis</b> um den Kessel. Halte das Tempo im <b>grünen Bereich</b>: zu langsam gibt Klumpen, zu schnell spritzt es.`,
+  weave:w=>`In jeder Fadenreihe fehlt ein Faden. Tippe die <b>Spur mit der Lücke</b>, bevor die Reihe den Webkamm erreicht. Falsche Spur = Fehler. 12 Reihen.`,
+  cut:w=>`Setz den Finger links auf die <b>Schere</b> und zieh sie entlang der gestrichelten Linie nach rechts. Je genauer, desto sauberer der Schnitt. 3 Schnitte.`,
+  solder:w=>`Die Lötpunkte leuchten in einer <b>Reihenfolge</b> auf. Merk sie dir und tippe sie danach in derselben Reihenfolge an. 4 Runden, 3 Fehler erlaubt.`,
   mine:w=>`Im Fels tauchen ${w||'Brocken'} auf. Tippe sie an, bevor sie verschwinden. <b>Gold</b> zählt dreifach, Finger weg vom <b>roten Dynamit</b>!`,
   pour:w=>`Die ${w||'Formen'} fahren unter dem Kessel durch. <b>Halte gedrückt</b>, um einzufüllen, und fülle jede bis zur grünen Marke. Nichts verschütten, nichts überlaufen lassen!`,
   stack:w=>`Die Lage pendelt am Kran. <b>Tippe</b>, um sie abzulegen. Was übersteht, bricht ab – genau getroffen bleibt sie ganz. 8 Lagen.`,
   assemble:w=>`Oben steht der Bauplan. Tippe auf dem Band immer das Teil an, das gerade <b>hervorgehoben</b> ist. Falsche Teile und Schrott kosten Punkte.`,
   bake:w=>`Drei Öfen garen gleichzeitig. Tippe einen Ofen an, wenn sein Balken im <b>grünen Bereich</b> steht. Zu früh ist ${w||'es'} roh, zu spät verbrannt. 9 Stück.`
 };
-const FN={mine:gMine,pour:gPour,stack:gStack,assemble:gAssemble,bake:gBake};
+const FN={mine:gMine,pour:gPour,stack:gStack,assemble:gAssemble,bake:gBake,stir:gStir,weave:gWeave,cut:gCut,solder:gSolder};
 const SET={
   erz:['mine','Erzrausch',{w:'Erzadern'}],kohle:['mine','Kohlerausch',{w:'Kohlebrocken'}],lehm:['mine','Lehmgrube',{w:'Lehmklumpen'}],
   sand:['mine','Sandgrube',{w:'Sandnester',ore:'#f6e7a8'}],kupfer:['mine','Kupferrausch',{w:'Kupferadern',ore:'#e8833a'}],
   stahl:['pour','Abstich',{}],oel:['pour','Öl abfüllen',{w:'Fässer',liq:'#3f3f46'}],
   ziegel:['stack','Ziegelkran',{}],maschine:['assemble','Fließband',{}],
-  glas:['pour','Glasguss',{liq:'#7dd3fc'}],kunststoff:['pour','Spritzguss',{liq:'#a78bfa'}],gehaeuse:['pour','Gehäuseguss',{liq:'#f472b6'}],akku:['pour','Elektrolyt einfüllen',{w:'Zellen',liq:'#4ade80'}],
+  glas:['pour','Glasguss',{liq:'#7dd3fc'}],kunststoff:['stir','Kunststoff mischen',{liq:'#a78bfa'}],gehaeuse:['pour','Gehäuseguss',{liq:'#f472b6'}],akku:['pour','Elektrolyt einfüllen',{w:'Zellen',liq:'#4ade80'}],
   draht:['bake','Glühofen',{w:'der Draht',item:'#e8833a'}],
-  platine:['assemble','Bestückung',{names:['Chip','Spule','Platte','Stift']}],display:['assemble','Display-Montage',{names:['Linse','Leiter','Scheibe','Klammer']}],handy:['assemble','Endmontage',{names:['Kamera','Akku','Display','Schraube']}],
-  muehle:['stack','Mehlsäcke stapeln',{cols:['#f5f0dc','#e2d8b8']}],baeckerei:['bake','Backstube',{w:'das Brot',item:'#d9a15c'}],kaeserei:['pour','Käse formen',{liq:'#fde68a'}],
+  platine:['solder','Platine löten',{}],display:['assemble','Display-Montage',{names:['Linse','Leiter','Scheibe','Klammer']}],handy:['assemble','Endmontage',{names:['Kamera','Akku','Display','Schraube']}],
+  muehle:['stack','Mehlsäcke stapeln',{cols:['#f5f0dc','#e2d8b8']}],baeckerei:['bake','Backstube',{w:'das Brot',item:'#d9a15c'}],kaeserei:['stir','Käsekessel rühren',{liq:'#fde68a'}],
   chipsfabrik:['bake','Fritteuse',{w:'die Chips',item:'#f2c94c'}],raeucherei:['bake','Räucherofen',{w:'der Lachs',item:'#f08a6b'}],
-  kelterei:['pour','Wein abfüllen',{w:'Fässer',liq:'#7c3aed'}],brauerei:['pour','Bier abfüllen',{w:'Fässer',liq:'#f59e0b'}],
-  weberei:['stack','Stoffbahnen legen',{cols:['#93c5fd','#f9a8d4']}],schneiderei:['assemble','Zuschnitt',{names:['Knopf','Garn','Stoff','Nadel']}],
-  brennerei:['pour','Schnaps abfüllen',{w:'Flaschen',liq:'#e5e7eb'}],faelscher:['assemble','Uhrwerk',{names:['Zahnrad','Feder','Glas','Schraube']}],kopierer:['stack','Rohlinge stapeln',{cols:['#94a3b8','#cbd5e1']}],
+  kelterei:['pour','Wein abfüllen',{w:'Fässer',liq:'#7c3aed'}],brauerei:['stir','Maische rühren',{liq:'#f59e0b'}],
+  weberei:['weave','Weben',{}],schneiderei:['cut','Zuschnitt',{}],
+  brennerei:['stir','Maische rühren',{liq:'#d9f99d'}],faelscher:['solder','Uhrwerk löten',{}],kopierer:['stack','Rohlinge stapeln',{cols:['#94a3b8','#cbd5e1']}],
   r_kamin:['stack','Kamin mauern',{cols:['#8b4a2b','#a5543a']}],r_dampfmaschine:['assemble','Dampfmaschine bauen',{names:['Schwungrad','Kolben','Kessel','Ventil']}],r_glasfaser:['pour','Glasfaser ziehen',{liq:'#67e8f9'}],
   r_solar:['stack','Module stapeln',{cols:['#1d4ed8','#3b82f6']}],r_ebike:['assemble','E-Bike bauen',{names:['Rad','Rahmen','Akku','Schraube']}],r_smartwatch:['assemble','Uhr bauen',{names:['Krone','Band','Display','Schraube']}],
   r_drohne:['assemble','Drohne bauen',{names:['Rotor','Arm','Platine','Schraube']}],r_roboter:['assemble','Roboter bauen',{names:['Gelenk','Arm','Platte','Schraube']}]
@@ -336,7 +487,7 @@ export function play3d(env,s,st,custom){return new Promise(res=>{
     update(dt){
       for(const k of chunks){if(!k.m.visible)continue;k.l-=dt;k.v.y-=16*dt;k.m.position.addScaledVector(k.v,dt);k.m.rotation.x+=dt*8;if(k.m.position.y<.1){k.m.position.y=.1;k.v.multiplyScalar(.4);k.v.y=Math.abs(k.v.y)*.5}if(k.l<=0)k.m.visible=false}
       if(this.running)game.update(dt)},
-    down(e){if(this.running&&game.down)game.down(e)},up(e){if(this.running&&game.up)game.up(e)}};
+    down(e){if(this.running&&game.down)game.down(e)},move(e){if(this.running&&game.move)game.move(e)},up(e){if(this.running&&game.up)game.up(e)}};
   const game=d.f(c);
   env.setGame(G3);
   function close(sc){

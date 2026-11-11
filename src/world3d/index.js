@@ -2,7 +2,7 @@
 import {NeutralToneMapping,CircleGeometry,CylinderGeometry,BackSide,Box3,Ray,Vector3,CanvasTexture,Color,DirectionalLight,DoubleSide,Fog,Group,HemisphereLight,InstancedMesh,MathUtils,Mesh,MeshBasicMaterial,MeshLambertMaterial,
   Object3D,PCFSoftShadowMap,PerspectiveCamera,PlaneGeometry,PointLight,RepeatWrapping,RingGeometry,Scene,SphereGeometry,Sprite,SpriteMaterial,SRGBColorSpace,WebGLRenderer,Float32BufferAttribute} from 'three';
 import {CROPS,G,ST,UNL} from '../data.js';
-import {go} from '../app.js';
+import {go,render} from '../app.js';
 import {goFish,harvest,pickCrop,waterPlot} from '../features/farm.js';
 import {openLab} from '../features/lab.js';
 import {applyResult,canStart,runStation} from '../features/workshop.js';
@@ -215,6 +215,7 @@ export async function open3d(){
     else if(camDrag==null)camDrag={id:e.pointerId,x:e.clientX,y:e.clientY};try{area.setPointerCapture(e.pointerId)}catch(_){}});
   area.addEventListener('pointermove',e=>{
     if(driveObj){driveObj.move(e);return}
+    if(game){game.move&&game.move(e);return}
     if(e.pointerId===stickId){let dx=e.clientX-+stickEl.dataset.ox,dy=e.clientY-+stickEl.dataset.oy;const l=Math.hypot(dx,dy),m=52;if(l>m){dx*=m/l;dy*=m/l}stick={x:dx/m,y:dy/m};knob.style.transform=`translate(${dx}px,${dy}px)`}
     else if(camDrag&&e.pointerId===camDrag.id){C.yaw-=(e.clientX-camDrag.x)*.008;C.pitch=MathUtils.clamp(C.pitch+(e.clientY-camDrag.y)*.005,.14,1.1);camDrag.x=e.clientX;camDrag.y=e.clientY}});
   const up=e=>{if(driveObj)driveObj.up(e);if(game)game.up(e);if(e.pointerId===stickId){stickId=null;stick={x:0,y:0};knob.style.transform='';stickEl.style.opacity=0}if(camDrag&&e.pointerId===camDrag.id)camDrag=null};
