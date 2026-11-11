@@ -82,7 +82,7 @@ let fail=0;const ok=(c,m)=>{console.log((c?'  ok  ':'  FEHLER ')+m);if(!c)fail++
   await p.evaluate(()=>{S.xp=xpFor(2)});await go('p_shop');await p.waitForFunction(()=>/Level 3/.test(document.getElementById('w3b').textContent),null,{timeout:15000});
   ok(await p.evaluate(()=>document.getElementById('w3b').disabled),'Laden unter Level 3 gesperrt: '+await p.textContent('#w3b'));
   await p.evaluate(()=>{S.xp=xpFor(5);render()});await p.evaluate(()=>document.querySelector('.lvlup')?.remove());
-  await p.waitForFunction(()=>!document.getElementById('w3b').disabled,null,{timeout:15000});await p.click('#w3b');await p.waitForFunction(()=>__w3dState().sheet,null,{timeout:5000});
+  await p.waitForFunction(()=>!document.getElementById('w3b').disabled,null,{timeout:15000});await p.waitForTimeout(800);await p.evaluate(()=>{document.querySelector('.lvlup')?.remove();closeOv()});await p.click('#w3b');await p.waitForFunction(()=>__w3dState().sheet,null,{timeout:5000});
   ok(await p.evaluate(()=>cur==='shop'&&document.body.classList.contains('w3sheet')&&/Laden/.test(document.getElementById('s-shop').textContent)),'Laden öffnet als Blatt über der Welt');
   const zb=await p.evaluate(()=>__w3dState().z);await p.keyboard.down('KeyW');await p.waitForTimeout(600);await p.keyboard.up('KeyW');
   ok(Math.abs(await p.evaluate(()=>__w3dState().z)-zb)<.01,'bei offenem Blatt läuft die Figur nicht');
