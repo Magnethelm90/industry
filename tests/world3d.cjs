@@ -151,7 +151,7 @@ let fail=0;const ok=(c,m)=>{console.log((c?'  ok  ':'  FEHLER ')+m);if(!c)fail++
   await result('Endmontage','handy',2);
   // Angeln am Steg in 3D
   await p.evaluate(()=>{S.stock.hering=0;S.stock.lachs=0;S.stock.thunfisch=0});
-  await go('p_fish');await p.waitForFunction(()=>!document.getElementById('w3b').disabled&&/Angeln/.test(document.getElementById('w3b').textContent),null,{timeout:15000});await p.click('#w3b');await p.waitForSelector('#w3go',{timeout:10000});
+  await go('p_fish');await p.waitForFunction(()=>!document.getElementById('w3b').disabled&&/Angeln/.test(document.getElementById('w3b').textContent),null,{timeout:15000});await p.evaluate(()=>{document.querySelector('.rescard')?.remove();closeOv()});await p.click('#w3b');await p.waitForSelector('#w3go',{timeout:10000});
   await p.click('#w3go');await p.waitForFunction(()=>__w3dGame().running,null,{timeout:30000});
   {let down=false;for(let k=0;k<40000;k++){const g=await gi();if(!g||g.ended||g.info.over)break;const i=g.info;
       if(i.phase==='bite'){await p.mouse.move(195,500);await p.mouse.down();down=true;await p.waitForTimeout(80)}
@@ -160,7 +160,7 @@ let fail=0;const ok=(c,m)=>{console.log((c?'  ok  ':'  FEHLER ')+m);if(!c)fail++
       await p.waitForTimeout(18)}
     if(down)await p.mouse.up()}
   await p.waitForFunction(()=>!document.querySelector('.w3g'),null,{timeout:60000});
-  ok(await p.evaluate(()=>S.stock.hering+S.stock.lachs+S.stock.thunfisch>0&&S.st.fish>0),'Angeln in 3D: Fang im Lager ('+await p.evaluate(()=>S.stock.hering+'/'+S.stock.lachs+'/'+S.stock.thunfisch)+'), Fangzähler erhöht');
+  ok(await p.evaluate(()=>S.stock.hering+S.stock.lachs+S.stock.thunfisch>0&&S.st.fish>0),'Angeln in 3D ['+await p.evaluate(()=>JSON.stringify({ov:!!document.getElementById('ov')?.children.length,g:window.__w3dGame&&__w3dGame()}))+'] Fang im Lager ('+await p.evaluate(()=>S.stock.hering+'/'+S.stock.lachs+'/'+S.stock.thunfisch)+'), Fangzähler erhöht');
   // Markt
   await p.evaluate(()=>{S.stock.erz=5;S.stock.stahl=2;S.stock.kohle=0;S.stock.lehm=0;S.stock.ziegel=0;S.stock.maschine=0});await go('markt');await p.waitForFunction(()=>/verkaufen/.test(document.getElementById('w3b').textContent),null,{timeout:15000});
   const m0=await p.evaluate(()=>S.money),x0=await p.evaluate(()=>S.xp),s0=await p.evaluate(()=>S.st.sold);

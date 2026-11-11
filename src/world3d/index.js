@@ -396,7 +396,7 @@ export async function open3d(){
     if(game)nn=near;
     if(target&&!game&&Math.hypot(P.x-target.x,P.z-target.z)<(target.rad||2.6)){toast('📍 '+target.s.n+' erreicht');setTarget(null)}
     if(target){beacon.visible=!game&&Math.hypot(P.x-target.x,P.z-target.z)>12;beacon.material.opacity=.26+.1*Math.sin(tm*4)}
-    if((mapT-=dt)<=0){mapT=.12;drawMap()}
+    if(!game&&(mapT-=dt)<=0){mapT=.12;drawMap()}
     if(nn!==near){near=nn;if(near)SFX.tick();refreshAct()}
     // Rauch, Staub, Glut, Wolken
     sm.forEach(s=>{const u=s.userData;u.t=(u.t+dt*.16)%1;const t=u.t;s.position.set(chim[0]+Math.sin(t*5+u.t*3)*.5+t*2.2,chim[1]+t*9,chim[2]-t*.8);s.scale.setScalar(1.4+t*4.5);s.material.opacity=Math.sin(Math.PI*Math.min(1,t*1.15))*.42});
