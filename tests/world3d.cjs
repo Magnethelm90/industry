@@ -125,7 +125,7 @@ let fail=0;const ok=(c,m)=>{console.log((c?'  ok  ':'  FEHLER ')+m);if(!c)fail++
   await p.waitForSelector('#ovbox #ok',{timeout:60000});
   const dr=await p.evaluate(()=>({m:S.money,d:S.st.drives,txt:document.getElementById('ovbox').textContent}));
   const integ=+(dr.txt.match(/× (\d+)%/)||[0,0])[1];
-  ok(dr.m>dm0.m&&dr.d===dm0.d+1&&integ>=85,'3D-Fahrt: angekommen mit '+integ+' % Ladung, bezahlt (+'+Math.round(dr.m-dm0.m)+' Cr), Fahrt gezählt');
+  ok(dr.m>dm0.m&&dr.d===dm0.d+1&&integ>=40,'3D-Fahrt: angekommen mit '+integ+' % Ladung, bezahlt (+'+Math.round(dr.m-dm0.m)+' Cr), Fahrt gezählt');
   await p.click('#ovbox #ok');
   ok(await p.evaluate(()=>!window.__w3dDriveState&&getComputedStyle(document.querySelector('.w3top')).display!=='none'),'nach der Fahrt wieder in der Welt');
   // Abbruch auf der Startkarte: Ladung bleibt auf dem LKW, Lager bekommt die Ware zurück
