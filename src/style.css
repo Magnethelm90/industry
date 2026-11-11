@@ -367,7 +367,7 @@ body[data-time=night] .stage.lake::before{content:"";position:absolute;inset:0 0
 #w3d{position:fixed;inset:0;z-index:30;background:#000;touch-action:none;user-select:none;-webkit-user-select:none}
 #w3d canvas{width:100%;max-width:none;height:100%;aspect-ratio:auto;margin:0;border-radius:0;box-shadow:none;display:block}
 .w3act[hidden]{display:none}
-.w3top{position:absolute;left:0;right:0;top:0;display:flex;gap:10px;align-items:center;padding:max(10px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) 0 max(12px,env(safe-area-inset-left));pointer-events:none}
+.w3top{position:absolute;left:0;right:118px;top:0;display:flex;gap:10px;align-items:center;padding:max(10px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) 0 max(12px,env(safe-area-inset-left));pointer-events:none}
 .w3top .btn{pointer-events:auto}
 .w3hud{display:flex;flex-direction:column;gap:4px;background:rgba(10,16,40,.72);backdrop-filter:blur(6px);padding:7px 12px;border-radius:16px;border:1px solid rgba(255,255,255,.12);font-size:13px;color:#fff;pointer-events:none}
 .w3r{display:flex;align-items:center;gap:6px 10px;flex-wrap:wrap}.w3hud b{font-size:17px;color:#fbbf24}.w3hud span{color:#cbd5e1;font-weight:700}.w3c{display:inline-flex;align-items:center;gap:3px}
@@ -473,3 +473,15 @@ body.w3sheet main{position:fixed;left:0;right:0;top:16vh;bottom:0;z-index:41;bac
 .w3sx{position:fixed;top:calc(16vh - 46px);right:12px;z-index:42;flex:none;padding:9px 14px}
 .d3flash{position:absolute;inset:0;background:rgba(255,40,60,.4);opacity:0;pointer-events:none}
 .d3flash.on{animation:d3f .45s ease-out}@keyframes d3f{from{opacity:1}to{opacity:0}}
+
+/* 3D: Karte und Zielauswahl */
+.w3map{position:absolute;top:max(10px,env(safe-area-inset-top));right:max(12px,env(safe-area-inset-right));width:108px;padding:0;border:2px solid rgba(255,255,255,.85);border-radius:18px;background:rgba(10,16,40,.78);overflow:hidden;cursor:pointer;color:#fff;font:700 11px system-ui,sans-serif;box-shadow:0 4px 14px rgba(0,0,0,.35)}
+.w3map canvas{display:block;width:100%;height:auto;aspect-ratio:1}
+.w3map span{display:block;padding:3px 4px 4px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.w3dest{position:absolute;left:12px;right:12px;bottom:max(16px,env(safe-area-inset-bottom));max-width:440px;margin:0 auto;max-height:62vh;display:flex;flex-direction:column;background:rgba(255,255,255,.97);color:#0f172a;border-radius:22px;box-shadow:0 10px 40px rgba(0,0,0,.45);overflow:hidden;z-index:6}
+.w3dest[hidden]{display:none}
+.w3dh .btn{width:auto;flex:none;padding:6px 14px}.w3dh{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid #e2e8f0}.w3dh b{flex:1;font-size:17px}
+.w3dr{overflow-y:auto;padding:6px;-webkit-overflow-scrolling:touch}
+.w3di{display:flex;width:100%;align-items:center;justify-content:space-between;gap:10px;text-align:left;background:#f1f5f9;color:#0f172a;border:0;border-radius:14px;padding:9px 12px;margin:0 0 5px;font:inherit;cursor:pointer}
+.w3di small{color:#475569;font-weight:600}.w3di em{font-style:normal;font-weight:800;color:#7c3aed}.w3di.lk{opacity:.55}
+#w3d.ingame .w3map,#w3d.ingame .w3dest{display:none}

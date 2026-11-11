@@ -42,6 +42,15 @@ let fail=0;const ok=(c,m)=>{console.log((c?'  ok  ':'  FEHLER ')+m);if(!c)fail++
   await go('lehm');await p.waitForFunction(()=>/Lehm/.test(document.getElementById('w3b').textContent),null,{timeout:15000});ok(true,'Lehmgrube erreichbar');
   const tx0=await p.evaluate(()=>__w3dState().truck);await p.waitForFunction(x=>__w3dState().truck>x+1,tx0,{timeout:15000}).catch(()=>{});
   ok(await p.evaluate(()=>__w3dState().truck)>tx0+1,'LKW fährt auf der Straße');
+  // Karte und Ziel
+  await p.click('#w3m');await p.waitForSelector('#w3dl:not([hidden]) .w3di');
+  ok(await p.evaluate(()=>document.querySelectorAll('#w3dl .w3di').length)>20,'Zielliste zeigt viele Orte');
+  await p.evaluate(()=>[...document.querySelectorAll('#w3dl .w3di')].find(b=>/Markt/.test(b.textContent)).click());
+  ok(await p.evaluate(()=>__w3dState().target)==='markt','Ziel Markt gesetzt');
+  await p.waitForFunction(()=>/Markt · \d+ m/.test(document.getElementById('w3mt').textContent),null,{timeout:5000});
+  await p.evaluate(()=>{const z=__w3dState().zones.find(z=>z.id==='markt');__w3dTeleport(z.x,z.z)});
+  await p.waitForFunction(()=>__w3dState().target===null,null,{timeout:5000});
+  ok(true,'Ziel wird bei Ankunft gelöscht');
   // 3D-Minispiele: Start über den Stationsknopf, Startkarte mit „Los!“, Bots spielen mit echten Klicks
   const begin=async id=>{await go(id);await p.waitForFunction(()=>!document.getElementById('w3b').disabled,null,{timeout:20000});await p.click('#w3b');await p.waitForSelector('#w3go',{timeout:10000});
     const before=await p.evaluate(()=>__w3dGame().running);await p.click('#w3go');await p.waitForFunction(()=>__w3dGame().running,null,{timeout:30000});return before};

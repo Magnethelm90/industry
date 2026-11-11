@@ -1,5 +1,5 @@
 /* 3D-Modus: begehbare Welt (Three.js, Modelle aus Blender). Nutzt denselben Spielstand und dieselben Minispiele wie das 2D-Spiel. */
-import {NeutralToneMapping,CircleGeometry,BackSide,Box3,Ray,Vector3,CanvasTexture,Color,DirectionalLight,DoubleSide,Fog,Group,HemisphereLight,InstancedMesh,MathUtils,Mesh,MeshBasicMaterial,MeshLambertMaterial,
+import {NeutralToneMapping,CircleGeometry,CylinderGeometry,BackSide,Box3,Ray,Vector3,CanvasTexture,Color,DirectionalLight,DoubleSide,Fog,Group,HemisphereLight,InstancedMesh,MathUtils,Mesh,MeshBasicMaterial,MeshLambertMaterial,
   Object3D,PCFSoftShadowMap,PerspectiveCamera,PlaneGeometry,PointLight,RepeatWrapping,RingGeometry,Scene,SphereGeometry,Sprite,SpriteMaterial,SRGBColorSpace,WebGLRenderer,Float32BufferAttribute} from 'three';
 import {CROPS,G,ST,UNL} from '../data.js';
 import {go} from '../app.js';
@@ -104,6 +104,8 @@ export async function open3d(){
   if(window.__w3d)return;
   const root=document.createElement('div');root.id='w3d';
   root.innerHTML=`<canvas id="w3c"></canvas><div class="w3load" id="w3l"><b>3D-Welt wird aufgebaut …</b></div><div class="w3vig"></div>
+    <button class="w3map" id="w3m" aria-label="Karte und Ziel wählen"><canvas id="w3mc" width="240" height="240"></canvas><span id="w3mt">📍 Ziel wählen</span></button>
+    <div class="w3dest" id="w3dl" hidden></div>
     <div class="w3top"><button class="btn sm" id="w3x">📋 Firma</button><div class="w3hud" id="w3h"></div></div>
     <div class="w3act" id="w3a" hidden><button class="btn a big" id="w3b"></button></div>
     <div class="w3stick" id="w3s"><i id="w3k"></i></div><div class="w3hint" id="w3t">Links: Laufen · Rechts wischen: Kamera</div>`;
@@ -202,11 +204,11 @@ export async function open3d(){
   cam.position.set(P.x+Math.sin(C.yaw)*Math.cos(C.pitch)*C.dist,1.6+Math.sin(C.pitch)*C.dist,P.z+Math.cos(C.yaw)*Math.cos(C.pitch)*C.dist);
   const keys={};let stick={x:0,y:0},camDrag=null,stickId=null,near=null,tm=0,dustT=0,fps=60,slow=0,game=null,swingT=0,driveObj=null;
   const look=new Vector3(0,1.5,7);
-  const env={renderer,M,setDrive:d=>{driveObj=d;if(!d){hud();refreshLabels()}},scene,cam,root,hero,setGame:g=>{game=g;root.classList.toggle('ingame',!!g);hideInGame.forEach(o=>o.visible=!g);zones.forEach(z=>{z.ring.visible=z.disc.visible=!g&&!hidden(z.s)});if(!g){cam.userData.d=null}},swing:()=>{swingT=.28}};
+  const env={renderer,M,setDrive:d=>{driveObj=d;if(!d){hud();refreshLabels()}},scene,cam,root,hero,setGame:g=>{game=g;beacon.visible=!!target&&!g;root.classList.toggle('ingame',!!g);hideInGame.forEach(o=>o.visible=!g);zones.forEach(z=>{z.ring.visible=z.disc.visible=!g&&!hidden(z.s)});if(!g){cam.userData.d=null}},swing:()=>{swingT=.28}};
   const stickEl=$('w3s'),knob=$('w3k');
   const key=e=>{if(OV||sheetOn)return;keys[e.code]=e.type==='keydown'};addEventListener('keydown',key);addEventListener('keyup',key);
   const area=root;
-  area.addEventListener('pointerdown',e=>{if(e.target.closest('button')||OV||sheetOn)return;
+  area.addEventListener('pointerdown',e=>{if(e.target.closest('button,.w3dest')||OV||sheetOn)return;
     if(driveObj){driveObj.down(e);return}
     if(game){game.down(e);return}
     if(e.clientX<innerWidth*.45&&stickId==null){stickId=e.pointerId;stickEl.dataset.ox=e.clientX;stickEl.dataset.oy=e.clientY;stickEl.style.cssText=`left:${e.clientX-60}px;top:${e.clientY-60}px;opacity:1`;stick={x:0,y:0}}
@@ -273,6 +275,35 @@ export async function open3d(){
       const sc=await play3d(env,s,st);if(!alive)return;if(sc!=null)applyResult(st,sc)}
     else await runStation(st);
     hud();refreshAct();refreshLabels()};
+  // Karte und Ziel: Tippen auf die Karte öffnet die Liste der Orte; das Ziel zeigt Pfeil, Entfernung und einen Leuchtstrahl in der Welt
+  let target=null;
+  const beacon=new Mesh(new CylinderGeometry(.32,.32,70,12,1,true),new MeshBasicMaterial({color:'#f0abfc',transparent:true,opacity:.4,depthWrite:false,fog:false,side:DoubleSide}));beacon.position.y=35;beacon.visible=false;scene.add(beacon);
+  const mc=$('w3mc'),mx=mc.getContext('2d'),MS=240/150,mp=(x,z)=>[120+x*MS,120+z*MS];
+  const setTarget=z=>{target=z||null;beacon.visible=!!target&&!game;if(target)beacon.position.set(target.x,35,target.z);drawMap()};
+  const hubName=s=>{const h=s.hubOf&&STATIONS.find(x=>x.id===s.hubOf);return h?h.n:''};
+  const dests=()=>zones.filter(z=>z.s.n&&!hidden(z.s));
+  const drawMap=()=>{
+    mx.clearRect(0,0,240,240);mx.fillStyle='rgba(116,198,83,.92)';mx.beginPath();mx.roundRect(0,0,240,240,26);mx.fill();
+    mx.fillStyle='rgba(230,200,143,.95)';for(const [x,z,w,d] of [[0,-3,5.2,46],[0,-17.5,76,4],[-9,-3,20,4.2],[9,-3,20,4.2],[34,24.5,50,4.6]]){const [a,b]=mp(x-w/2,z-d/2);mx.fillRect(a,b,w*MS,d*MS)}
+    mx.fillStyle='#4cc3f0';{const [a,b]=mp(38,8);mx.beginPath();mx.arc(a,b,6.5*MS,0,7);mx.fill()}
+    for(const s of STATIONS){const [a,b]=mp(s.at[0],s.at[1]);mx.fillStyle=s.hub?'#6366f1':lvLock(s)||locked(s)?'#94a3b8':stateOf(s)[1]?'#16a34a':'#f59e0b';
+      mx.strokeStyle='#fff';mx.lineWidth=2;mx.beginPath();if(s.hub)mx.rect(a-6,b-6,12,12);else mx.arc(a,b,5,0,7);mx.fill();mx.stroke()}
+    for(const r of RINGS){if(hidden(r))continue;const [a,b]=mp(r.ring[0],r.ring[1]);mx.fillStyle=lvLock(r)?'#94a3b8':stateOf(r)[1]?'#16a34a':'#f59e0b';mx.beginPath();mx.arc(a,b,2.6,0,7);mx.fill()}
+    if(target){const [a,b]=mp(target.x,target.z),[c,d]=mp(P.x,P.z),k=.5+.5*Math.sin(tm*5);
+      mx.setLineDash([6,5]);mx.strokeStyle='#d946ef';mx.lineWidth=3;mx.beginPath();mx.moveTo(c,d);mx.lineTo(a,b);mx.stroke();mx.setLineDash([]);
+      mx.fillStyle='rgba(217,70,239,.35)';mx.beginPath();mx.arc(a,b,9+k*7,0,7);mx.fill();mx.fillStyle='#d946ef';mx.strokeStyle='#fff';mx.lineWidth=3;mx.beginPath();mx.arc(a,b,6,0,7);mx.fill();mx.stroke()}
+    {const [a,b]=mp(P.x,P.z);mx.save();mx.translate(a,b);mx.rotate(Math.PI-P.yaw);mx.fillStyle='#ef4444';mx.strokeStyle='#fff';mx.lineWidth=3;mx.beginPath();mx.moveTo(0,-11);mx.lineTo(8,8);mx.lineTo(0,4);mx.lineTo(-8,8);mx.closePath();mx.fill();mx.stroke();mx.restore()}
+    const t=$('w3mt');
+    if(target){const dx=target.x-P.x,dz=target.z-P.z,sy=Math.sin(C.yaw),cy=Math.cos(C.yaw),a=Math.atan2(dx*cy-dz*sy,-dx*sy-dz*cy);
+      t.innerHTML=`<i style="display:inline-block;transform:rotate(${a}rad)">⬆️</i> ${target.s.n} · ${Math.round(Math.hypot(dx,dz))} m`}
+    else t.textContent='📍 Ziel wählen'};
+  const closeDest=()=>{$('w3dl').hidden=true};
+  const openDest=()=>{const L=$('w3dl'),rows=dests().map(z=>{const [sub,ok]=stateOf(z.s),lk=!!(lvLock(z.s)||locked(z.s));return {z,sub,ok,lk,d:Math.hypot(P.x-z.x,P.z-z.z)}}).sort((a,b)=>a.lk-b.lk||a.d-b.d);
+    L.innerHTML=`<div class="w3dh"><b>Wohin?</b>${target?'<button class="btn sm" data-off="1">Ziel aus</button>':''}<button class="btn sm" data-x="1">✕</button></div><div class="w3dr">`+rows.map((r,i)=>`<button class="w3di${r.lk?' lk':''}" data-i="${i}"><span><b>${r.z.s.n}</b>${hubName(r.z.s)?' <small>('+hubName(r.z.s)+')</small>':''}<br><small>${r.sub}</small></span><em>${Math.round(r.d)} m</em></button>`).join('')+'</div>';
+    L.hidden=false;
+    L.onclick=e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.x){closeDest();return}if(b.dataset.off){setTarget(null);closeDest();return}
+      const r=rows[+b.dataset.i];if(r){setTarget(r.z);SFX.tick();closeDest()}}};
+  $('w3m').onclick=()=>{if(OV||sheetOn||game)return;$('w3dl').hidden?openDest():closeDest()};
   // Beete: Erde, neun Pflanzen je Beet, Zeichen darüber. Wächst sichtbar mit dem Fortschritt.
   const plots=[],emo={};
   const emoji=ch=>{if(emo[ch])return emo[ch];const c=document.createElement('canvas');c.width=c.height=96;const x=c.getContext('2d');x.font='72px system-ui,sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText(ch,48,52);const tx=new CanvasTexture(c);tx.colorSpace=SRGBColorSpace;return emo[ch]=tx};
@@ -299,7 +330,7 @@ export async function open3d(){
   $('w3x').onclick=exit;
   // Die Lieferung (Logistik) fährt in 3D, solange die Welt offen ist
   window.__w3dDrive=(route,load)=>{closeSheet();return drive3d(env,route,load)};
-  window.__w3dState=()=>({x:P.x,z:P.z,sheet:sheetOn,plots:plots.length,truck:T.x,zones:zones.map(z=>({id:z.s.id,x:z.x,z:z.z,hidden:hidden(z.s)})),near:near&&near.s.id,alive,calls:renderer.info.render.calls,tri:renderer.info.render.triangles,pr});
+  window.__w3dState=()=>({x:P.x,z:P.z,sheet:sheetOn,plots:plots.length,truck:T.x,zones:zones.map(z=>({id:z.s.id,x:z.x,z:z.z,hidden:hidden(z.s)})),near:near&&near.s.id,target:target&&target.s.id,alive,calls:renderer.info.render.calls,tri:renderer.info.render.triangles,pr});
   window.__w3dTeleport=(x,z)=>{P.x=x;P.z=z};
   hud();refreshLabels();updatePlots();
   // Kollision (Kreis gegen Kreise und Kästen)
@@ -309,7 +340,7 @@ export async function open3d(){
     else{const dx=P.x-c.x,dz=P.z-c.z,ox=c.hw+R-Math.abs(dx),oz=c.hd+R-Math.abs(dz);if(ox>0&&oz>0){if(ox<oz)P.x+=Math.sign(dx||1)*ox;else P.z+=Math.sign(dz||1)*oz}}};
   const inside=(c,x,z,y)=>y<c.h&&(c.r!=null?Math.hypot(x-c.x,z-c.z)<c.r:Math.abs(x-c.x)<c.hw&&Math.abs(z-c.z)<c.hd);
   const allCols=[...STATIONS.flatMap(s=>s.cw),...EXTRA];
-  let last=performance.now(),hudT=0;const SPEED=6.4;
+  let last=performance.now(),hudT=0,mapT=0;const SPEED=6.4;
   (function frame(now){
     if(!alive)return;requestAnimationFrame(frame);
     const dt=Math.min(.05,(now-last)/1000);last=now;tm+=dt;
@@ -363,6 +394,9 @@ export async function open3d(){
       if(best&&!game)best.lb.material.opacity=MathUtils.clamp((bd-.2)/.8,0,1)*.0+1}
     for(const s of STATIONS){const d=Math.hypot(P.x-s.at[0],P.z-s.at[1]);s.lb.material.opacity=game?0:MathUtils.clamp((d-9)/6,0,1)*MathUtils.clamp(1.3-d/70,.35,1)}
     if(game)nn=near;
+    if(target&&!game&&Math.hypot(P.x-target.x,P.z-target.z)<(target.rad||2.6)){toast('📍 '+target.s.n+' erreicht');setTarget(null)}
+    if(target){beacon.visible=!game&&Math.hypot(P.x-target.x,P.z-target.z)>12;beacon.material.opacity=.26+.1*Math.sin(tm*4)}
+    if((mapT-=dt)<=0){mapT=.12;drawMap()}
     if(nn!==near){near=nn;if(near)SFX.tick();refreshAct()}
     // Rauch, Staub, Glut, Wolken
     sm.forEach(s=>{const u=s.userData;u.t=(u.t+dt*.16)%1;const t=u.t;s.position.set(chim[0]+Math.sin(t*5+u.t*3)*.5+t*2.2,chim[1]+t*9,chim[2]-t*.8);s.scale.setScalar(1.4+t*4.5);s.material.opacity=Math.sin(Math.PI*Math.min(1,t*1.15))*.42});
