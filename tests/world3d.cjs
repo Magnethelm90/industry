@@ -160,7 +160,8 @@ let fail=0;const ok=(c,m)=>{console.log((c?'  ok  ':'  FEHLER ')+m);if(!c)fail++
       await p.waitForTimeout(18)}
     if(down)await p.mouse.up()}
   await p.waitForFunction(()=>!document.querySelector('.w3g'),null,{timeout:60000});
-  ok(await p.evaluate(()=>S.stock.hering+S.stock.lachs+S.stock.thunfisch>0&&S.st.fish>0),'Angeln in 3D ['+await p.evaluate(()=>JSON.stringify({ov:!!document.getElementById('ov')?.children.length,g:window.__w3dGame&&__w3dGame()}))+'] Fang im Lager ('+await p.evaluate(()=>S.stock.hering+'/'+S.stock.lachs+'/'+S.stock.thunfisch)+'), Fangzähler erhöht');
+  ok(await p.evaluate(()=>S.stock.hering+S.stock.lachs+S.stock.thunfisch>0&&S.st.fish>0),'Angeln in 3D ['+await p.evaluate(()=>JSON.stringify({ov:!!document.getElementById('ov')?.children.length,g:window.__w3dGame&&__w3dGame()}))+'] '+await p.evaluate(()=>(document.getElementById('ov')?.innerText||'').slice(0,120).replace(/\n/g,' | '))+' Fang im Lager ('+await p.evaluate(()=>S.stock.hering+'/'+S.stock.lachs+'/'+S.stock.thunfisch)+'), Fangzähler erhöht');
+  await p.evaluate(()=>{document.querySelector('.rescard')?.remove();closeOv()});
   // Markt
   await p.evaluate(()=>{S.stock.erz=5;S.stock.stahl=2;S.stock.kohle=0;S.stock.lehm=0;S.stock.ziegel=0;S.stock.maschine=0});await go('markt');await p.waitForFunction(()=>/verkaufen/.test(document.getElementById('w3b').textContent),null,{timeout:15000});
   const m0=await p.evaluate(()=>S.money),x0=await p.evaluate(()=>S.xp),s0=await p.evaluate(()=>S.st.sold);
