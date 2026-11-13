@@ -52,7 +52,7 @@ let fail=0;const ok=(c,m)=>{console.log((c?'  ok  ':'  FEHLER ')+m);if(!c)fail++
   await p.waitForFunction(()=>__w3dState().target===null,null,{timeout:5000});
   ok(true,'Ziel wird bei Ankunft gelöscht');
   // 3D-Minispiele: Start über den Stationsknopf, Startkarte mit „Los!“, Bots spielen mit echten Klicks
-  const begin=async id=>{await go(id);await p.waitForFunction(()=>!document.getElementById('w3b').disabled,null,{timeout:20000});await p.click('#w3b');await p.waitForSelector('#w3go',{timeout:10000});
+  const begin=async id=>{await go(id);await p.waitForFunction(()=>!document.getElementById('w3b').disabled,null,{timeout:20000});await p.evaluate(()=>{document.querySelectorAll('.lvlup,.rescard').forEach(e=>e.remove());closeOv()});await p.click('#w3b');await p.waitForSelector('#w3go',{timeout:10000});
     const before=await p.evaluate(()=>__w3dGame().running);await p.click('#w3go');await p.waitForFunction(()=>__w3dGame().running,null,{timeout:30000});return before};
   const gi=()=>p.evaluate(()=>window.__w3dGame?__w3dGame():null);
   const result=async(id,out,min)=>{await p.waitForFunction(()=>__w3dGame().ended,null,{timeout:240000});await p.waitForSelector('.rescard',{timeout:10000});
