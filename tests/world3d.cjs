@@ -101,7 +101,7 @@ let fail=0;const ok=(c,m)=>{console.log((c?'  ok  ':'  FEHLER ')+m);if(!c)fail++
   await p.evaluate(()=>{closeOv();S.farm.plots[0]={c:null,p:0,w:0,pest:0,half:0,ready:0};S.money=500});await go('plot0');await btn('bestellen');await p.click('#w3b');
   await p.waitForSelector('#ovbox [data-k="weizen"]',{timeout:5000});await p.click('#ovbox [data-k="weizen"]');
   ok(await p.evaluate(()=>S.farm.plots[0].c==='weizen'&&S.farm.plots[0].w>0),'Beet 1: Weizen gesät und angegossen');
-  await btn('wächst');ok(await p.evaluate(()=>document.getElementById('w3b').disabled),'wachsendes Beet: Knopf zeigt den Fortschritt');
+  await p.evaluate(()=>{S.farm.plots[0].pest=0});await btn('wächst');ok(await p.evaluate(()=>document.getElementById('w3b').disabled),'wachsendes Beet: Knopf zeigt den Fortschritt');
   await p.evaluate(()=>{S.farm.plots[0].w=0});await btn('Gießen');await p.click('#w3b');ok(await p.evaluate(()=>S.farm.plots[0].w>0),'trockenes Beet gegossen');
   await p.evaluate(()=>{S.farm.plots[0].pest=Date.now()+60000});await btn('Schädlinge');await p.click('#w3b');ok(await p.evaluate(()=>!S.farm.plots[0].pest),'Schädlinge vertrieben');
   const w0=await p.evaluate(()=>{S.farm.plots[0].p=1;S.farm.plots[0].ready=1;return S.stock.weizen});await btn('ernten');await p.click('#w3b');
