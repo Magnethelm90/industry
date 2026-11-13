@@ -140,10 +140,10 @@ let fail=0;const ok=(c,m)=>{console.log((c?'  ok  ':'  FEHLER ')+m);if(!c)fail++
   ok(await p.evaluate(()=>{const z=__w3dState().zones.find(z=>z.id==='r_kamin');return z&&z.hidden===true}),'Rezept-Station ist unsichtbar, bis das Rezept entdeckt ist');
   await p.evaluate(()=>{S.xp=xpFor(6);S.rec.kamin=1;Object.keys(S.stock).forEach(g=>S.stock[g]=20);render()});await p.evaluate(()=>document.querySelector('.lvlup')?.remove());
   ok(await p.evaluate(()=>{const z=__w3dState().zones.find(z=>z.id==='r_kamin');return z&&z.hidden===false}),'entdecktes Rezept: Station erscheint');
-  // Ofen-Spiel (Backstube): Bot tippt im grünen Bereich
-  await p.evaluate(()=>closeOv());await begin('baeckerei');
+  // Ofen-Spiel (Räucherofen): Bot tippt im grünen Bereich
+  await p.evaluate(()=>closeOv());await p.evaluate(()=>{S.stock.lachs=9});await begin('raeucherei');
   for(let k=0;k<6000;k++){const g=await gi();if(!g||g.ended)break;const o=(g.info.ovens||[]).find(o=>o.on&&o.p>.76&&o.p<.9);if(o){await p.mouse.click(o.xy[0],o.xy[1]);await p.waitForTimeout(120)}await p.waitForTimeout(15)}
-  await result('Backstube','brot',2);
+  await result('Räucherofen','raeucherlachs',2);
   // Fließband mit Themenbezeichnung (Smartphone-Endmontage)
   await begin('handy');
   ok(await p.evaluate(()=>/Kamera|Akku|Display|Schraube/.test(document.querySelector('.w3gs').textContent)),'Endmontage zeigt eigene Teilenamen');
@@ -172,6 +172,18 @@ let fail=0;const ok=(c,m)=>{console.log((c?'  ok  ':'  FEHLER ')+m);if(!c)fail++
     a+=step;await p.mouse.move(i.center[0]+90*Math.cos(a),i.center[1]+90*Math.sin(a));await p.waitForTimeout(20)}
     await p.mouse.up()}
   await result('Rühren','kaese',2);
+  // Teig kneten (Bäckerei) und Fangen (Mühle)
+  await p.evaluate(()=>{Object.assign(S.stock,{mehl:9,eier:9,weizen:9})});
+  await begin('baeckerei');
+  {let dirn=1,lastTt=-9,x=100;await p.mouse.move(100,500);await p.mouse.down();
+    for(let k=0;k<20000;k++){const g=await gi();if(!g||g.ended||g.info.done)break;const i=g.info;
+      if(i.t-lastTt>=.6){dirn*=-1;lastTt=i.t;const x1=dirn>0?290:100;for(let j=1;j<=5;j++)await p.mouse.move(x+(x1-x)*j/5,500);x=x1}
+      await p.waitForTimeout(25)}
+    await p.mouse.up()}
+  await result('Teig kneten','brot',2);
+  await begin('muehle');
+  {await p.mouse.move(195,500);await p.mouse.down();for(let k=0;k<20000;k++){const g=await gi();if(!g||g.ended||g.info.over)break;const it=g.info.items.filter(o=>o.k==='good').sort((a,b)=>a.y-b.y)[0];if(it)await p.mouse.move(it.p[0],500);await p.waitForTimeout(25)}await p.mouse.up()}
+  await result('Körner fangen','mehl',2);
   // Angeln am Steg in 3D
   await p.evaluate(()=>{S.stock.hering=0;S.stock.lachs=0;S.stock.thunfisch=0});
   for(let att=0;att<3&&!(await p.evaluate(()=>S.stock.hering+S.stock.lachs+S.stock.thunfisch>0));att++){

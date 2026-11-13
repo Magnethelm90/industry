@@ -424,8 +424,75 @@ function gSolder(c){
     dispose(){}
   }}
 
+
+/* ---------- Teig kneten (Bäckerei): hin und her wischen, im gleichmäßigen Takt. */
+function gKnead(c){
+  const Z=8.6,NEED=12,DUR=11,STROKE=70,MINT=.33,MAXT=.95,good=new Color(c.th.item||'#e8c07a'),raw=new Color('#fff3d6');
+  c.view(c.L(0,6.4,Z+8.8),c.L(0,1.2,Z),3.9);
+  c.hero.position.copy(c.L(-4.4,0,Z+1.6));c.hero.rotation.y=c.s.ry+1.1;
+  const g=c.group;
+  g.add(box(7.4,.9,4.6,'#a16207',0,.45,Z));const fl=box(5.2,.03,3.2,'#fff7e6',0,.92,Z);fl.castShadow=false;g.add(fl);
+  const dough=mk(new SphereGeometry(1.35,20,14),new MeshLambertMaterial({color:raw.clone()}),0,1.7,Z);dough.scale.set(1.15,.7,1);g.add(dough);
+  const pin=mk(new CylinderGeometry(.22,.22,3.4,10),lam('#c08a4d'),0,2.6,Z);pin.rotation.z=Math.PI/2;g.add(pin);
+  const bars=()=>`<div class="f3"><small>Teig – gleichmäßig im Takt wischen</small><div class="f3p"><i id="f3g"></i></div></div>`;
+  c.status('<b>Hin und her wischen!</b>'+bars(),true);
+  let sum=0,n=0,dir=0,x0=null,lastX=0,lastT=0,t0=null,t=0,done=false,down=false,sq=0,off=0,beat=0;
+  const world=(x,y,z)=>g.localToWorld(new Vector3(x,y,z));
+  const stroke=()=>{const dt=lastT?t-lastT:.5;lastT=t;n++;let v=1,txt='Im Takt! 👌';
+    if(dt<MINT){v=.5;txt='Zu hastig'}else if(dt>MAXT){v=.6;txt='Zu lahm'}else SFX.good();if(v<1)SFX.tick();
+    sum+=v;vib(10);sq=n%2?1:-.5;beat=1;c.pop(txt,world(0,3.4,Z),v>=1?'#34d399':'#fbbf24');c.burst(world((Math.random()-.5)*2,1.9,Z+1),'#fff8e1',4,3);
+    dough.material.color.copy(raw).lerp(good,Math.min(1,sum/NEED));const gb=c.ui('f3g');if(gb)gb.style.width=Math.min(1,sum/NEED)*100+'%'};
+  const end=()=>{if(done)return;done=true;const v=Math.min(1,sum/NEED);c.say(v>=1?'Perfekter Teig! 🥖':Math.round(v*100)+' % geknetet');if(v>=1)SFX.win();setTimeout(()=>c.finish(v),700)};
+  return {
+    update(dt){
+      if(done)return;t+=dt;if(t0!=null){c.time(1-(t-t0)/DUR);if(t-t0>=DUR)end()}
+      sq*=Math.pow(.02,dt);beat=Math.max(0,beat-dt*3);
+      dough.scale.set(1.15+sq*.3,.7-sq*.18,1-sq*.12);dough.position.x+=(off-dough.position.x)*Math.min(1,dt*14);
+      pin.position.set(dough.position.x,2.55+Math.sin(t*10)*.03*beat,Z-.1+sq*.3)},
+    down(e){if(done)return;down=true;x0=lastX=e.clientX;dir=0},
+    move(e){if(!down||done)return;const dx=e.clientX-lastX;if(!dx)return;const d=Math.sign(dx);if(!dir)dir=d;
+      if(d!==dir){if(Math.abs(lastX-x0)>=STROKE){if(t0==null)t0=t;stroke();x0=lastX}else x0=lastX;dir=d}
+      lastX=e.clientX;off=Math.max(-.9,Math.min(.9,(e.clientX-x0)*.012))},
+    up(){down=false;if(!done&&x0!=null&&Math.abs(lastX-x0)>=STROKE&&dir){if(t0==null)t0=t;stroke()}x0=null;off=0},
+    info:()=>({n,sum,t,t0,done,over:done}),
+    dispose(){}
+  }}
+
+/* ---------- Fangen (Mühle, Kelterei, Chipsfabrik): Ware fällt vom Himmel, der Korb folgt dem Finger. Steine nicht auffangen. */
+function gCatch(c){
+  const Z=8.6,D=20,BY=1.4,col=c.th.item||'#e9c46a';
+  c.view(c.L(0,7.2,Z+9.6),c.L(0,3.4,Z),4.8);
+  c.hero.position.copy(c.L(-6,0,Z+1.2));c.hero.rotation.y=c.s.ry+1.2;
+  const g=c.group;
+  g.add(box(11,.2,5,'#8a6a3b',0,.1,Z));
+  const basket=new Group();basket.add(mk(new CylinderGeometry(1.2,.9,.8,14),lam('#b45309'),0,.4,0),mk(new CylinderGeometry(1.25,1.25,.12,14),lam('#92400e'),0,.82,0));basket.position.set(0,BY-.4,Z);g.add(basket);
+  const geoG=new SphereGeometry(.34,8,6),geoS=new IcosahedronGeometry(.4,0),matG=lam(col,col,.25),matS=lam('#6b7280');
+  const items=[];let t=0,next=.5,bx=0,tx=0,pts=0,total=0,stones=0,over=false,spawned=0;
+  const plane=new Plane(new Vector3(0,1,0),-BY),rc=new Raycaster(),hit=new Vector3();
+  const local=e=>{rc.setFromCamera(new Vector2(e.clientX/innerWidth*2-1,-(e.clientY/innerHeight*2-1)),c.cam);if(!rc.ray.intersectPlane(plane,hit))return null;return g.worldToLocal(hit.clone()).x};
+  const world=(x,y,z)=>g.localToWorld(new Vector3(x,y,z));
+  const stat=()=>c.status(`${pts} gefangen`+(stones?` · ${stones} Stein${stones>1?'e':''}`:''));stat();
+  return {
+    update(dt){
+      if(over)return;t+=dt;c.time(1-t/D);
+      if(t<D-2&&(next-=dt)<=0){const stone=Math.random()<.24,m=mk(stone?geoS:geoG,stone?matS:matG);if(!stone){m.scale.set(1,1.25,1)}const x=(Math.random()-.5)*8;m.position.set(x,9,Z);g.add(m);items.push({m,stone,v:0,x,done:false});if(!stone)total++;spawned++;next=Math.max(.38,.7-t*.016)}
+      bx+=(tx-bx)*Math.min(1,dt*14);basket.position.x=bx;basket.rotation.z=(tx-bx)*-.08;
+      for(const it of items){if(it.done)continue;it.v+=(5+t*.12)*dt;it.m.position.y-=it.v*dt;it.m.rotation.x+=dt*3;it.m.rotation.z+=dt*2;
+        const y=it.m.position.y;
+        if(y<=BY+.3&&y>BY-.5&&Math.abs(it.m.position.x-bx)<1.15){it.done=true;g.remove(it.m);const p=world(bx,BY+.9,Z);
+          if(it.stone){stones++;pts=Math.max(0,pts-2);SFX.crash();vib([50,30,50]);c.shake(.3);c.pop('Stein! −2',p,'#ef4444');c.burst(p,'#9ca3af',8,4)}
+          else{pts++;SFX.good();vib(8);c.pop('+1',p,'#34d399');c.burst(p,col,5,3)}stat()}
+        else if(y<.3){it.done=true;g.remove(it.m);if(!it.stone)SFX.miss()}}
+      if(t>=D&&!items.some(i=>!i.done)||t>=D+4){over=true;const sc=clamp(pts/Math.max(8,total*.85));c.say(pts+' von '+total+' gefangen');setTimeout(()=>c.finish(sc),700)}},
+    down(e){const x=local(e);if(x!=null)tx=clamp(x,-4.6,4.6)},move(e){const x=local(e);if(x!=null)tx=clamp(x,-4.6,4.6)},up(){},
+    info:()=>({bx,pts,total,t,over,base:c.project(world(bx,BY,Z)),items:items.filter(i=>!i.done).map(i=>({k:i.stone?'stone':'good',x:i.m.position.x,y:i.m.position.y,p:c.project(i.m.position.clone().applyMatrix4(g.matrixWorld))}))}),
+    dispose(){geoG.dispose();geoS.dispose()}
+  }}
+
 // Welches 3D-Spiel eine Station nutzt: [Spiel, Titel, Thema]. Die Themen färben und benennen dasselbe Spiel passend zur Station.
 const HOW={
+  knead:w=>`Wisch mit dem Finger <b>hin und her</b> über den Teig – nicht zu hastig und nicht zu lahm. Im <b>gleichmäßigen Takt</b> wird der Teig am besten. 11 Sekunden ab dem ersten Zug.`,
+  catch:w=>`${w||'Ware'} fällt vom Himmel. <b>Zieh den Korb</b> mit dem Finger nach links und rechts und fang sie auf. <b>Graue Steine</b> nicht auffangen!`,
   stir:w=>`Wisch mit dem Finger <b>im Kreis</b> um den Kessel. Halte das Tempo im <b>grünen Bereich</b>: zu langsam gibt Klumpen, zu schnell spritzt es.`,
   weave:w=>`In jeder Fadenreihe fehlt ein Faden. Tippe die <b>Spur mit der Lücke</b>, bevor die Reihe den Webkamm erreicht. Falsche Spur = Fehler. 12 Reihen.`,
   cut:w=>`Setz den Finger links auf die <b>Schere</b> und zieh sie entlang der gestrichelten Linie nach rechts. Je genauer, desto sauberer der Schnitt. 3 Schnitte.`,
@@ -436,7 +503,7 @@ const HOW={
   assemble:w=>`Oben steht der Bauplan. Tippe auf dem Band immer das Teil an, das gerade <b>hervorgehoben</b> ist. Falsche Teile und Schrott kosten Punkte.`,
   bake:w=>`Drei Öfen garen gleichzeitig. Tippe einen Ofen an, wenn sein Balken im <b>grünen Bereich</b> steht. Zu früh ist ${w||'es'} roh, zu spät verbrannt. 9 Stück.`
 };
-const FN={mine:gMine,pour:gPour,stack:gStack,assemble:gAssemble,bake:gBake,stir:gStir,weave:gWeave,cut:gCut,solder:gSolder};
+const FN={mine:gMine,pour:gPour,stack:gStack,assemble:gAssemble,bake:gBake,stir:gStir,knead:gKnead,catch:gCatch,weave:gWeave,cut:gCut,solder:gSolder};
 const SET={
   erz:['mine','Erzrausch',{w:'Erzadern'}],kohle:['mine','Kohlerausch',{w:'Kohlebrocken'}],lehm:['mine','Lehmgrube',{w:'Lehmklumpen'}],
   sand:['mine','Sandgrube',{w:'Sandnester',ore:'#f6e7a8'}],kupfer:['mine','Kupferrausch',{w:'Kupferadern',ore:'#e8833a'}],
@@ -445,9 +512,9 @@ const SET={
   glas:['pour','Glasguss',{liq:'#7dd3fc'}],kunststoff:['stir','Kunststoff mischen',{liq:'#a78bfa'}],gehaeuse:['pour','Gehäuseguss',{liq:'#f472b6'}],akku:['pour','Elektrolyt einfüllen',{w:'Zellen',liq:'#4ade80'}],
   draht:['bake','Glühofen',{w:'der Draht',item:'#e8833a'}],
   platine:['solder','Platine löten',{}],display:['assemble','Display-Montage',{names:['Linse','Leiter','Scheibe','Klammer']}],handy:['assemble','Endmontage',{names:['Kamera','Akku','Display','Schraube']}],
-  muehle:['stack','Mehlsäcke stapeln',{cols:['#f5f0dc','#e2d8b8']}],baeckerei:['bake','Backstube',{w:'das Brot',item:'#d9a15c'}],kaeserei:['stir','Käsekessel rühren',{liq:'#fde68a'}],
-  chipsfabrik:['bake','Fritteuse',{w:'die Chips',item:'#f2c94c'}],raeucherei:['bake','Räucherofen',{w:'der Lachs',item:'#f08a6b'}],
-  kelterei:['pour','Wein abfüllen',{w:'Fässer',liq:'#7c3aed'}],brauerei:['stir','Maische rühren',{liq:'#f59e0b'}],
+  muehle:['catch','Körner auffangen',{w:'Weizenkörner',item:'#e9c46a'}],baeckerei:['knead','Teig kneten',{item:'#e8c07a'}],kaeserei:['stir','Käsekessel rühren',{liq:'#fde68a'}],
+  chipsfabrik:['catch','Kartoffeln fangen',{w:'Kartoffeln',item:'#d6a35c'}],raeucherei:['bake','Räucherofen',{w:'der Lachs',item:'#f08a6b'}],
+  kelterei:['catch','Trauben lesen',{w:'Trauben',item:'#7c3aed'}],brauerei:['stir','Maische rühren',{liq:'#f59e0b'}],
   weberei:['weave','Weben',{}],schneiderei:['cut','Zuschnitt',{}],
   brennerei:['stir','Maische rühren',{liq:'#d9f99d'}],faelscher:['solder','Uhrwerk löten',{}],kopierer:['stack','Rohlinge stapeln',{cols:['#94a3b8','#cbd5e1']}],
   r_kamin:['stack','Kamin mauern',{cols:['#8b4a2b','#a5543a']}],r_dampfmaschine:['assemble','Dampfmaschine bauen',{names:['Schwungrad','Kolben','Kessel','Ventil']}],r_glasfaser:['pour','Glasfaser ziehen',{liq:'#67e8f9'}],

@@ -108,10 +108,12 @@ Wer in der Welt am Logistikhof eine Lieferung startet, fährt die Strecke selbst
 - **Neue Orte:** Sandgrube, Kupfermine und Ölfeld mit Bohrturm; die Manufaktur (9 Stationen: Mühle, Bäckerei, Käserei, Chips, Räucherei, Kelterei, Brauerei, Weberei, Schneiderei) und das Elektronikwerk (8 Stationen: Glas bis Smartphone) mit je einem Ring pro Station vor dem Gebäude; die drei Untergrund-Werkstätten am Hinterhof; die geheimen Rezepte als Ringe vor dem Labor (erst sichtbar, wenn das Rezept entdeckt ist). Stationen unter ihrem Level zeigen ein Schloss. Neue Modelle: `hall`, `factory`, `derrick`.
 
 ### Eigene Spielregeln in der 3D-Welt
-Neben Erzrausch, Abstich, Kran, Fließband und Ofen gibt es vier weitere 3D-Spiele:
+Neben Erzrausch, Abstich, Kran, Fließband und Ofen (Räucherei, Glühofen) gibt es weitere 3D-Spiele:
 - **Rühren** (Käserei, Brauerei, Brennerei, Kunststoff): Mit dem Finger im Kreis um den Kessel wischen. Das Tempo muss im grünen Bereich bleiben, zu schnell spritzt es.
 - **Weben** (Weberei): Fadenreihen laufen auf den Webkamm zu, in jeder fehlt ein Faden. Tippe die Spur mit der Lücke.
 - **Zuschneiden** (Schneiderei): Die Schere entlang der gestrichelten Linie ziehen, drei Schnitte, je genauer desto besser.
+- **Teig kneten** (Bäckerei): Hin und her wischen im gleichmäßigen Takt, nicht zu hastig und nicht zu lahm.
+- **Fangen** (Mühle, Kelterei, Chipsfabrik): Ware fällt vom Himmel, der Korb folgt dem Finger, Steine nicht auffangen.
 - **Löten** (Platine, Fälscherwerkstatt): Lötpunkte leuchten in einer Reihenfolge auf, die du nachtippst. Vier Runden, drei Fehler erlaubt.
 
 ### Karte, Ziel, Kurven und Wetter
