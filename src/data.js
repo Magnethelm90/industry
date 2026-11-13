@@ -40,6 +40,17 @@ export const REC=[
  {out:'drohne',in:['akku','platine','kunststoff'],games:['solder','bolts'],hint:'Leicht, smart – und sie fliegt.'},
  {out:'roboter',in:['maschine','platine','akku'],games:['simon','solder','bolts','wires'],hint:'Mechanik mit Gehirn und eigener Energie.'}
 ];
+// Mischfarbe: Farbton im Kreis gemittelt, kräftig gehalten (Mitteln der RGB-Werte würde nur Grau ergeben)
+export function mixCol(cs){
+  const hsl=c=>{const [r,g,b]=[1,3,5].map(i=>parseInt(c.slice(i,i+2),16)/255),mx=Math.max(r,g,b),mn=Math.min(r,g,b),d=mx-mn;let h=0;
+    if(d){h=mx===r?((g-b)/d)%6:mx===g?(b-r)/d+2:(r-g)/d+4;h*=60;if(h<0)h+=360}return {h,s:d?d/(1-Math.abs(mx+mn-1)):0,l:(mx+mn)/2}};
+  const a=cs.map(hsl),w=a.map(x=>Math.max(.15,x.s)),sw=w.reduce((x,y)=>x+y);
+  const X=a.reduce((t,x,i)=>t+Math.cos(x.h*Math.PI/180)*w[i],0)/sw,Y=a.reduce((t,x,i)=>t+Math.sin(x.h*Math.PI/180)*w[i],0)/sw;
+  const h=(Math.atan2(Y,X)*180/Math.PI+360)%360,sat=Math.max(.6,Math.min(.85,a.reduce((t,x)=>t+x.s,0)/a.length)),l=.58;
+  const k=n=>{const q=(n+h/30)%12;return l-sat*Math.min(l,1-l)*Math.max(-1,Math.min(q-3,9-q,1))};
+  return '#'+[0,8,4].map(n=>Math.round(k(n)*255).toString(16).padStart(2,'0')).join('')}
+// Das Ergebnis eines Rezepts hat die Mischfarbe seiner Zutaten
+REC.forEach(r=>{G[r.out].c=mixCol(r.in.map(x=>G[x].c))});
 // Forschung im Labor: immer nur eine gleichzeitig, läuft auch bei geschlossener App weiter. t in Sekunden.
 // rep: beliebig oft (Kosten steigen je Durchgang um ×1,6), need: setzt eine andere Forschung voraus
 export const RES=[

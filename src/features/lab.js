@@ -1,5 +1,5 @@
 /* Labor: geheime Rezepte entdecken (Mischspiel + Rätsel) und forschen (dauerhafte Boni) */
-import {CATS,G,REC,RES,catOf} from '../data.js';
+import {CATS,G,REC,RES,catOf,mixCol} from '../data.js';
 import {SFX,burst,fx,toast,vib} from '../fx.js';
 import {GKU,S,cap,lvl} from '../state.js';
 import {bindX,openOv,xbtn} from '../ui.js';
@@ -91,7 +91,8 @@ function draw(msg,cls){
 async function experiment(){
   if(sel.length<3||sel.some(x=>S.stock[x.g]<1))return;
   const gs=sel.map(x=>x.g);gs.forEach(g=>S.stock[g]-=1);
-  const sc=await play(()=>gMix({title:'Experiment',how:'Schenk die drei Zutaten im Verhältnis der Skala rechts ein. Je genauer, desto mehr bekommst du heraus, wenn das Rezept stimmt.',ing:gs.map(g=>({n:G[g].n,c:G[g].c,icon:ic(g,30)}))}),ICON);
+  const rc=REC.find(r=>r.in.every(x=>gs.includes(x))),mixc=rc&&unlocked(rc)?G[rc.out].c:mixCol(gs.map(g=>G[g].c));
+  const sc=await play(()=>gMix({title:'Experiment',how:'Schenk die drei Zutaten im Verhältnis der Skala rechts ein. Je genauer, desto mehr bekommst du heraus, wenn das Rezept stimmt.',ing:gs.map(g=>({n:G[g].n,c:G[g].c,icon:ic(g,30)})),mixc}),ICON);
   if(sc==null){gs.forEach(g=>S.stock[g]+=1);return} // abgebrochen: nichts verbraucht
   const r=REC.find(r=>r.in.every(x=>gs.includes(x)));
   if(r&&!unlocked(r)){gs.forEach(g=>S.stock[g]+=1);SFX.miss();draw('⚗️ Es reagiert – aber zu instabil. Dieses Rezept gelingt erst ab Level '+G[r.out].lv+'. Zutaten zurück.','bad');return}

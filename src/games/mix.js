@@ -27,6 +27,8 @@ export function gMix(s){return new Promise(res=>{
   ruler.innerHTML=ING.map((g,i)=>`<i style="height:${T[i]}%;background:${g.c}"></i>`).join('');st.appendChild(ruler);
   const BW=74,bx=[W*.16,W*.44,W*.72],bcx=(il+ir)/2;
   const bottles=ING.map((g,i)=>{const b=put(st,g.p,BW,null,bx[i],52);b.style.pointerEvents='auto';b.style.touchAction='none';b.style.transition='transform .18s';b.style.zIndex=4;
+    // eigene Zutaten: Flasche in der Zutatenfarbe einfärben (Farbton ersetzen, Licht und Glanz bleiben)
+    if(s.ing){const u=getComputedStyle(b).backgroundImage;const t=document.createElement('i');t.style.cssText=`position:absolute;inset:0;pointer-events:none;background:${g.c};mix-blend-mode:color;-webkit-mask:${u} center/contain no-repeat;mask:${u} center/contain no-repeat`;b.appendChild(t)}
     if(g.icon)b.insertAdjacentHTML('beforeend',`<span style="position:absolute;left:50%;top:60%;transform:translate(-50%,-50%);pointer-events:none;filter:drop-shadow(0 1px 2px #000)">${g.icon}</span>`);
     const lb=document.createElement('div');lb.className='pourlbl';lb.style.left=bx[i]+'px';lb.style.top='92px';lb.style.bottom='auto';lb.style.textAlign='center';lb.innerHTML=`${g.n}<br><span id="pv${i}">0 / ${Math.round(T[i])}</span>`;st.appendChild(lb);return b});
   const streams=ING.map(g=>{const e=document.createElement('div');e.className='stream';e.style.cssText=`opacity:0;background:${g.c};box-shadow:0 0 10px ${g.c}`;st.appendChild(e);return e});
@@ -39,8 +41,9 @@ export function gMix(s){return new Promise(res=>{
   function finish(){
     done=true;act=-1;bottles.forEach((b,i)=>{b.style.transform='';streams[i].style.opacity=0});const tot=amt.reduce((a,b)=>a+b);
     const err=amt.reduce((a,v,i)=>a+Math.abs(v-T[i]),0),sc=Math.max(0,1-Math.max(0,err-6)/60)*Math.min(1,tot/100);
+    if(s.mixc&&tot>0){const o=document.createElement('i');o.style.cssText=`position:absolute;left:0;right:0;bottom:0;height:${tot/100*IH}px;background:linear-gradient(90deg,${s.mixc},color-mix(in srgb,${s.mixc} 60%,#000));box-shadow:inset 0 2px 0 rgba(255,255,255,.3);opacity:0;transition:opacity .7s`;liq.appendChild(o);void o.offsetWidth;o.style.opacity=1}
     pop($('m'),'Mischung '+Math.round(sc*100)+' % genau');sc>.7?SFX.win():SFX.miss();
-    setTimeout(()=>ov.alive&&res(sc),900)}
+    setTimeout(()=>ov.alive&&res(sc),s.mixc?1500:900)}
   (function loop(){const now=gnow();
     if(!ov.alive||done)return;const dt=Math.min(.05,(now-last)/1000);last=now;
     const tot=amt.reduce((a,b)=>a+b);
