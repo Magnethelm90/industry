@@ -15,6 +15,7 @@ import {OV} from '../ui.js';
 import {$,fmt,ic} from '../util.js';
 import {dayPhase} from '../world.js';
 import {loadAll} from './models.js';
+import {enhanceAll,grassMat,gravel,skyEnv,std,waterMat} from './real.js';
 
 const WARES=['erz','kohle','lehm','ziegel','stahl','maschine'];
 // Rotation um Y: lokal (x,z) → Welt
@@ -69,14 +70,6 @@ let pond=null;let seed=11;const rnd=()=>(seed=(seed*16807)%2147483647)/214748364
 function softTex(inner='rgba(255,255,255,.9)'){
   const c=document.createElement('canvas');c.width=c.height=64;const x=c.getContext('2d'),g=x.createRadialGradient(32,32,2,32,32,30);
   g.addColorStop(0,inner);g.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=g;x.fillRect(0,0,64,64);return new CanvasTexture(c)}
-function grassTex(){
-  const c=document.createElement('canvas');c.width=c.height=256;const x=c.getContext('2d');x.fillStyle='#74c653';x.fillRect(0,0,256,256);
-  for(let i=0;i<900;i++){x.fillStyle=`hsla(${88+Math.random()*30},${50+Math.random()*25}%,${42+Math.random()*20}%,.32)`;const r=2+Math.random()*9;x.beginPath();x.arc(Math.random()*256,Math.random()*256,r,0,7);x.fill()}
-  const t=new CanvasTexture(c);t.wrapS=t.wrapT=RepeatWrapping;t.repeat.set(40,40);t.colorSpace=SRGBColorSpace;t.anisotropy=4;return t}
-function pathTex(){
-  const c=document.createElement('canvas');c.width=c.height=128;const x=c.getContext('2d');x.fillStyle='#e6c88f';x.fillRect(0,0,128,128);
-  for(let i=0;i<260;i++){x.fillStyle=`hsla(${32+Math.random()*10},${30+Math.random()*20}%,${48+Math.random()*22}%,.5)`;x.beginPath();x.arc(Math.random()*128,Math.random()*128,1+Math.random()*4,0,7);x.fill()}
-  const t=new CanvasTexture(c);t.wrapS=t.wrapT=RepeatWrapping;t.colorSpace=SRGBColorSpace;t.anisotropy=8;return t}
 function skyDome(top,mid,bot){
   const g=new SphereGeometry(160,24,16),pos=g.attributes.position,cols=[],a=new Color(top),b=new Color(mid),d=new Color(bot),c=new Color();
   for(let i=0;i<pos.count;i++){const y=pos.getY(i)/160;if(y>0)c.copy(b).lerp(a,Math.pow(y,.6));else c.copy(b).lerp(d,Math.min(1,-y*3));cols.push(c.r,c.g,c.b)}
@@ -120,22 +113,25 @@ export async function open3d(){
   $('w3l').remove();
   let pr=Math.min(devicePixelRatio||1,2);renderer.setPixelRatio(pr);renderer.shadowMap.enabled=true;renderer.shadowMap.type=PCFSoftShadowMap;
   renderer.toneMapping=NeutralToneMapping;renderer.toneMappingExposure=1.12;
-  const ph=dayPhase(),night=ph==='night';
+  const ph=window.__w3dPh||dayPhase(),night=ph==='night';
   const SK={night:['#16245a','#3a4f9a','#26356e'],dawn:['#5b8be0','#ffc59a','#f7e2c4'],day:['#2a8cf0','#8fd0ff','#d8f0ff'],dusk:['#4a5cc0','#ff9a66','#ffd2a0']}[ph];
   const LI={night:.62,dawn:.85,day:1,dusk:.85}[ph],FOG=SK[1];
   const scene=new Scene();scene.background=new Color(FOG);scene.fog=new Fog(FOG,55,170);
   scene.add(skyDome(...SK));
-  scene.add(new HemisphereLight(night?'#8fa3e8':'#ffffff',night?'#34503a':'#8fcf6a',.95*LI+.3));
-  const sun=new DirectionalLight(night?'#aebfff':ph==='day'?'#fff4dc':'#ffc891',1.5*LI+.2);sun.position.set(-20,32,16);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.bias=-.0004;sun.shadow.normalBias=.04;
+  scene.add(new HemisphereLight(night?'#8fa3e8':'#ffffff',night?'#34503a':'#8fcf6a',.42*LI+.16));
+  const SUNC=night?'#aebfff':ph==='day'?'#fff4dc':'#ffc891';
+  // Himmel beleuchtet die Szene und spiegelt sich in Metall, Glas und Wasser
+  scene.environment=skyEnv(renderer,SK,new Vector3(-20,32,16).normalize(),SUNC,night);scene.environmentIntensity=night?.55:.85;
+  const sun=new DirectionalLight(SUNC,1.9*LI+.25);sun.position.set(-20,32,16);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.bias=-.0004;sun.shadow.normalBias=.04;
   Object.assign(sun.shadow.camera,{left:-32,right:32,top:32,bottom:-32,near:1,far:100});scene.add(sun,sun.target);
   const cam=new PerspectiveCamera(55,1,.1,260);
   // Boden, Wege
-  const gt=grassTex(),ground=new Mesh(new PlaneGeometry(320,320),new MeshLambertMaterial({map:gt}));ground.rotation.x=-Math.PI/2;ground.receiveShadow=true;scene.add(ground);
-  const pt=pathTex(),pm=new MeshLambertMaterial({map:pt});
-  const path=(x,z,w,d)=>{const t=pt.clone();t.needsUpdate=true;t.repeat.set(w/6,d/6);t.anisotropy=8;const p=new Mesh(new PlaneGeometry(w,d),new MeshLambertMaterial({map:t}));p.rotation.x=-Math.PI/2;p.position.set(x,.025,z);p.receiveShadow=true;scene.add(p)};
+  const ground=new Mesh(new PlaneGeometry(320,320),grassMat());ground.rotation.x=-Math.PI/2;ground.receiveShadow=true;scene.add(ground);
+  const gv=gravel();
+  const path=(x,z,w,d)=>{const p=new Mesh(new PlaneGeometry(w,d),gv(w/3.2,d/3.2));p.rotation.x=-Math.PI/2;p.position.set(x,.025,z);p.receiveShadow=true;scene.add(p)};
   path(0,-3,5.2,46);path(0,-17.5,76,4);path(-36,-21,3.6,7);path(36,-21,3.6,7);path(-10,12,22,4);path(-9,-3,20,4.2);path(9,-3,20,4.2);path(-17,-6+7,3.6,16);path(17,-6+7,3.6,16);
   // Plätze vor den Stationen
-  const plaza=(x,z,r)=>{const m=new Mesh(new RingGeometry(0,r,28),new MeshLambertMaterial({map:pt}));m.rotation.x=-Math.PI/2;m.position.set(x,.03,z);m.receiveShadow=true;scene.add(m)};
+  const plaza=(x,z,r)=>{const m=new Mesh(new CircleGeometry(r,28),gv(r/1.6,r/1.6));m.rotation.x=-Math.PI/2;m.position.set(x,.03,z);m.receiveShadow=true;scene.add(m)};
   plaza(0,6,7.5);plaza(0,-17,6);plaza(0,12,5);
   // Stationen
   const zones=[];
@@ -177,14 +173,14 @@ export async function open3d(){
   for(let i=0;i<200&&bushes.length<40;i++){const x=(rnd()-.5)*110,z=(rnd()-.5)*100;if(!free(x,z,1))continue;bushes.push(place(x,z,.8+rnd()*.7,rnd()*6.28))}
   scatter(scene,M.pine,pines);scatter(scene,M.oak,oaks);hideInGame.push(scatter(scene,M.rock,rocks),scatter(scene,M.bush,bushes));
   // Blumen
-  {const fl=new InstancedMesh(new SphereGeometry(.09,5,4),new MeshLambertMaterial({color:'#ffffff'}),180),m=new Object3D(),cs=['#f472b6','#fde047','#f8fafc','#fb923c','#a78bfa'];
+  {const fl=new InstancedMesh(new SphereGeometry(.09,5,4),std('#ffffff',{roughness:.6}),180),m=new Object3D(),cs=['#f472b6','#fde047','#f8fafc','#fb923c','#a78bfa'];
     let n=0;while(n<180){const x=(rnd()-.5)*100,z=(rnd()-.5)*90;if(!free(x,z,0))continue;m.position.set(x,.1,z);m.updateMatrix();fl.setMatrixAt(n,m.matrix);fl.setColorAt(n,new Color(cs[n%5]));n++}scene.add(fl)}
   // Hügel am Horizont
-  {const hc=['#6fbf5a','#5fae52','#7ccd62','#58a84e'];for(let i=0;i<16;i++){const a=i/16*Math.PI*2+rnd()*.3,r=105+rnd()*25,s=14+rnd()*16;
-    const h=new Mesh(new SphereGeometry(s,14,8),new MeshLambertMaterial({color:hc[i%4]}));h.scale.y=.45;h.position.set(Math.cos(a)*r,-s*.12,Math.sin(a)*r);scene.add(h)}}
+  {const hc=['#5a9a4c','#4f8c46','#66a856','#4a8442'];for(let i=0;i<16;i++){const a=i/16*Math.PI*2+rnd()*.3,r=105+rnd()*25,s=14+rnd()*16;
+    const h=new Mesh(new SphereGeometry(s,14,8),std(hc[i%4],{roughness:1}));h.scale.y=.45;h.position.set(Math.cos(a)*r,-s*.12,Math.sin(a)*r);scene.add(h)}}
   // Teich
-  {const px=38,pz=8,wm=new MeshBasicMaterial({color:'#4cc3f0',transparent:true,opacity:.92});const w=new Mesh(new CircleGeometry(6.5,32),wm);w.rotation.x=-Math.PI/2;w.position.set(px,.05,pz);scene.add(w);
-    const rim=new Mesh(new RingGeometry(6.4,7.6,32),new MeshLambertMaterial({color:'#e6c88f',side:DoubleSide}));rim.rotation.x=-Math.PI/2;rim.position.set(px,.04,pz);scene.add(rim);
+  {const px=38,pz=8,wm=waterMat(night);const w=new Mesh(new CircleGeometry(6.5,32),wm);w.rotation.x=-Math.PI/2;w.position.set(px,.05,pz);scene.add(w);
+    const rim=new Mesh(new RingGeometry(6.4,7.6,32),std('#cdb489',{side:DoubleSide,roughness:.95}));rim.rotation.x=-Math.PI/2;rim.position.set(px,.04,pz);scene.add(rim);
     EXTRA.push({x:px,z:pz,r:6.6,h:.5});pond=w}
   // Wolken
   const clouds=[],cm=new MeshBasicMaterial({color:night?'#3a4570':'#ffffff',transparent:true,opacity:night?.5:.92,fog:false});
@@ -197,6 +193,7 @@ export async function open3d(){
   for(let i=0;i<12;i++){const s=mkSprite(night?'#9aa0b8':'#d4d4d8');s.userData.t=i/12;sm.push(s)}
   const dust=[];for(let i=0;i<8;i++){const s=mkSprite('#d9c7a0',.5);s.visible=false;s.userData.t=1;dust.push(s)}
   const glow=new PointLight('#ff8a3d',night?60:26,16,1.6);glow.position.set(fz[0],2.2,fz[1]+3.6);scene.add(glow);
+  enhanceAll(scene,night);
   // Spielfigur
   const hero=M.worker.clone(true);hero.scale.setScalar(1.18);scene.add(hero);
   const lg=n=>hero.getObjectByName(n),legL=lg('!legL'),legR=lg('!legR'),armL=lg('!armL'),armR=lg('!armR');
@@ -312,9 +309,9 @@ export async function open3d(){
   function updatePlots(){
     if(!isOpen('farm'))return;
     while(plots.length<Math.min(12,S.farm.plots.length)){const i=plots.length,[x,z]=PLOT(i),g=new Group();g.position.set(x,0,z);
-      const rim=new Mesh(new PlaneGeometry(3.4,3.4),new MeshLambertMaterial({color:'#8a5a2b'}));rim.rotation.x=-Math.PI/2;rim.position.y=.035;rim.receiveShadow=true;g.add(rim);
-      const soil=new Mesh(soilGeo,new MeshLambertMaterial({color:'#6b4423'}));soil.rotation.x=-Math.PI/2;soil.position.y=.05;soil.receiveShadow=true;g.add(soil);
-      const pm=new MeshLambertMaterial({color:'#65a30d'}),pl=[];for(let k=0;k<9;k++){const m=new Mesh(plantGeo,pm);m.position.set((k%3-1)*.95,.2,(Math.floor(k/3)-1)*.95);m.castShadow=true;m.visible=false;g.add(m);pl.push(m)}
+      const rim=new Mesh(new PlaneGeometry(3.4,3.4),std('#8a5a2b',{roughness:.9}));rim.rotation.x=-Math.PI/2;rim.position.y=.035;rim.receiveShadow=true;g.add(rim);
+      const soil=new Mesh(soilGeo,std('#4a3220',{roughness:1}));soil.rotation.x=-Math.PI/2;soil.position.y=.05;soil.receiveShadow=true;g.add(soil);
+      const pm=std('#5a9a1c',{roughness:.8}),pl=[];for(let k=0;k<9;k++){const m=new Mesh(plantGeo,pm);m.position.set((k%3-1)*.95,.2,(Math.floor(k/3)-1)*.95);m.castShadow=true;m.visible=false;g.add(m);pl.push(m)}
       const sp=new Sprite(new SpriteMaterial({transparent:true,depthTest:false}));sp.scale.set(1.3,1.3,1);sp.position.y=2.4;sp.visible=false;g.add(sp);
       scene.add(g);plots.push({g,soil,pm,pl,sp});
       const ring=new Mesh(new RingGeometry(1.25,1.5,28),new MeshBasicMaterial({color:'#a3e635',side:DoubleSide,transparent:true,opacity:.6,depthWrite:false}));ring.rotation.x=-Math.PI/2;ring.position.set(x,.07,z);scene.add(ring);
@@ -406,7 +403,7 @@ export async function open3d(){
     {if(T.wait>0)T.wait-=dt;else if(T.turn>0){T.turn-=dt;truck.rotation.y+=T.dir*Math.PI*dt/1.2*-1;if(T.turn<=0){T.dir*=-1;truck.rotation.y=T.dir>0?Math.PI/2:-Math.PI/2;T.wait=.6}}
       else{T.x+=T.dir*6*dt;if(T.x>52&&T.dir>0||T.x<14&&T.dir<0)T.turn=1.2}
       truck.position.x=T.x;tcol.x=T.x}
-    if(pond)pond.material.opacity=.86+Math.sin(tm*2)*.05;
+    if(pond)pond.material.userData.flow(tm);
     glow.intensity=(night?56:24)+Math.sin(tm*17)*3+Math.sin(tm*5.3)*2.5;
     clouds.forEach(c=>{c.position.x+=dt*.9;if(c.position.x>140)c.position.x=-140});
     if((hudT-=dt)<=0){hudT=.5;hud();if(!game)refreshAct();refreshLabels();updatePlots();const t=$('w3t');if(t&&tm>9)t.style.opacity=0}

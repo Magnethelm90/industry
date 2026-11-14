@@ -1,13 +1,14 @@
 /* 3D-Minispiele: laufen direkt in der Welt an der jeweiligen Station (statt des 2D-Fensters).
    Jedes Spiel bekommt einen Kontext c (Szene, Kamera, Hilfen) und meldet am Ende c.finish(Score 0..1). */
-import {BoxGeometry,Color,CylinderGeometry,Group,IcosahedronGeometry,Mesh,MeshBasicMaterial,MeshLambertMaterial,Plane,PointLight,Raycaster,SphereGeometry,Vector2,Vector3} from 'three';
+import {BoxGeometry,Color,CylinderGeometry,Group,IcosahedronGeometry,Mesh,MeshBasicMaterial,MeshStandardMaterial,Plane,PointLight,Raycaster,SphereGeometry,Vector2,Vector3} from 'three';
 import {SFX,tone,vib} from '../fx.js';
+import {enhance} from './real.js';
 import {G} from '../data.js';
 import {S,diff,unl} from '../state.js';
 import {FISH} from '../games/fish.js';
 import {dayPhase,wxIs} from '../world.js';
 
-const lam=(c,e,ei=1)=>new MeshLambertMaterial({color:c,emissive:e||'#000000',emissiveIntensity:e?ei:0});
+const lam=(c,e,ei=1)=>{const m=new MeshStandardMaterial({color:c,emissive:e||'#000000',emissiveIntensity:e?ei:0,roughness:.72,metalness:0});if(!e)enhance(m);return m};
 const mk=(geo,mat,x=0,y=0,z=0)=>{const m=new Mesh(geo,mat);m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;return m};
 const box=(w,h,d,c,x,y,z,e)=>mk(new BoxGeometry(w,h,d),typeof c==='string'?lam(c,e):c,x,y,z);
 const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
@@ -195,7 +196,7 @@ function gBake(c){
   for(let i=0;i<3;i++){const x=(i-1)*2.7,o=new Group();o.position.set(x,0,Z);
     o.add(box(2.3,2.6,2,'#9a4a32',0,1.3,0),box(2.5,.25,2.2,'#6b7280',0,2.72,0),box(1.6,1.3,.2,'#1c1410',0,1.25,1.0));
     const glow=box(1.5,.25,.1,new MeshBasicMaterial({color:'#fb923c'}),0,.72,1.08);glow.castShadow=false;o.add(glow);
-    const item=mk(new IcosahedronGeometry(.42,1),new MeshLambertMaterial({color:raw.clone()}),0,1.2,1.12);item.scale.set(1.35,.75,.8);o.add(item);
+    const item=mk(new IcosahedronGeometry(.42,1),new MeshStandardMaterial({roughness:.72,color:raw.clone()}),0,1.2,1.12);item.scale.set(1.35,.75,.8);o.add(item);
     // Balken über dem Ofen: grüner Bereich = jetzt herausnehmen
     o.add(box(2.1,.3,.12,'#1e293b',0,3.4,.9));const zone=box(2.1*.2,.32,.13,new MeshBasicMaterial({color:'#22c55e'}),-1.05+2.1*(.56+.1),3.4,.92);zone.castShadow=false;o.add(zone);
     const bar=box(.14,.5,.16,new MeshBasicMaterial({color:'#ffffff'}),-1.05,3.4,.96);bar.castShadow=false;o.add(bar);
@@ -399,7 +400,7 @@ function gSolder(c){
   const g=c.group;
   g.add(box(9,.3,6.6,'#14532d',0,1,Z),box(9.4,.5,7,'#334155',0,.5,Z-.05));
   for(let i=0;i<10;i++){const l=box(.12,.04,3+Math.random()*2,'#86efac',-4+i*.9,1.17,Z+(Math.random()-.5)*1);l.castShadow=false;g.add(l)}
-  const pads=[[-2.2,-1.5],[2.2,-1.5],[-2.2,1.6],[2.2,1.6]].map(([x,z],i)=>{const m=mk(new CylinderGeometry(1.1,1.1,.3,20),new MeshLambertMaterial({color:COL[i],emissive:'#000000'}),x,1.35,Z+z);g.add(m);return {m,x,z,i,glow:0}});
+  const pads=[[-2.2,-1.5],[2.2,-1.5],[-2.2,1.6],[2.2,1.6]].map(([x,z],i)=>{const m=mk(new CylinderGeometry(1.1,1.1,.3,20),new MeshStandardMaterial({roughness:.72,color:COL[i],emissive:'#000000'}),x,1.35,Z+z);g.add(m);return {m,x,z,i,glow:0}});
   const iron=new Group();iron.add(mk(new CylinderGeometry(.1,.1,2.4,6),lam('#475569'),0,1.2,0),mk(new CylinderGeometry(.18,.04,.5,6),lam('#fbbf24'),0,-.1,0));iron.position.set(0,2.2,Z);g.add(iron);
   let state='pause',seq=[],idx=0,rnd=0,strikes=0,done=0,t=0,tm=.8,showI=0,over=false;
   const world=(x,y,z)=>g.localToWorld(new Vector3(x,y,z));
@@ -432,7 +433,7 @@ function gKnead(c){
   c.hero.position.copy(c.L(-4.4,0,Z+1.6));c.hero.rotation.y=c.s.ry+1.1;
   const g=c.group;
   g.add(box(7.4,.9,4.6,'#a16207',0,.45,Z));const fl=box(5.2,.03,3.2,'#fff7e6',0,.92,Z);fl.castShadow=false;g.add(fl);
-  const dough=mk(new SphereGeometry(1.35,20,14),new MeshLambertMaterial({color:raw.clone()}),0,1.7,Z);dough.scale.set(1.15,.7,1);g.add(dough);
+  const dough=mk(new SphereGeometry(1.35,20,14),new MeshStandardMaterial({roughness:.72,color:raw.clone()}),0,1.7,Z);dough.scale.set(1.15,.7,1);g.add(dough);
   const pin=mk(new CylinderGeometry(.22,.22,3.4,10),lam('#c08a4d'),0,2.6,Z);pin.rotation.z=Math.PI/2;g.add(pin);
   const bars=()=>`<div class="f3"><small>Teig – gleichmäßig im Takt wischen</small><div class="f3p"><i id="f3g"></i></div></div>`;
   c.status('<b>Hin und her wischen!</b>'+bars(),true);
@@ -530,7 +531,7 @@ export function play3d(env,s,st,custom){return new Promise(res=>{
   const group=new Group();group.position.set(s.at[0],0,s.at[1]);group.rotation.y=s.ry;scene.add(group);
   const world=new Group();scene.add(world);
   // Splitter: fester Vorrat an kleinen Brocken mit Schwerkraft
-  const cg=new IcosahedronGeometry(.13,0),chunks=Array.from({length:44},()=>{const m=new Mesh(cg,new MeshLambertMaterial({color:'#fff'}));m.visible=false;world.add(m);return {m,v:new Vector3(),l:0}});
+  const cg=new IcosahedronGeometry(.13,0),chunks=Array.from({length:44},()=>{const m=new Mesh(cg,new MeshStandardMaterial({roughness:.72,color:'#fff'}));m.visible=false;world.add(m);return {m,v:new Vector3(),l:0}});
   let ci=0,ended=false;
   const ui=document.createElement('div');ui.className='w3g';
   ui.innerHTML=`<div class="w3gp"><button class="x" id="w3gx">✕</button><b id="w3gt">${d.t}${outN&&!outN.includes('undefined')?outN:''}</b><div class="w3gs" id="w3gs"></div><div class="timer"><i id="w3gm" style="width:100%"></i></div></div>

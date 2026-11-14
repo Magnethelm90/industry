@@ -1,13 +1,14 @@
 /* 3D-Lieferfahrt: Du steuerst den LKW selbst über die Landstraße zum Markt.
    Gleiche Regeln und gleiche Abrechnung wie die 2D-Fahrt (Zustand der Ladung in %, Münzen); Ergebnis {integ, coins} oder null bei Abbruch. */
-import {BoxGeometry,CanvasTexture,CircleGeometry,Color,ConeGeometry,CylinderGeometry,DirectionalLight,Fog,Group,HemisphereLight,Mesh,MeshBasicMaterial,MeshLambertMaterial,
+import {BoxGeometry,CanvasTexture,CircleGeometry,Color,ConeGeometry,CylinderGeometry,DirectionalLight,Fog,Group,HemisphereLight,Mesh,MeshBasicMaterial,MeshStandardMaterial,
   PerspectiveCamera,PlaneGeometry,RepeatWrapping,Scene,SRGBColorSpace,InstancedMesh,Object3D,SphereGeometry} from 'three';
 import {SFX,motor,vib} from '../fx.js';
+import {enhance,enhanceAll} from './real.js';
 import {dayPhase,weather} from '../world.js';
 
 const LANE=3.7,MAXX=4.7,ROADW=11.5,FAR=260,STEP=450;
 const DMG={cone:15,barrier:25,boulder:25,car:30},HITW={cone:.9,barrier:2.7,boulder:2,car:2,coin:1.7};
-const lam=(c,o={})=>new MeshLambertMaterial({color:c,...o});
+const lam=(c,o={})=>{const m=new MeshStandardMaterial({color:c,roughness:.8,metalness:0,...o});if(!o.transparent)enhance(m);return m};
 const box=(w,h,d,c,x=0,y=0,z=0)=>{const m=new Mesh(new BoxGeometry(w,h,d),typeof c==='string'?lam(c):c);m.position.set(x,y,z);return m};
 
 function roadTex(){
@@ -37,16 +38,17 @@ export function drive3d(env,route,load){return new Promise(res=>{
   const AMP=route.id==='hafen'?1.25:.8,cv=d=>AMP*(7*Math.sin(d/85)+4*Math.sin(d/38+1.3));let curvePos=0;const r=dz=>cv(curvePos+dz)-cv(curvePos);
   const bent=[];const bend=(geo,mesh)=>{bent.push({geo,mesh,bx:Float32Array.from(geo.attributes.position.array.filter((_,i)=>i%3===0))})};
   const bendUpdate=()=>{for(const b of bent){const pa=b.geo.attributes.position;for(let i=0;i<pa.count;i++){const dz=-(b.mesh.position.z-pa.getY(i));pa.setX(i,b.bx[i]+r(dz))}pa.needsUpdate=true}};
-  scene.add(new HemisphereLight(night?'#8fa3e8':'#ffffff',night?'#34503a':'#8fcf6a',.95*LI+.3));
-  const sun=new DirectionalLight(night?'#aebfff':'#fff4dc',1.4*LI+.2);sun.position.set(-12,24,10);scene.add(sun);
+  scene.environment=env.scene.environment;scene.environmentIntensity=(night?.55:.85)*(wet||snow?.7:1);
+  scene.add(new HemisphereLight(night?'#8fa3e8':'#ffffff',night?'#34503a':'#8fcf6a',.42*LI+.16));
+  const sun=new DirectionalLight(night?'#aebfff':'#fff4dc',1.8*LI+.25);sun.position.set(-12,24,10);scene.add(sun);
   const cam=new PerspectiveCamera(58,innerWidth/innerHeight,.1,400);
   const fit=()=>{cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix()};addEventListener('resize',fit);
   // Straße und Wiese laufen als Band unter dem LKW durch (die Textur wandert)
-  const rt=roadTex();rt.repeat.set(1,FAR/12);const road=new Mesh(new PlaneGeometry(ROADW,FAR+40,1,70),lam('#ffffff',{map:rt}));road.rotation.x=-Math.PI/2;road.position.set(0,.02,-FAR/2+20);scene.add(road);bend(road.geometry,road);
+  const rt=roadTex();rt.repeat.set(1,FAR/12);const road=new Mesh(new PlaneGeometry(ROADW,FAR+40,1,70),lam('#ffffff',{map:rt,roughness:wet?.28:snow?.7:.9}));road.rotation.x=-Math.PI/2;road.position.set(0,.02,-FAR/2+20);scene.add(road);bend(road.geometry,road);
   const gt=grassTex();gt.repeat.set(30,FAR/8);const grass=new Mesh(new PlaneGeometry(260,FAR+40),lam(snow?'#f1f5f9':'#ffffff',{map:gt}));grass.rotation.x=-Math.PI/2;grass.position.set(0,0,-FAR/2+20);scene.add(grass);
   for(const s of [-1,1]){const sh=new Mesh(new PlaneGeometry(1.6,FAR+40,1,70),lam('#d9c39a'));sh.rotation.x=-Math.PI/2;sh.position.set(s*(ROADW/2+.8),.015,-FAR/2+20);scene.add(sh);bend(sh.geometry,sh)}
   // Hafenstrecke: links liegt das Meer
-  if(route.id==='hafen'){const sea=new Mesh(new PlaneGeometry(200,FAR+40,1,70),lam('#3aa7e0'));sea.rotation.x=-Math.PI/2;sea.position.set(-(34+100),.03,-FAR/2+20);scene.add(sea);bend(sea.geometry,sea)}
+  if(route.id==='hafen'){const sea=new Mesh(new PlaneGeometry(200,FAR+40,1,70),lam('#1f7fa8',{roughness:.1,metalness:.15,envMapIntensity:1.4}));sea.rotation.x=-Math.PI/2;sea.position.set(-(34+100),.03,-FAR/2+20);scene.add(sea);bend(sea.geometry,sea)}
   // Hügel am Horizont
   for(let i=0;i<10;i++){const s=26+Math.random()*26,h=new Mesh(new CircleGeometry(s,18),new MeshBasicMaterial({color:['#6fbf5a','#5fae52','#7ccd62'][i%3],fog:true}));h.position.set(-170+i*38,-s*.45,-FAR+12);scene.add(h)}
   // Landschaft am Straßenrand: wandert mit und wird vorn wieder eingesetzt
@@ -56,6 +58,7 @@ export function drive3d(env,route,load){return new Promise(res=>{
   for(let i=0;i<46;i++){const k=kinds[i%kinds.length],o=M[k].clone(true),side=i%2?1:-1;
     const x=k==='lamp'?side*(ROADW/2+1.6):decoX(side);o.position.set(x,0,-Math.random()*FAR);o.rotation.y=k==='lamp'?(side>0?Math.PI:0):Math.random()*6.28;o.scale.setScalar(k==='lamp'?1:.9+Math.random()*.8);scene.add(o);deco.push({o,lamp:k==='lamp',bx:x})}
   if(route.id==='hafen')for(let i=0;i<22;i++){const o=new Group(),cols=['#ef4444','#2563eb','#f59e0b','#16a34a','#f8fafc'];for(let k=0;k<1+i%3;k++)o.add(box(5.6,2.6,2.4,cols[(i+k*2)%5],0,1.3+k*2.6,0));o.position.set(-(ROADW/2+5+Math.random()*7),0,-Math.random()*FAR);o.rotation.y=Math.random()*.3-.15;scene.add(o);deco.push({o,lamp:false,bx:o.position.x,fix:1})}
+  enhanceAll(scene,night);
   // LKW mit Schatten
   const truck=M.truck.clone(true);truck.rotation.y=Math.PI;scene.add(truck);
   const shadow=new Mesh(new CircleGeometry(2.2,20),new MeshBasicMaterial({color:'#000',transparent:true,opacity:.28}));shadow.rotation.x=-Math.PI/2;shadow.scale.set(.8,1.7,1);shadow.position.y=.04;scene.add(shadow);
