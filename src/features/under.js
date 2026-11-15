@@ -28,7 +28,7 @@ export function fenceSell(f,e){
   while(k<n&&(S.ug.stash[f.g]||0)>0){S.ug.stash[f.g]--;k++}
   const pay=Math.round(k*G[f.g].base*f.m);S.money+=pay;S.xp+=Math.ceil(pay/15);S.ug.heat=Math.min(100,S.ug.heat+k*.6*f.risk);
   SFX.coin();vib(15);fx('+'+fmt(pay)+' Cr','#a3e635',e.clientX,e.clientY-30);
-  if(Math.random()<f.risk*.04){toast('🚨 '+f.n+' war ein Spitzel! Die Polizei kommt!');setTimeout(()=>{if(!OV)raid()},1200)}
+  if(Math.random()<f.risk*.04){toast('🚨 '+f.n+' war ein Spitzel! Die Polizei kommt!');setTimeout(()=>{if(!OV&&!window.__w3dBusy)raid()},1200)}
   render();
 }
 export function siren(ov){let i=0;const iv=setInterval(()=>{if(!ov.alive){clearInterval(iv);return}tone(i++%2?660:880,.28,'square',.035)},300)}
@@ -74,7 +74,7 @@ export function tickUnder(dt){
   const u=S.ug,now=Date.now();u.heat=Math.max(0,u.heat-.04*dt);
   if(!isOpen('under'))return;
   if(!u.fences||now>u.fenceAt)genFences();
-  if(OV)return;
+  if(OV||window.__w3dBusy)return; // nicht mitten in ein 3D-Spiel oder eine Fahrt platzen
   const exposed=illLager().length>0;
   if((exposed||u.heat>50)&&now>u.nextRaid){u.nextRaid=now+20000;if(Math.random()<u.heat/100*.18+(exposed?.04:0))return raid()}
   if(u.active&&now>u.nextGang){if(u.nextGang)gangDemand();u.nextGang=now+(4+Math.random()*3)*60000;return}

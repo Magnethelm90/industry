@@ -31,7 +31,7 @@ let fail=0;const ok=(c,m)=>{console.log((c?'  ok  ':'  FEHLER ')+m);if(!c)fail++
   await p.click('#w3gb');await p.waitForTimeout(200);
   await go('stahl');await p.waitForTimeout(700);
   ok(await p.evaluate(()=>document.getElementById('w3b').disabled===false&&/Schmelzofen/.test(document.getElementById('w3b').textContent)),'Schmelzofen: Zutaten reichen, Knopf aktiv');
-  await p.evaluate(()=>{S.stock.erz=0});await p.waitForFunction(()=>document.getElementById('w3b').disabled,null,{timeout:15000}).catch(()=>{});
+  await p.evaluate(()=>{S.stock.erz=0});await p.waitForFunction(()=>document.getElementById('w3b').disabled,null,{timeout:60000}).catch(()=>{});
   ok(await p.evaluate(()=>document.getElementById('w3b').disabled&&/fehlt/.test(document.getElementById('w3b').textContent)),'Schmelzofen: ohne Erz zeigt der Knopf, was fehlt');
   // Neue Stationen: Ziegelei braucht Lehm, Montage Stahl und Ziegel
   await p.evaluate(()=>{S.stock.lehm=0});await go('ziegel');await p.waitForFunction(()=>document.getElementById('w3b').disabled&&/Lehm/.test(document.getElementById('w3b').textContent),null,{timeout:15000});

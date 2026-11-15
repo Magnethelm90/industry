@@ -201,7 +201,7 @@ export async function open3d(){
   cam.position.set(P.x+Math.sin(C.yaw)*Math.cos(C.pitch)*C.dist,1.6+Math.sin(C.pitch)*C.dist,P.z+Math.cos(C.yaw)*Math.cos(C.pitch)*C.dist);
   const keys={};let stick={x:0,y:0},camDrag=null,stickId=null,near=null,tm=0,dustT=0,fps=60,slow=0,game=null,swingT=0,driveObj=null;
   const look=new Vector3(0,1.5,7);
-  const env={renderer,M,setDrive:d=>{driveObj=d;if(!d){hud();refreshLabels()}},scene,cam,root,hero,setGame:g=>{game=g;beacon.visible=!!target&&!g;root.classList.toggle('ingame',!!g);hideInGame.forEach(o=>o.visible=!g);zones.forEach(z=>{z.ring.visible=z.disc.visible=!g&&!hidden(z.s)});if(!g){cam.userData.d=null}},swing:()=>{swingT=.28}};
+  const env={renderer,M,setDrive:d=>{driveObj=d;window.__w3dBusy=!!d;if(!d){hud();refreshLabels()}},scene,cam,root,hero,setGame:g=>{game=g;window.__w3dBusy=!!g;beacon.visible=!!target&&!g;root.classList.toggle('ingame',!!g);hideInGame.forEach(o=>o.visible=!g);zones.forEach(z=>{z.ring.visible=z.disc.visible=!g&&!hidden(z.s)});if(!g){cam.userData.d=null}},swing:()=>{swingT=.28}};
   const stickEl=$('w3s'),knob=$('w3k');
   const key=e=>{if(OV||sheetOn)return;keys[e.code]=e.type==='keydown'};addEventListener('keydown',key);addEventListener('keyup',key);
   const area=root;
@@ -324,7 +324,7 @@ export async function open3d(){
       o.sp.visible=!!ch;if(ch){o.sp.material.map=emoji(ch);o.sp.material.needsUpdate=true}})}
   const exit=()=>{closeSheet();alive=false;removeEventListener('keydown',key);removeEventListener('keyup',key);removeEventListener('resize',resize);
     scene.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material){(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>{m.map&&m.map.dispose();m.dispose()})}});
-    renderer.dispose();root.remove();window.__w3d=0;delete window.__w3dState;delete window.__w3dDrive};
+    renderer.dispose();root.remove();window.__w3d=0;window.__w3dBusy=false;delete window.__w3dState;delete window.__w3dDrive};
   $('w3x').onclick=exit;
   // Die Lieferung (Logistik) fährt in 3D, solange die Welt offen ist
   window.__w3dDrive=(route,load)=>{closeSheet();return drive3d(env,route,load)};
