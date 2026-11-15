@@ -132,8 +132,9 @@ function gStack(c){
   g.add(box(3.6,.26,2,'#8a5a2b',0,.13,Z));
   const layers=[{x:0,w:W0,y:.26+H/2}];g.add(box(W0,H,1.4,cols[0],0,layers[0].y,Z));
   // Kranarm über dem Stapel
-  g.add(box(.35,9,.35,'#facc15',-5.4,4.5,Z-1.2),box(9,.3,.3,'#facc15',-1.2,8.8,Z-1.2));
-  const rope=box(.06,1,.06,'#1e293b',0,6,Z);rope.castShadow=false;g.add(rope);
+  const cr=()=>metal('#d9a514',.45);g.add(box(.35,9,.35,cr(),-5.4,4.5,Z-1.2),box(9,.3,.3,cr(),-1.2,8.8,Z-1.2),box(.9,.5,.9,metal('#3a4350',.5),-5.4,.25,Z-1.2));
+  for(let i=0;i<6;i++){const d=box(.1,1.5,.1,cr(),-5.4,1+i*1.4,Z-1.2);d.rotation.z=i%2?.5:-.5;d.castShadow=false;g.add(d)}
+  const rope=box(.05,1,.05,metal('#20262e',.4),0,6,Z);rope.castShadow=false;g.add(rope);
   let cur=null,ph=0,placed=0,over=false,drop=null,camY=2.2;
   const next=()=>{const p=layers[layers.length-1];cur=box(p.w,H,1.4,cols[layers.length%2],0,p.y+H+1.5,Z);g.add(cur);ph=Math.random()<.5?0:Math.PI};
   next();c.status('Lage 0 von '+N);
@@ -147,7 +148,7 @@ function gStack(c){
         if(k>=1){const dx=drop.x-p.x,ov=p.w-Math.abs(dx);
           if(ov<.3){SFX.crash();c.shake(.4);c.burst(world(drop.x,drop.y1,Z),cols[0],14,5);g.remove(cur);c.pop('Daneben!',world(drop.x,drop.y1+1,Z),'#ef4444');drop=null;return end()}
           const perfect=Math.abs(dx)<.16,w=perfect?p.w:ov,x=perfect?p.x:p.x+dx/2;
-          cur.scale.x=w/p.w;cur.position.set(x,drop.y1,Z);layers.push({x,w,y:drop.y1});placed++;
+          cur.scale.x=w/p.w;cur.position.set(x,drop.y1,Z);layers.push({x,w,y:drop.y1});placed++;c.puff(world(x-w/2,drop.y1-.2,Z+.7),'dust',3);c.puff(world(x+w/2,drop.y1-.2,Z+.7),'dust',3);
           if(perfect){SFX.perfect();c.pop('Perfekt! ✨',world(x,drop.y1+1,Z),'#34d399');c.burst(world(x,drop.y1,Z),'#fde047',10,4)}
           else{SFX.thud();c.burst(world(p.x+Math.sign(dx)*(p.w/2+Math.abs(dx)/2),drop.y1,Z),cols[0],6,3.5);c.pop(Math.round(w/W0*100)+' %',world(x,drop.y1+1,Z),'#fff')}
           vib(12);c.shake(.12);drop=null;c.status('Lage '+placed+' von '+N);
@@ -163,19 +164,20 @@ function gStack(c){
 
 /* ---------- Fließband (Montage): Teile fahren vorbei. Tippe immer das Teil an, das der Bauplan gerade verlangt. */
 const PARTS={
-  gear:{n:'Zahnrad',c:'#fbbf24',mk:()=>{const m=mk(new CylinderGeometry(.55,.55,.24,8),lam('#fbbf24'));return m}},
-  pipe:{n:'Rohr',c:'#38bdf8',mk:()=>{const m=mk(new CylinderGeometry(.22,.22,1.15,10),lam('#38bdf8'));m.rotation.x=Math.PI/2;return m}},
-  plate:{n:'Blech',c:'#cbd5e1',mk:()=>mk(new BoxGeometry(1,.14,.8),lam('#cbd5e1'))},
-  bolt:{n:'Schraube',c:'#f472b6',mk:()=>{const g=new Group();g.add(mk(new CylinderGeometry(.16,.16,.6,6),lam('#f472b6'),0,.1,0),mk(new CylinderGeometry(.3,.3,.18,6),lam('#db2777'),0,.48,0));return g}},
-  junk:{n:'Schrott',c:'#57534e',mk:()=>mk(new IcosahedronGeometry(.42,0),lam('#57534e'))}
+  gear:{n:'Zahnrad',c:'#fbbf24',mk:()=>{const g=new Group(),mt=metal('#d4a017',.32);g.add(mk(new CylinderGeometry(.46,.46,.24,20),mt),mk(new CylinderGeometry(.14,.14,.3,10),metal('#3a3f47',.4)));for(let i=0;i<10;i++){const a=i/10*Math.PI*2,t=mk(new BoxGeometry(.2,.24,.16),mt,Math.cos(a)*.52,0,Math.sin(a)*.52);t.rotation.y=-a;g.add(t)}return g}},
+  pipe:{n:'Rohr',c:'#38bdf8',mk:()=>{const m=mk(new CylinderGeometry(.22,.22,1.15,14),metal('#4aa3d8',.28));m.rotation.x=Math.PI/2;return m}},
+  plate:{n:'Blech',c:'#cbd5e1',mk:()=>mk(new BoxGeometry(1,.1,.8),metal('#c9d1db',.22))},
+  bolt:{n:'Schraube',c:'#f472b6',mk:()=>{const g=new Group();g.add(mk(new CylinderGeometry(.14,.14,.6,10),metal('#e06aa8',.3),0,.1,0),mk(new CylinderGeometry(.3,.3,.18,6),metal('#c2478c',.3),0,.48,0));return g}},
+  junk:{n:'Schrott',c:'#57534e',mk:()=>mk(new IcosahedronGeometry(.42,0),lam('#6b4a35'))}
 };
 function gAssemble(c){
   const N=CNT.assemble(c.q),D=N*4.25,Z=8.6,KEYS=['gear','pipe','plate','bolt'],NM=k=>k==='junk'?'Schrott':(c.th.names?c.th.names[KEYS.indexOf(k)]:PARTS[k].n);
   c.view(c.L(0,6.4,18),c.L(.4,1.7,Z+.4),3.4);
   c.hero.position.copy(c.L(-5.8,0,6.6));c.hero.rotation.y=c.s.ry+.9;
   const g=c.group;
-  g.add(box(14,.3,1.6,'#475569',0,.9,Z));for(const x of [-6,-2,2,6])g.add(box(.3,.9,1.2,'#334155',x,.45,Z));
-  g.add(box(2.2,.3,2.2,'#334155',2.4,.15,Z+2.4)); // Sockel der entstehenden Maschine
+  g.add(box(14,.3,1.6,'#2b2f36',0,.9,Z),box(14,.14,.12,metal('#8a94a3',.35),0,1.02,Z+.8),box(14,.14,.12,metal('#8a94a3',.35),0,1.02,Z-.8));for(const x of [-6,-2,2,6])g.add(box(.3,.9,1.2,metal('#3a4350',.55),x,.45,Z));
+  for(const x of [-7,7]){const r=mk(new CylinderGeometry(.2,.2,1.7,12),metal('#8a94a3',.3),x,.9,Z);r.rotation.x=Math.PI/2;g.add(r)}
+  g.add(box(2.2,.3,2.2,metal('#3a4350',.5),2.4,.15,Z+2.4)); // Sockel der entstehenden Maschine
   const plan=Array.from({length:N},()=>KEYS[Math.floor(Math.random()*4)]);
   const items=[];let idx=0,strikes=0,t=0,next=.2,over=false;
   const show=()=>c.status(plan.map((k,i)=>`<i class="w3chip${i<idx?' ok':i===idx?' cur':''}" style="--c:${PARTS[k].c}">${i<idx?'✓':NM(k)}</i>`).join(''),true);
@@ -194,7 +196,7 @@ function gAssemble(c){
       if(over)return;let hit=null,bd=62;const w=new Vector3();
       for(const o of items){if(o.st!=='belt')continue;o.m.getWorldPosition(w);const [x,y]=c.project(w),d=Math.hypot(x-e.clientX,y-e.clientY);if(d<bd){bd=d;hit=o}}
       if(!hit)return;hit.m.getWorldPosition(w);c.swing();
-      if(hit.k===plan[idx]){hit.st='fly';hit.t=0;hit.from=hit.m.position.clone();hit.to=new Vector3(2.4+((idx%2)-.5)*.5,.5+idx*.3,Z+2.4);idx++;
+      if(hit.k===plan[idx]){c.puff(hit.m.getWorldPosition(new Vector3()),'spark',4);hit.st='fly';hit.t=0;hit.from=hit.m.position.clone();hit.to=new Vector3(2.4+((idx%2)-.5)*.5,.5+idx*.3,Z+2.4);idx++;
         SFX.good();vib(10);c.burst(w.clone(),PARTS[hit.k].c,6,4);c.pop('✓ '+NM(hit.k),w,'#34d399');show();if(idx>=N)end()}
       else{strikes++;hit.st='fall';hit.v=4;SFX.err();vib([40,30,40]);c.shake(.2);c.pop('✗ falsch',w,'#ef4444')}},
     info:()=>{const w=new Vector3();return {need:plan[idx],idx,strikes,items:items.filter(o=>o.st==='belt').map(o=>{o.m.getWorldPosition(w);return {k:o.k,p:c.project(w)}})}},
@@ -355,7 +357,8 @@ function gWeave(c){
   const g=c.group,X=i=>(i-2)*LW;
   g.add(box(10.4,.2,9.6,'#8b5a2b',0,.1,Z-2.6));
   for(let i=0;i<=LANES;i++)g.add(box(.08,.22,9.6,'#5b3a1b',(i-2.5)*LW,.2,Z-2.6));
-  g.add(box(10.6,.6,.45,'#f8fafc',0,.55,ZC+.5));for(let i=0;i<=LANES*3;i++)g.add(box(.08,.7,.5,'#cbd5e1',(i/3-2.5)*LW,.6,ZC+.5));
+  g.add(box(10.6,.2,.5,'#5b3a1b',0,.95,ZC+.5),box(10.6,.2,.5,'#5b3a1b',0,.25,ZC+.5));for(let i=0;i<=LANES*5;i++){const zn=box(.05,.7,.4,metal('#c9d1db',.25),(i/5-2.5)*LW,.6,ZC+.5);zn.castShadow=false;g.add(zn)}
+  for(const sx of [-1,1])g.add(box(.4,1.6,.4,'#5b3a1b',sx*5.4,.8,ZC+.5),box(.4,1.2,.4,'#5b3a1b',sx*5.4,.6,ZS-.2));g.add(mk(new CylinderGeometry(.3,.3,10.8,14),lam('#7a4f2a'),0,.9,ZS-.2)).children.at(-1).rotation.z=Math.PI/2;
   const cloth=box(10.2,.16,1,'#fde68a',0,.28,ZC+1.5);cloth.scale.z=.01;g.add(cloth);
   const rows=[];let spawned=0,good=0,bad=0,miss=0,t=0,next=.4,over=false;
   const world=(x,y,z)=>g.localToWorld(new Vector3(x,y,z));
@@ -363,7 +366,7 @@ function gWeave(c){
   const mkRow=()=>{const gap=Math.floor(Math.random()*LANES),r=new Group();
     for(let i=0;i<LANES;i++){if(i===gap){const m=mk(new BoxGeometry(LW-.3,.06,1),new MeshBasicMaterial({color:'#fde047',transparent:true,opacity:.4}),X(i),.3,0);m.castShadow=false;r.add(m)}else r.add(box(LW-.3,.3,1,COL[i],X(i),.4,0))}
     r.position.z=ZS;g.add(r);rows.push({g:r,gap,z:ZS,done:false})};
-  const settle=(r,ok)=>{r.done=true;if(ok){good++;SFX.good();vib(8);c.burst(world(X(r.gap),.8,ZC),COL[r.gap],6,4);c.pop('✓',world(X(r.gap),1.6,ZC),'#34d399');cloth.scale.z=Math.min(3.2,good*.27);cloth.position.z=ZC+1+cloth.scale.z/2;setTimeout(()=>{g.remove(r.g)},0)}else r.g.traverse(o=>{if(o.material){o.material.transparent=true;o.material.opacity=.3}});stat()};
+  const settle=(r,ok)=>{r.done=true;if(ok){good++;SFX.good();vib(8);c.puff(world(X(r.gap),.8,ZC),'dust',3);c.pop('✓',world(X(r.gap),1.6,ZC),'#34d399');cloth.scale.z=Math.min(3.2,good*.27);cloth.position.z=ZC+1+cloth.scale.z/2;setTimeout(()=>{g.remove(r.g)},0)}else r.g.traverse(o=>{if(o.material){o.material.transparent=true;o.material.opacity=.3}});stat()};
   const laneXY=()=>Array.from({length:LANES},(_,i)=>c.project(world(X(i),.6,ZC)));
   return {
     update(dt){
@@ -388,13 +391,13 @@ function gCut(c){
   c.view(c.L(0,8.4,Z+7.2),c.L(0,CY,Z),5.2);
   c.hero.position.copy(c.L(-6.4,0,Z+2));c.hero.rotation.y=c.s.ry+1.2;
   const g=c.group;
-  g.add(box(10.4,.9,6.2,'#a16207',0,.45,Z));
+  g.add(box(10.4,.9,6.2,'#7a4f2a',0,.45,Z));for(let i=0;i<6;i++){const f=box(10.42,.02,.04,'#4a2f18',0,.905,Z-2.6+i*1.04);f.castShadow=false;g.add(f)}
   const cloth=box(9.4,.1,5.2,'#e9d5ff',0,CY-.05,Z);g.add(cloth);
   const dashGeo=new BoxGeometry(.16,.04,.16),dashMat=new MeshBasicMaterial({color:'#7c3aed'}),dots=[];
   for(let i=0;i<48;i++){const d=new Mesh(dashGeo,dashMat);d.position.y=CY+.03;g.add(d);dots.push(d)}
   const trGeo=new SphereGeometry(.12,6,5),trMat=new MeshBasicMaterial({color:'#22c55e'}),tr=[];
   for(let i=0;i<MAXP;i++){const d=new Mesh(trGeo,trMat);d.visible=false;d.position.y=CY+.08;g.add(d);tr.push(d)}
-  const sc=new Group();for(const r of [.35,-.35]){const b=box(.18,.08,1.1,'#cbd5e1',0,0,0);b.rotation.y=r;sc.add(b)}sc.add(box(.4,.12,.4,'#ef4444',0,0,.7));sc.position.set(X0,CY+.25,Z);sc.scale.setScalar(1.5);g.add(sc);
+  const sc=new Group();for(const r of [.35,-.35]){const b=box(.18,.06,1.1,metal('#d5dbe3',.18),0,0,0);b.rotation.y=r;sc.add(b)}for(const sx of [-.3,.3]){const h=mk(new TorusGeometry(.22,.07,8,16),lam('#b91c1c'),sx,0,.75);h.rotation.x=Math.PI/2;sc.add(h)}sc.add(mk(new CylinderGeometry(.07,.07,.12,8),metal('#59636f',.3)));sc.position.set(X0,CY+.25,Z);sc.scale.setScalar(1.5);g.add(sc);
   let round=0,fz=()=>0,pts=[],down=false,total=0,over=false,wait=0,rawT=0,t=0;
   const newPath=()=>{const a=.8+round*.5+Math.random()*.4,b=.9+Math.random()*.8+round*.35,ph=Math.random()*6,a2=.35,b2=2.2+Math.random(),ph2=Math.random()*6;
     fz=x=>a*Math.sin((x-X0)/(X1-X0)*Math.PI*b+ph)*(1-.35*Math.abs(x/3.7))+a2*Math.sin((x-X0)/(X1-X0)*Math.PI*b2+ph2)*.5;
@@ -406,7 +409,7 @@ function gCut(c){
   const score=()=>{if(!pts.length)return 0;const mx=Math.max(...pts.map(p=>p[0])),reach=clamp((mx-X0)/(X1-X0-.3));let sum=0,k=0;
     for(let x=X0;x<=X1;x+=.3){if(x>mx)break;const d=Math.min(...pts.map(p=>Math.hypot(p[0]-x,p[1]-fz(x))));sum+=Math.max(0,1-d/TOL);k++}return reach*(k?sum/k:0)};
   const finish=()=>{down=false;if(wait>0||over)return;const v=score();total+=v;wait=.9;
-    const txt=v>=.9?'Sauber geschnitten! ✂️':v>=.6?'Ganz gut':'Schief…';c.say(txt);(v>=.6?SFX.good:SFX.miss)();vib(v>=.6?10:[40,30,40]);c.burst(sc.position.clone().applyMatrix4(g.matrixWorld),'#e9d5ff',8,4)};
+    const txt=v>=.9?'Sauber geschnitten! ✂️':v>=.6?'Ganz gut':'Schief…';c.say(txt);(v>=.6?SFX.good:SFX.miss)();vib(v>=.6?10:[40,30,40]);c.puff(sc.position.clone().applyMatrix4(g.matrixWorld),'dust',5)};
   return {
     update(dt){
       if(over)return;t+=dt;c.time(1-(round+(down?.5:0))/CUTS);
@@ -495,7 +498,9 @@ function gCatch(c){
   c.hero.position.copy(c.L(-6,0,Z+1.2));c.hero.rotation.y=c.s.ry+1.2;
   const g=c.group;
   g.add(box(11,.2,5,'#8a6a3b',0,.1,Z));
-  const basket=new Group();basket.add(mk(new CylinderGeometry(1.2,.9,.8,14),lam('#b45309'),0,.4,0),mk(new CylinderGeometry(1.25,1.25,.12,14),lam('#92400e'),0,.82,0));basket.position.set(0,BY-.4,Z);g.add(basket);
+  const basket=new Group();basket.add(mk(new CylinderGeometry(1.2,.9,.8,20,1,true),lam('#a8743a'),0,.4,0),mk(new CylinderGeometry(.9,.9,.06,20),lam('#8a5a2b'),0,.03,0));
+  for(let i=0;i<4;i++){const r=mk(new TorusGeometry(.93+i*.09,.05,6,24),lam(i%2?'#8a5a2b':'#c08a4d'),0,.12+i*.24,0);r.rotation.x=Math.PI/2;basket.add(r)}
+  {const h=mk(new TorusGeometry(1.2,.06,6,20,Math.PI),lam('#8a5a2b'),0,.84,0);basket.add(h)}basket.position.set(0,BY-.4,Z);g.add(basket);
   const geoG=new SphereGeometry(.34,8,6),geoS=new IcosahedronGeometry(.4,0),matG=lam(col,col,.25),matS=lam('#6b7280');
   const items=[];let t=0,next=.5,bx=0,tx=0,pts=0,total=0,stones=0,over=false,spawned=0;
   const plane=new Plane(new Vector3(0,1,0),-BY),rc=new Raycaster(),hit=new Vector3();
@@ -511,7 +516,7 @@ function gCatch(c){
         const y=it.m.position.y;
         if(y<=BY+.3&&y>BY-.5&&Math.abs(it.m.position.x-bx)<1.15){it.done=true;g.remove(it.m);const p=world(bx,BY+.9,Z);
           if(it.stone){stones++;pts=Math.max(0,pts-2);SFX.crash();vib([50,30,50]);c.shake(.3);c.pop('Stein! −2',p,'#ef4444');c.burst(p,'#9ca3af',8,4)}
-          else{pts++;SFX.good();vib(8);c.pop('+1',p,'#34d399');c.burst(p,col,5,3)}stat()}
+          else{pts++;SFX.good();vib(8);c.pop('+1',p,'#34d399');c.burst(p,col,3,3);c.puff(p,'dust',2)}stat()}
         else if(y<.3){it.done=true;g.remove(it.m);if(!it.stone)SFX.miss()}}
       if(t>=D&&!items.some(i=>!i.done)||t>=D+4){over=true;const sc=clamp(pts/Math.max(8,total*.85));c.say(pts+' von '+total+' gefangen');setTimeout(()=>c.finish(sc),700)}},
     down(e){const x=local(e);if(x!=null)tx=clamp(x,-4.6,4.6)},move(e){const x=local(e);if(x!=null)tx=clamp(x,-4.6,4.6)},up(){},

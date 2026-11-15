@@ -37,7 +37,7 @@ const URL='file://'+path.resolve(__dirname,'../dist/index.html')+'?debug';
 
   // Alle Bildschirme rendern
   for(const k of ['work','farm','bld','market','shop','orders','logistics','under']){
-    await ev(k=>go(k),k);await p.waitForTimeout(80);
+    await ev(k=>go(k),k);await p.waitForFunction(k=>document.querySelector('#s-'+k).children.length>1,k,{timeout:5000}).catch(()=>{});
     const n=await ev(k=>document.querySelector('#s-'+k).children.length,k);
     ok(n>1,'Bildschirm '+k+' ('+n+' Elemente)');
   }
