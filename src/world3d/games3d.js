@@ -567,7 +567,8 @@ export function play3d(env,s,st,custom){return new Promise(res=>{
   const wipe=keep=>[group,world].forEach((gr,i)=>[...gr.children].forEach(o=>{if(keep[i].has(o))return;o.traverse(x=>{if(x.geometry)x.geometry.dispose();if(x.material)(Array.isArray(x.material)?x.material:[x.material]).forEach(m=>m.dispose())});gr.remove(o)}));
   const keep0=[new Set(),new Set(chunks.map(k=>k.m))];
   function next(sc){
-    if(ended)return;scores.push(sc);
+    if(ended)return;if(steps.length===1)return close(sc); // ein Schritt: Ergebnis unverändert (Angeln liefert eine Fangliste)
+    scores.push(sc);
     if(si+1>=steps.length)return close(scores.reduce((a,b)=>a+b,0)/scores.length);
     G3.running=false;game.dispose&&game.dispose();wipe(keep0);si++;c.th=steps[si].th||{};
     $('w3gt').textContent=hd(si)+outN;$('w3gs').innerHTML='';$('w3gm').style.width='100%';
