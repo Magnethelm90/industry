@@ -39,7 +39,7 @@ export function drive3d(env,route,load){return new Promise(res=>{
   const bent=[];const bend=(geo,mesh)=>{bent.push({geo,mesh,bx:Float32Array.from(geo.attributes.position.array.filter((_,i)=>i%3===0))})};
   const bendUpdate=()=>{for(const b of bent){const pa=b.geo.attributes.position;for(let i=0;i<pa.count;i++){const dz=-(b.mesh.position.z-pa.getY(i));pa.setX(i,b.bx[i]+r(dz))}pa.needsUpdate=true}};
   scene.environment=env.scene.environment;scene.environmentIntensity=(night?.55:.85)*(wet||snow?.7:1);
-  scene.add(new HemisphereLight(night?'#8fa3e8':'#ffffff',night?'#34503a':'#8fcf6a',.42*LI+.16));
+  scene.add(new HemisphereLight(night?'#8fa3e8':'#ffffff',night?'#34503a':'#8fcf6a',(.42*LI+.16)*(scene.environment?1:2.1)));
   const sun=new DirectionalLight(night?'#aebfff':'#fff4dc',1.8*LI+.25);sun.position.set(-12,24,10);scene.add(sun);
   const cam=new PerspectiveCamera(58,innerWidth/innerHeight,.1,400);
   const fit=()=>{cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix()};addEventListener('resize',fit);

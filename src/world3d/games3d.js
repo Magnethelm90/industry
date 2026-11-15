@@ -8,6 +8,9 @@ import {S,diff,unl} from '../state.js';
 import {FISH} from '../games/fish.js';
 import {dayPhase,wxIs} from '../world.js';
 
+// Umfang eines Spiels; q<1 bei mehrstufigen Abläufen (jeder Schritt ist dann kürzer)
+const CNT={mine:q=>Math.round(20*q),pour:q=>Math.max(3,Math.round(6*q)),stack:q=>Math.max(5,Math.round(8*q)),assemble:q=>Math.max(5,Math.round(8*q)),bake:q=>Math.max(6,Math.round(9*q)),
+  stir:q=>Math.round(16*q),weave:q=>Math.max(7,Math.round(12*q)),cut:q=>q<1?2:3,solder:q=>q<1?3:4,knead:q=>Math.round(11*q)+(q<1?1:0),catch:q=>Math.round(20*q)};
 const lam=(c,e,ei=1)=>{const m=new MeshStandardMaterial({color:c,emissive:e||'#000000',emissiveIntensity:e?ei:0,roughness:.72,metalness:0});if(!e)enhance(m);return m};
 const mk=(geo,mat,x=0,y=0,z=0)=>{const m=new Mesh(geo,mat);m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;return m};
 const box=(w,h,d,c,x,y,z,e)=>mk(new BoxGeometry(w,h,d),typeof c==='string'?lam(c,e):c,x,y,z);
@@ -16,7 +19,7 @@ const STEP=450; // ms je Zahl beim Herunterzählen
 
 /* ---------- Erzrausch (Minen): Adern leuchten im Fels auf – antippen, bevor sie verschwinden. Gold zählt dreifach, Dynamit kostet Punkte. */
 function gMine(c){
-  const D=20,ore=c.th.ore||(c.s.tint?c.s.tint.ore:'#c2603a');
+  const D=CNT.mine(c.q),ore=c.th.ore||(c.s.tint?c.s.tint.ore:'#c2603a');
   const look=c.L(0,3.2,1),camPos=c.view(c.L(0,6,17),look,4.3).clone();
   c.hero.position.copy(c.L(-3.4,0,7.6));c.hero.rotation.y=c.s.ry+Math.PI;
   // Mögliche Stellen: Strahlen von der Spielkamera auf den Fels
@@ -63,7 +66,7 @@ function gMine(c){
 
 /* ---------- Abstich (Schmelzofen): Formen fahren unter der Gießpfanne durch. Halten = gießen. Jede Form bis zur Marke füllen, nichts verschütten. */
 function gPour(c){
-  const N=6,Z=8.6,RATE=1.05,LIQ=c.th.liq||'#ff9a3d';
+  const N=CNT.pour(c.q),Z=8.6,RATE=1.05,LIQ=c.th.liq||'#ff9a3d';
   c.view(c.L(0,6.2,18),c.L(0,2.3,Z),2.9);
   c.hero.position.copy(c.L(-5.6,0,6.4));c.hero.rotation.y=c.s.ry+.9;
   const g=c.group;
@@ -109,7 +112,7 @@ function gPour(c){
 
 /* ---------- Kran (Ziegelei): Die Ziegellage pendelt – tippen zum Ablegen. Was übersteht, bricht ab. */
 function gStack(c){
-  const N=8,Z=8.6,W0=2.8,H=.5;
+  const N=CNT.stack(c.q),Z=8.6,W0=2.8,H=.5;
   c.view(c.L(0,5.5,17),c.L(0,2.8,Z),3.3);
   c.hero.position.copy(c.L(-5.2,0,7));c.hero.rotation.y=c.s.ry+.8;
   const g=c.group,cols=c.th.cols||['#b5533a','#c96a48'];
@@ -154,7 +157,7 @@ const PARTS={
   junk:{n:'Schrott',c:'#57534e',mk:()=>mk(new IcosahedronGeometry(.42,0),lam('#57534e'))}
 };
 function gAssemble(c){
-  const N=8,D=34,Z=8.6,KEYS=['gear','pipe','plate','bolt'],NM=k=>k==='junk'?'Schrott':(c.th.names?c.th.names[KEYS.indexOf(k)]:PARTS[k].n);
+  const N=CNT.assemble(c.q),D=N*4.25,Z=8.6,KEYS=['gear','pipe','plate','bolt'],NM=k=>k==='junk'?'Schrott':(c.th.names?c.th.names[KEYS.indexOf(k)]:PARTS[k].n);
   c.view(c.L(0,6.4,18),c.L(.4,1.7,Z+.4),3.4);
   c.hero.position.copy(c.L(-5.8,0,6.6));c.hero.rotation.y=c.s.ry+.9;
   const g=c.group;
@@ -188,7 +191,7 @@ function gAssemble(c){
 
 /* ---------- Ofen (Backstube, Räucherei, Fritteuse, Glühofen): Drei Öfen garen gleichzeitig. Tippe einen Ofen an, wenn sein Balken im grünen Bereich steht. */
 function gBake(c){
-  const N=9,Z=8.6,col=c.th.item||'#e8c07a';
+  const N=CNT.bake(c.q),Z=8.6,col=c.th.item||'#e8c07a';
   c.view(c.L(0,5.6,17.5),c.L(0,2.1,Z),3.9);
   c.hero.position.copy(c.L(-5.8,0,6.8));c.hero.rotation.y=c.s.ry+.9;
   const g=c.group,ovens=[];
@@ -281,7 +284,7 @@ function gFish3(c){
 
 /* ---------- Rühren (Käserei, Brauerei, Brennerei, Kunststoff): im Kreis wischen; das Tempo muss im grünen Bereich bleiben. */
 function gStir(c){
-  const Z=8.6,LO=3.6,HI=8.5,NEED=6,DUR=16,liq=c.th.liq||'#f59e0b';
+  const Z=8.6,LO=3.6,HI=8.5,DUR=CNT.stir(c.q),NEED=DUR*.375,liq=c.th.liq||'#f59e0b';
   c.view(c.L(0,6.8,Z+9),c.L(0,1.6,Z),3.8);
   c.hero.position.copy(c.L(-4.8,0,Z+1.4));c.hero.rotation.y=c.s.ry+1.1;
   const g=c.group;
@@ -320,7 +323,7 @@ let rotDir=1;
 
 /* ---------- Weben (Weberei): Fadenreihen laufen auf den Webkamm zu, in jeder fehlt ein Faden. Tippe die Spur mit der Lücke, bevor die Reihe den Kamm erreicht. */
 function gWeave(c){
-  const LANES=5,ROWS=12,Z=8.6,LW=1.9,ZS=Z-5.4,ZC=Z+1.8,COL=['#ef4444','#f59e0b','#22c55e','#38bdf8','#a78bfa'];
+  const LANES=5,ROWS=CNT.weave(c.q),Z=8.6,LW=1.9,ZS=Z-5.4,ZC=Z+1.8,COL=['#ef4444','#f59e0b','#22c55e','#38bdf8','#a78bfa'];
   c.view(c.L(0,7.2,Z+9),c.L(0,.6,Z-1.6),5.4);
   c.hero.position.copy(c.L(-6.4,0,Z+2));c.hero.rotation.y=c.s.ry+1.2;
   const g=c.group,X=i=>(i-2)*LW;
@@ -355,7 +358,7 @@ function gWeave(c){
 
 /* ---------- Zuschneiden (Schneiderei): Mit dem Finger der gestrichelten Linie von links nach rechts folgen. 3 Schnitte. */
 function gCut(c){
-  const Z=8.6,CUTS=3,X0=-3.7,X1=3.7,TOL=.6,CY=1.0,MAXP=170;
+  const Z=8.6,CUTS=CNT.cut(c.q),X0=-3.7,X1=3.7,TOL=.6,CY=1.0,MAXP=170;
   c.view(c.L(0,8.4,Z+7.2),c.L(0,CY,Z),5.2);
   c.hero.position.copy(c.L(-6.4,0,Z+2));c.hero.rotation.y=c.s.ry+1.2;
   const g=c.group;
@@ -394,7 +397,7 @@ function gCut(c){
 
 /* ---------- Löten (Platine, Fälscherwerkstatt): Lötpunkte leuchten in einer Reihenfolge auf; merke sie dir und tippe sie nach. */
 function gSolder(c){
-  const Z=8.6,ROUNDS=4,LEN=[3,4,5,6],MAXS=3,COL=['#ef4444','#fbbf24','#22c55e','#38bdf8'],FQ=[392,523,659,784];
+  const Z=8.6,ROUNDS=CNT.solder(c.q),LEN=[3,4,5,6],MAXS=3,COL=['#ef4444','#fbbf24','#22c55e','#38bdf8'],FQ=[392,523,659,784];
   c.view(c.L(0,8.6,Z+8.2),c.L(0,1.1,Z),5.2);
   c.hero.position.copy(c.L(-6,0,Z+1.8));c.hero.rotation.y=c.s.ry+1.2;
   const g=c.group;
@@ -428,7 +431,7 @@ function gSolder(c){
 
 /* ---------- Teig kneten (Bäckerei): hin und her wischen, im gleichmäßigen Takt. */
 function gKnead(c){
-  const Z=8.6,NEED=12,DUR=11,STROKE=70,MINT=.33,MAXT=.95,good=new Color(c.th.item||'#e8c07a'),raw=new Color('#fff3d6');
+  const Z=8.6,DUR=CNT.knead(c.q),NEED=Math.round(DUR*1.09),STROKE=70,MINT=.33,MAXT=.95,good=new Color(c.th.item||'#e8c07a'),raw=new Color('#fff3d6');
   c.view(c.L(0,6.4,Z+8.8),c.L(0,1.2,Z),3.9);
   c.hero.position.copy(c.L(-4.4,0,Z+1.6));c.hero.rotation.y=c.s.ry+1.1;
   const g=c.group;
@@ -461,7 +464,7 @@ function gKnead(c){
 
 /* ---------- Fangen (Mühle, Kelterei, Chipsfabrik): Ware fällt vom Himmel, der Korb folgt dem Finger. Steine nicht auffangen. */
 function gCatch(c){
-  const Z=8.6,D=20,BY=1.4,col=c.th.item||'#e9c46a';
+  const Z=8.6,D=CNT.catch(c.q),BY=1.4,col=c.th.item||'#e9c46a';
   c.view(c.L(0,7.2,Z+9.6),c.L(0,3.4,Z),4.8);
   c.hero.position.copy(c.L(-6,0,Z+1.2));c.hero.rotation.y=c.s.ry+1.2;
   const g=c.group;
@@ -492,53 +495,56 @@ function gCatch(c){
 
 // Welches 3D-Spiel eine Station nutzt: [Spiel, Titel, Thema]. Die Themen färben und benennen dasselbe Spiel passend zur Station.
 const HOW={
-  knead:w=>`Wisch mit dem Finger <b>hin und her</b> über den Teig – nicht zu hastig und nicht zu lahm. Im <b>gleichmäßigen Takt</b> wird der Teig am besten. 11 Sekunden ab dem ersten Zug.`,
+  knead:(w,q)=>`Wisch mit dem Finger <b>hin und her</b> über den Teig – nicht zu hastig und nicht zu lahm. Im <b>gleichmäßigen Takt</b> wird der Teig am besten. ${CNT.knead(q)} Sekunden ab dem ersten Zug.`,
   catch:w=>`${w||'Ware'} fällt vom Himmel. <b>Zieh den Korb</b> mit dem Finger nach links und rechts und fang sie auf. <b>Graue Steine</b> nicht auffangen!`,
   stir:w=>`Wisch mit dem Finger <b>im Kreis</b> um den Kessel. Halte das Tempo im <b>grünen Bereich</b>: zu langsam gibt Klumpen, zu schnell spritzt es.`,
-  weave:w=>`In jeder Fadenreihe fehlt ein Faden. Tippe die <b>Spur mit der Lücke</b>, bevor die Reihe den Webkamm erreicht. Falsche Spur = Fehler. 12 Reihen.`,
-  cut:w=>`Setz den Finger links auf die <b>Schere</b> und zieh sie entlang der gestrichelten Linie nach rechts. Je genauer, desto sauberer der Schnitt. 3 Schnitte.`,
-  solder:w=>`Die Lötpunkte leuchten in einer <b>Reihenfolge</b> auf. Merk sie dir und tippe sie danach in derselben Reihenfolge an. 4 Runden, 3 Fehler erlaubt.`,
+  weave:(w,q)=>`In jeder Fadenreihe fehlt ein Faden. Tippe die <b>Spur mit der Lücke</b>, bevor die Reihe den Webkamm erreicht. Falsche Spur = Fehler. ${CNT.weave(q)} Reihen.`,
+  cut:(w,q)=>`Setz den Finger links auf die <b>Schere</b> und zieh sie entlang der gestrichelten Linie nach rechts. Je genauer, desto sauberer der Schnitt. ${CNT.cut(q)} Schnitte.`,
+  solder:(w,q)=>`Die Lötpunkte leuchten in einer <b>Reihenfolge</b> auf. Merk sie dir und tippe sie danach in derselben Reihenfolge an. ${CNT.solder(q)} Runden, 3 Fehler erlaubt.`,
   mine:w=>`Im Fels tauchen ${w||'Brocken'} auf. Tippe sie an, bevor sie verschwinden. <b>Gold</b> zählt dreifach, Finger weg vom <b>roten Dynamit</b>!`,
   pour:w=>`Die ${w||'Formen'} fahren unter dem Kessel durch. <b>Halte gedrückt</b>, um einzufüllen, und fülle jede bis zur grünen Marke. Nichts verschütten, nichts überlaufen lassen!`,
-  stack:w=>`Die Lage pendelt am Kran. <b>Tippe</b>, um sie abzulegen. Was übersteht, bricht ab – genau getroffen bleibt sie ganz. 8 Lagen.`,
+  stack:(w,q)=>`Die Lage pendelt am Kran. <b>Tippe</b>, um sie abzulegen. Was übersteht, bricht ab – genau getroffen bleibt sie ganz. ${CNT.stack(q)} Lagen.`,
   assemble:w=>`Oben steht der Bauplan. Tippe auf dem Band immer das Teil an, das gerade <b>hervorgehoben</b> ist. Falsche Teile und Schrott kosten Punkte.`,
-  bake:w=>`Drei Öfen garen gleichzeitig. Tippe einen Ofen an, wenn sein Balken im <b>grünen Bereich</b> steht. Zu früh ist ${w||'es'} roh, zu spät verbrannt. 9 Stück.`
+  bake:(w,q)=>`Drei Öfen garen gleichzeitig. Tippe einen Ofen an, wenn sein Balken im <b>grünen Bereich</b> steht. Zu früh ist ${w||'es'} roh, zu spät verbrannt. ${CNT.bake(q)} Stück.`
 };
 const FN={mine:gMine,pour:gPour,stack:gStack,assemble:gAssemble,bake:gBake,stir:gStir,knead:gKnead,catch:gCatch,weave:gWeave,cut:gCut,solder:gSolder};
 const SET={
   erz:['mine','Erzrausch',{w:'Erzadern'}],kohle:['mine','Kohlerausch',{w:'Kohlebrocken'}],lehm:['mine','Lehmgrube',{w:'Lehmklumpen'}],
   sand:['mine','Sandgrube',{w:'Sandnester',ore:'#f6e7a8'}],kupfer:['mine','Kupferrausch',{w:'Kupferadern',ore:'#e8833a'}],
-  stahl:['pour','Abstich',{}],oel:['pour','Öl abfüllen',{w:'Fässer',liq:'#3f3f46'}],
-  ziegel:['stack','Ziegelkran',{}],maschine:['assemble','Fließband',{}],
-  glas:['pour','Glasguss',{liq:'#7dd3fc'}],kunststoff:['stir','Kunststoff mischen',{liq:'#a78bfa'}],gehaeuse:['pour','Gehäuseguss',{liq:'#f472b6'}],akku:['pour','Elektrolyt einfüllen',{w:'Zellen',liq:'#4ade80'}],
+  stahl:[['bake','Erz schmelzen',{w:'das Erz',item:'#ff8a3d'}],['pour','Abstich',{}]],oel:['pour','Öl abfüllen',{w:'Fässer',liq:'#3f3f46'}],
+  ziegel:[['knead','Lehm kneten',{item:'#c0694a'}],['bake','Ziegel brennen',{w:'der Ziegel',item:'#b4432b'}]],maschine:['assemble','Fließband',{}],
+  glas:[['bake','Sand schmelzen',{w:'der Sand',item:'#fde68a'}],['pour','Glasguss',{liq:'#7dd3fc'}]],kunststoff:[['stir','Kunststoff mischen',{liq:'#a78bfa'}],['pour','In Formen gießen',{liq:'#a78bfa'}]],gehaeuse:['pour','Gehäuseguss',{liq:'#f472b6'}],akku:[['pour','Elektrolyt einfüllen',{w:'Zellen',liq:'#4ade80'}],['solder','Kontakte löten',{}]],
   draht:['bake','Glühofen',{w:'der Draht',item:'#e8833a'}],
-  platine:['solder','Platine löten',{}],display:['assemble','Display-Montage',{names:['Linse','Leiter','Scheibe','Klammer']}],handy:['assemble','Endmontage',{names:['Kamera','Akku','Display','Schraube']}],
-  muehle:['catch','Körner auffangen',{w:'Weizenkörner',item:'#e9c46a'}],baeckerei:['knead','Teig kneten',{item:'#e8c07a'}],kaeserei:['stir','Käsekessel rühren',{liq:'#fde68a'}],
-  chipsfabrik:['catch','Kartoffeln fangen',{w:'Kartoffeln',item:'#d6a35c'}],raeucherei:['bake','Räucherofen',{w:'der Lachs',item:'#f08a6b'}],
-  kelterei:['catch','Trauben lesen',{w:'Trauben',item:'#7c3aed'}],brauerei:['stir','Maische rühren',{liq:'#f59e0b'}],
+  platine:[['assemble','Platine bestücken',{names:['Chip','Widerstand','Sockel','Kondensator']}],['solder','Platine löten',{}]],display:[['assemble','Display-Montage',{names:['Linse','Leiter','Scheibe','Klammer']}],['solder','Anschlüsse löten',{}]],handy:[['assemble','Endmontage',{names:['Kamera','Akku','Display','Schraube']}],['solder','Verlöten',{}]],
+  muehle:['catch','Körner auffangen',{w:'Weizenkörner',item:'#e9c46a'}],baeckerei:[['knead','Teig kneten',{item:'#e8c07a'}],['bake','Brot backen',{w:'das Brot',item:'#c98a3e'}]],kaeserei:[['stir','Käsekessel rühren',{liq:'#fde68a'}],['pour','In Formen füllen',{w:'Käseformen',liq:'#fde68a'}]],
+  chipsfabrik:[['catch','Kartoffeln fangen',{w:'Kartoffeln',item:'#d6a35c'}],['bake','Chips backen',{w:'die Chips',item:'#f2c14e'}]],raeucherei:['bake','Räucherofen',{w:'der Lachs',item:'#f08a6b'}],
+  kelterei:[['catch','Trauben lesen',{w:'Trauben',item:'#7c3aed'}],['pour','Wein abfüllen',{w:'Fässer',liq:'#7f1d4f'}]],brauerei:[['stir','Maische rühren',{liq:'#f59e0b'}],['pour','Bier abfüllen',{w:'Fässer',liq:'#f59e0b'}]],
   weberei:['weave','Weben',{}],schneiderei:['cut','Zuschnitt',{}],
-  brennerei:['stir','Maische rühren',{liq:'#d9f99d'}],faelscher:['solder','Uhrwerk löten',{}],kopierer:['stack','Rohlinge stapeln',{cols:['#94a3b8','#cbd5e1']}],
+  brennerei:[['stir','Maische rühren',{liq:'#d9f99d'}],['pour','Abfüllen',{w:'Flaschen',liq:'#d9f99d'}]],faelscher:[['assemble','Uhrwerk zusammensetzen',{names:['Zahnrad','Feder','Zifferblatt','Schraube']}],['solder','Uhrwerk löten',{}]],kopierer:['stack','Rohlinge stapeln',{cols:['#94a3b8','#cbd5e1']}],
   r_kamin:['stack','Kamin mauern',{cols:['#8b4a2b','#a5543a']}],r_dampfmaschine:['assemble','Dampfmaschine bauen',{names:['Schwungrad','Kolben','Kessel','Ventil']}],r_glasfaser:['pour','Glasfaser ziehen',{liq:'#67e8f9'}],
   r_solar:['stack','Module stapeln',{cols:['#1d4ed8','#3b82f6']}],r_ebike:['assemble','E-Bike bauen',{names:['Rad','Rahmen','Akku','Schraube']}],r_smartwatch:['assemble','Uhr bauen',{names:['Krone','Band','Display','Schraube']}],
   r_drohne:['assemble','Drohne bauen',{names:['Rotor','Arm','Platine','Schraube']}],r_roboter:['assemble','Roboter bauen',{names:['Gelenk','Arm','Platte','Schraube']}]
 };
-const DEF=Object.fromEntries(Object.entries(SET).map(([k,[f,title,th]])=>[k,{f:FN[f],t:title,h:HOW[f](th.w),th}]));
+const stepOf=([f,title,th],q)=>({k:f,f:FN[f],t:title,h:HOW[f](th.w,q),th});
+const DEF=Object.fromEntries(Object.entries(SET).map(([k,v])=>{const a=Array.isArray(v[0])?v:[v],q=a.length>1?.6:1;return [k,{steps:a.map(x=>stepOf(x,q))}]}));
 export const has3d=id=>!!DEF[id];
 
 // Startet das 3D-Spiel der Station. env kommt aus der Welt (Szene, Kamera, Figur …). Ergebnis: Score 0..1 oder null bei Abbruch.
 export function play3d(env,s,st,custom){return new Promise(res=>{
-  const d=custom||DEF[st?st.id:s.id],{scene,cam,root}=env,outN=custom?'':' · '+G[(st||{}).out||s.id]?.n;
+  const steps=custom?[custom]:DEF[st?st.id:s.id].steps,{scene,cam,root}=env,on=custom?'':' · '+G[(st||{}).out||s.id]?.n,outN=on&&!on.includes('undefined')?on:'';
+  // Mehrere Schritte laufen nacheinander; jeder hat seine eigene Startkarte, die Wertung ist der Durchschnitt
+  const hd=i=>(steps.length>1?`Schritt ${i+1} von ${steps.length} · `:'')+steps[i].t;let si=0;const scores=[];
   const group=new Group();group.position.set(s.at[0],0,s.at[1]);group.rotation.y=s.ry;scene.add(group);
   const world=new Group();scene.add(world);
   // Splitter: fester Vorrat an kleinen Brocken mit Schwerkraft
   const cg=new IcosahedronGeometry(.13,0),chunks=Array.from({length:44},()=>{const m=new Mesh(cg,new MeshStandardMaterial({roughness:.72,color:'#fff'}));m.visible=false;world.add(m);return {m,v:new Vector3(),l:0}});
   let ci=0,ended=false;
   const ui=document.createElement('div');ui.className='w3g';
-  ui.innerHTML=`<div class="w3gp"><button class="x" id="w3gx">✕</button><b id="w3gt">${d.t}${outN&&!outN.includes('undefined')?outN:''}</b><div class="w3gs" id="w3gs"></div><div class="timer"><i id="w3gm" style="width:100%"></i></div></div>
-    <div class="w3gate" id="w3gg"><div class="gt">${d.t}</div><div class="gh">${d.h}</div><button class="btn a big" id="w3go">▶ Los!</button><button class="btn sm ghost" id="w3gb">Zurück</button></div>`;
+  ui.innerHTML=`<div class="w3gp"><button class="x" id="w3gx">✕</button><b id="w3gt">${hd(0)}${outN}</b><div class="w3gs" id="w3gs"></div><div class="timer"><i id="w3gm" style="width:100%"></i></div></div>
+    <div class="w3gate" id="w3gg"><div class="gt">${hd(0)}</div><div class="gh">${steps[0].h}</div><button class="btn a big" id="w3go">▶ Los!</button><button class="btn sm ghost" id="w3gb">Zurück</button></div>`;
   root.appendChild(ui);
   const $=id=>ui.querySelector('#'+id);
-  const c={scene,cam,s,group,world,hero:env.hero,th:d.th||{},ui:id=>ui.querySelector('#'+id),
+  const c={scene,cam,s,group,world,hero:env.hero,th:steps[0].th||{},q:steps.length>1?.6:1,ui:id=>ui.querySelector('#'+id),
     L:(x,y,z)=>{const a=s.ry;return new Vector3(s.at[0]+x*Math.cos(a)+z*Math.sin(a),y,s.at[1]-x*Math.sin(a)+z*Math.cos(a))},
     // Kamera so weit zurück, dass die halbe Breite hw (Meter) auch im Hochformat ins Bild passt
     view:(p,l,hw=4)=>{const d=p.clone().sub(l),need=hw/(Math.tan(cam.fov*Math.PI/360)*cam.aspect);if(d.length()<need)d.setLength(need);G3.camPos.copy(l).add(d);G3.camLook.copy(l);return G3.camPos},
@@ -550,23 +556,33 @@ export function play3d(env,s,st,custom){return new Promise(res=>{
     status:(t,html)=>{const e=$('w3gs');if(html)e.innerHTML=t;else e.textContent=t},
     say:t=>{const e=$('w3gs');e.textContent=t;e.classList.remove('pop');void e.offsetWidth;e.classList.add('pop')},
     time:v=>{$('w3gm').style.width=clamp(v)*100+'%'},
-    finish:sc=>close(sc)};
+    finish:sc=>next(sc)};
   const G3={camPos:new Vector3(),camLook:new Vector3(),shake:0,running:false,
     update(dt){
       for(const k of chunks){if(!k.m.visible)continue;k.l-=dt;k.v.y-=16*dt;k.m.position.addScaledVector(k.v,dt);k.m.rotation.x+=dt*8;if(k.m.position.y<.1){k.m.position.y=.1;k.v.multiplyScalar(.4);k.v.y=Math.abs(k.v.y)*.5}if(k.l<=0)k.m.visible=false}
       if(this.running)game.update(dt)},
     down(e){if(this.running&&game.down)game.down(e)},move(e){if(this.running&&game.move)game.move(e)},up(e){if(this.running&&game.up)game.up(e)}};
-  const game=d.f(c);
+  let game=steps[0].f(c);
   env.setGame(G3);
+  const wipe=keep=>[group,world].forEach((gr,i)=>[...gr.children].forEach(o=>{if(keep[i].has(o))return;o.traverse(x=>{if(x.geometry)x.geometry.dispose();if(x.material)(Array.isArray(x.material)?x.material:[x.material]).forEach(m=>m.dispose())});gr.remove(o)}));
+  const keep0=[new Set(),new Set(chunks.map(k=>k.m))];
+  function next(sc){
+    if(ended)return;scores.push(sc);
+    if(si+1>=steps.length)return close(scores.reduce((a,b)=>a+b,0)/scores.length);
+    G3.running=false;game.dispose&&game.dispose();wipe(keep0);si++;c.th=steps[si].th||{};
+    $('w3gt').textContent=hd(si)+outN;$('w3gs').innerHTML='';$('w3gm').style.width='100%';
+    game=steps[si].f(c);
+    const gate=document.createElement('div');gate.className='w3gate';gate.id='w3gg';
+    gate.innerHTML=`<div class="gt">${hd(si)}</div><div class="gh">${steps[si].h}</div><button class="btn a big" id="w3go">▶ Weiter</button>`;ui.appendChild(gate);arm()}
   function close(sc){
     if(ended)return;ended=true;G3.running=false;env.setGame(null);game.dispose&&game.dispose();
     [group,world].forEach(gr=>{gr.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material)(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>m.dispose())});scene.remove(gr)});
     ui.remove();res(sc)}
   $('w3gx').onclick=()=>close(null);$('w3gb').onclick=()=>close(null);
-  $('w3go').onclick=()=>{const gate=$('w3gg');let n=3;gate.classList.add('count');
-    const show=()=>{if(ended)return;if(n===0){gate.remove();G3.running=true;SFX.good();return}gate.innerHTML=`<div class="cd">${n}</div>`;SFX.tick();n--;setTimeout(show,STEP)};show()};
+  const arm=()=>{$('w3go').onclick=()=>{const gate=$('w3gg');let n=3;gate.classList.add('count');
+    const show=()=>{if(ended)return;if(n===0){gate.remove();G3.running=true;SFX.good();return}gate.innerHTML=`<div class="cd">${n}</div>`;SFX.tick();n--;setTimeout(show,STEP)};show()}};arm();
   // Für automatische Tests
-  window.__w3dGame=()=>({id:st?st.id:s.id,running:G3.running,ended,info:game.info?game.info():null});
+  window.__w3dGame=()=>({id:st?st.id:s.id,kind:steps[si].k||'fish',step:si,steps:steps.length,running:G3.running,ended,info:game.info?game.info():null});
 })}
 
 // Angeln am Steg: Ergebnis ist die Fangliste {Ware: Anzahl} oder null bei Abbruch

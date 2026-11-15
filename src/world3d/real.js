@@ -72,7 +72,7 @@ export function enhance(m,night){
   const k=kindOf(m),[cA,rA,nA,sc]=KIND[k];
   if(k==='metal'){m.metalness=Math.min(1,m.metalness+.35);m.roughness=Math.max(.22,m.roughness-.22);m.envMapIntensity=1.25}
   const tex=detailTex();
-  m.onBeforeCompile=sh=>{
+  m.userData.det=sh=>{
     sh.uniforms.uDet={value:tex};
     sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nvarying vec3 vWp;varying vec3 vWn;')
       .replace('#include <project_vertex>',`#include <project_vertex>
@@ -86,8 +86,6 @@ export function enhance(m,night){
       .replace('#include <map_fragment>',`#include <map_fragment>
         {vec3 an=abs(normalize(vWn));an=pow(an,vec3(4.));an/=(an.x+an.y+an.z);vec3 p=vWp*${sc.toFixed(2)}*.5;
         vec3 tx=texture2D(uDet,p.zy).rgb,ty=texture2D(uDet,p.xz).rgb,tz=texture2D(uDet,p.xy).rgb;
-        vec3 fx=texture2D(uDet,p.zy*4.3).rgb,fy=texture2D(uDet,p.xz*4.3).rgb,fz=texture2D(uDet,p.xy*4.3).rgb;
-        tx=tx*.6+fx*.4;ty=ty*.6+fy*.4;tz=tz*.6+fz*.4;
         dH=tx.b*an.x+ty.b*an.y+tz.b*an.z;
         dW=vec3(0.,tx.g-.5,tx.r-.5)*an.x+vec3(ty.r-.5,0.,ty.g-.5)*an.y+vec3(tz.r-.5,tz.g-.5,0.)*an.z;
         diffuseColor.rgb*=1.+(dH-.5)*${(cA*2).toFixed(2)};}`)
@@ -95,7 +93,12 @@ export function enhance(m,night){
         roughnessFactor=clamp(roughnessFactor+(dH-.5)*${(rA*2).toFixed(2)},.04,1.);`)
       .replace('#include <normal_fragment_maps>',`#include <normal_fragment_maps>
         normal=normalize(normal-${nA.toFixed(2)}*(viewMatrix*vec4(dW,0.)).xyz);`)};
-  m.customProgramCacheKey=()=>'real-'+k;m.needsUpdate=true}
+  m.userData.kind=k;LIST.add(m);m.addEventListener('dispose',()=>LIST.delete(m));apply(m)}
+// Oberflächenstruktur für schwache Geräte abschaltbar (Materialien werden neu übersetzt)
+const LIST=new Set();let detOn=true;const NOP=()=>{};
+function apply(m){m.onBeforeCompile=detOn?m.userData.det:NOP;m.customProgramCacheKey=()=>detOn?'real-'+m.userData.kind:'plain';m.needsUpdate=true}
+export function setDetail(on){if(detOn===on)return;detOn=on;LIST.forEach(apply)}
+export const detailOn=()=>detOn;
 export const enhanceAll=(root,night)=>root.traverse(o=>{if(o.isMesh||o.isInstancedMesh)(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>enhance(m,night))});
 // Standard-Material als Ersatz für die bisherigen einfachen Materialien
 export const std=(color,o={})=>new MeshStandardMaterial({color,roughness:.82,metalness:0,...o});

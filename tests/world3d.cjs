@@ -55,25 +55,59 @@ let fail=0;const ok=(c,m)=>{console.log((c?'  ok  ':'  FEHLER ')+m);if(!c)fail++
   const begin=async id=>{await go(id);await p.waitForFunction(()=>!document.getElementById('w3b').disabled,null,{timeout:20000});await p.evaluate(()=>{document.querySelectorAll('.lvlup,.rescard').forEach(e=>e.remove());closeOv()});await p.click('#w3b');await p.waitForSelector('#w3go',{timeout:10000});
     const before=await p.evaluate(()=>__w3dGame().running);await p.click('#w3go');await p.waitForFunction(()=>__w3dGame().running,null,{timeout:30000});return before};
   const gi=()=>p.evaluate(()=>window.__w3dGame?__w3dGame():null);
+  // Bots je Spielart (echte Mausklicks). Jeder läuft, bis sein Schritt vorbei ist; auto() spielt alle Schritte eines Ablaufs.
+  const live=(g,st)=>g&&!g.ended&&g.step===st&&g.running;
+  const BOT={
+    mine:async st=>{for(let k=0;k<4000;k++){const g=await gi();if(!live(g,st))break;const n=(g.info.nodes||[]).find(n=>n.k!=='tnt'&&n.p[1]>90);if(n)await p.mouse.click(n.p[0],n.p[1]);await p.waitForTimeout(40)}},
+    pour:async st=>{let down=false;
+      for(let k=0;k<6000;k++){const g=await gi();if(!live(g,st))break;const u=g.info.moulds.find(o=>o.q==null&&Math.abs(o.x)<.72),want=!!u&&u.f<.9;
+        if(want&&!down){await p.mouse.move(195,600);await p.mouse.down();down=true}else if(!want&&down){await p.mouse.up();down=false}await p.waitForTimeout(25)}
+      if(down)await p.mouse.up()},
+    stack:async st=>{for(let k=0;k<8000;k++){const g=await gi();if(!live(g,st))break;if(!g.info.drop&&!g.info.over&&Math.abs(g.info.x-g.info.tx)<.13){await p.mouse.click(195,600);await p.waitForTimeout(120)}await p.waitForTimeout(12)}},
+    assemble:async st=>{for(let k=0;k<6000;k++){const g=await gi();if(!live(g,st))break;const it=g.info.items.find(o=>o.k===g.info.need&&o.p[0]>40&&o.p[0]<350);if(it){await p.mouse.click(it.p[0],it.p[1]);await p.waitForTimeout(150)}await p.waitForTimeout(30)}},
+    bake:async st=>{for(let k=0;k<6000;k++){const g=await gi();if(!live(g,st))break;const o=(g.info.ovens||[]).find(o=>o.on&&o.p>.76&&o.p<.9);if(o){await p.mouse.click(o.xy[0],o.xy[1]);await p.waitForTimeout(120)}await p.waitForTimeout(15)}},
+    weave:async st=>{for(let k=0;k<9000;k++){const g=await gi();if(!live(g,st)||g.info.over)break;const i=g.info;const r=i.rows.filter(r=>r.z+.5>i.zc-3.2&&r.z<=i.zc+.2).sort((a,b)=>b.z-a.z)[0];
+      if(r&&r.z>i.zc-1.6){await p.mouse.click(i.lanes[r.gap][0],i.lanes[r.gap][1]);await p.waitForTimeout(60)}await p.waitForTimeout(25)}},
+    solder:async st=>{for(let k=0;k<9000;k++){const g=await gi();if(!live(g,st)||g.info.over)break;const i=g.info;if(i.state==='input'){const pp=i.pads[i.seq[i.idx]];await p.mouse.click(pp[0],pp[1]);await p.waitForTimeout(150)}await p.waitForTimeout(40)}},
+    cut:async st=>{for(let k=0;k<400;k++){const g=await gi();if(!live(g,st)||g.info.over)break;const r0=g.info.round,path=g.info.fz.map(f=>f[2]);
+      await p.mouse.move(path[0][0],path[0][1]);await p.mouse.down();
+      for(let j=1;j<path.length;j++){await p.mouse.move(path[j][0],path[j][1],{steps:3});await p.waitForTimeout(60)}
+      await p.mouse.move(path[path.length-1][0]+20,path[path.length-1][1]);await p.mouse.up();
+      await p.waitForFunction(r=>{const g=__w3dGame();return g.ended||!g.running||g.info.over||g.info.round>r},r0,{timeout:20000}).catch(()=>{})}},
+    stir:async st=>{let a=0,step=.22;for(let k=0;k<20000;k++){const g=await gi();if(!live(g,st)||g.info.done)break;const i=g.info;
+        if(k===0){await p.mouse.move(i.center[0]+90,i.center[1]);await p.mouse.down()}
+        if(i.started){if(i.w<5)step=Math.min(.9,step*1.15);else if(i.w>7)step=Math.max(.05,step*.85)}
+        a+=step;await p.mouse.move(i.center[0]+90*Math.cos(a),i.center[1]+90*Math.sin(a));await p.waitForTimeout(20)}
+      await p.mouse.up()},
+    knead:async st=>{let dirn=1,lastTt=-9,x=100;await p.mouse.move(100,500);await p.mouse.down();
+      for(let k=0;k<20000;k++){const g=await gi();if(!live(g,st)||g.info.done)break;const i=g.info;
+        if(i.t-lastTt>=.6){dirn*=-1;lastTt=i.t;const x1=dirn>0?290:100;for(let j=1;j<=5;j++)await p.mouse.move(x+(x1-x)*j/5,500);x=x1}
+        await p.waitForTimeout(25)}
+      await p.mouse.up()},
+    catch:async st=>{await p.mouse.move(195,500);await p.mouse.down();for(let k=0;k<20000;k++){const g=await gi();if(!live(g,st)||g.info.over)break;const it=g.info.items.filter(o=>o.k==='good').sort((a,b)=>a.y-b.y)[0];if(it)await p.mouse.move(it.p[0],500);await p.waitForTimeout(25)}await p.mouse.up()}
+  };
+  const seen=[];
+  const auto=async()=>{for(let n=0;n<6;n++){let g=await gi();if(!g||g.ended)break;
+    if(!g.running){await p.waitForSelector('#w3go',{timeout:20000});await p.evaluate(()=>{document.querySelectorAll('.lvlup,.rescard').forEach(e=>e.remove());closeOv()});await p.click('#w3go');await p.waitForFunction(()=>{const g=__w3dGame();return g.ended||g.running},null,{timeout:30000});g=await gi();if(g.ended)break}
+    seen.push(g.id+':'+g.kind+(g.steps>1?' '+(g.step+1)+'/'+g.steps:''));await BOT[g.kind](g.step);
+    await p.waitForFunction(st=>{const g=__w3dGame();return g.ended||g.step!==st},g.step,{timeout:90000})}};
   const result=async(id,out,min)=>{await p.waitForFunction(()=>__w3dGame().ended,null,{timeout:240000});await p.waitForSelector('.rescard',{timeout:10000});
     const st=await p.evaluate(()=>document.querySelectorAll('.rescard .rs .on').length),n=await p.evaluate(o=>S.stock[o],out);
     ok(st>=min,'3D-Spiel '+id+': '+st+' Sterne, Lager '+out+' = '+n);await p.evaluate(()=>document.querySelector('.rescard')?.remove())};
   await p.evaluate(()=>{Object.keys(S.stock).forEach(g=>S.stock[g]=20);S.stock.erz=0;S.combo=0});
   ok(await begin('erz')===false,'Erzrausch: Zeit läuft erst nach „Los!“');
   ok(await p.evaluate(()=>getComputedStyle(document.querySelector('.w3top')).display==='none'),'im Spiel sind Anzeige und Laufknopf ausgeblendet');
-  for(let k=0;k<4000;k++){const g=await gi();if(!g||g.ended)break;const n=(g.info.nodes||[]).find(n=>n.k!=='tnt'&&n.p[1]>90);if(n)await p.mouse.click(n.p[0],n.p[1]);await p.waitForTimeout(40)}
+  await auto();
   await result('Erzrausch','erz',2);
   ok(await p.evaluate(()=>S.stock.erz>0&&S.st.make.erz>0),'Erz gutgeschrieben und gezählt');
-  await begin('stahl');{let down=false;
-    for(let k=0;k<6000;k++){const g=await gi();if(!g||g.ended)break;const u=g.info.moulds.find(o=>o.q==null&&Math.abs(o.x)<.72),want=!!u&&u.f<.9;
-      if(want&&!down){await p.mouse.move(195,600);await p.mouse.down();down=true}else if(!want&&down){await p.mouse.up();down=false}await p.waitForTimeout(25)}
-    if(down)await p.mouse.up()}
+  await begin('stahl');
+  await auto();
   await result('Abstich','stahl',2);
   await begin('ziegel');
-  for(let k=0;k<8000;k++){const g=await gi();if(!g||g.ended)break;if(!g.info.drop&&!g.info.over&&Math.abs(g.info.x-g.info.tx)<.13){await p.mouse.click(195,600);await p.waitForTimeout(120)}await p.waitForTimeout(12)}
-  await result('Ziegelkran','ziegel',2);
+  await auto();
+  await result('Ziegel','ziegel',2);
   await begin('maschine');
-  for(let k=0;k<6000;k++){const g=await gi();if(!g||g.ended)break;const it=g.info.items.find(o=>o.k===g.info.need&&o.p[0]>40&&o.p[0]<350);if(it){await p.mouse.click(it.p[0],it.p[1]);await p.waitForTimeout(150)}await p.waitForTimeout(30)}
+  await auto();
   await result('Fließband','maschine',2);
   // Abbrechen kostet nichts
   const e0=await p.evaluate(()=>S.stock.erz);await go('stahl');await p.click('#w3b');await p.waitForSelector('#w3gb');await p.click('#w3gb');await p.waitForTimeout(300);
@@ -142,48 +176,36 @@ let fail=0;const ok=(c,m)=>{console.log((c?'  ok  ':'  FEHLER ')+m);if(!c)fail++
   ok(await p.evaluate(()=>{const z=__w3dState().zones.find(z=>z.id==='r_kamin');return z&&z.hidden===false}),'entdecktes Rezept: Station erscheint');
   // Ofen-Spiel (Räucherofen): Bot tippt im grünen Bereich
   await p.evaluate(()=>closeOv());await p.evaluate(()=>{S.stock.lachs=9});await begin('raeucherei');
-  for(let k=0;k<6000;k++){const g=await gi();if(!g||g.ended)break;const o=(g.info.ovens||[]).find(o=>o.on&&o.p>.76&&o.p<.9);if(o){await p.mouse.click(o.xy[0],o.xy[1]);await p.waitForTimeout(120)}await p.waitForTimeout(15)}
+  await auto();
   await result('Räucherofen','raeucherlachs',2);
   // Fließband mit Themenbezeichnung (Smartphone-Endmontage)
   await begin('handy');
   ok(await p.evaluate(()=>/Kamera|Akku|Display|Schraube/.test(document.querySelector('.w3gs').textContent)),'Endmontage zeigt eigene Teilenamen');
-  for(let k=0;k<6000;k++){const g=await gi();if(!g||g.ended)break;const it=g.info.items.find(o=>o.k===g.info.need&&o.p[0]>40&&o.p[0]<350);if(it){await p.mouse.click(it.p[0],it.p[1]);await p.waitForTimeout(150)}await p.waitForTimeout(30)}
+  await auto();
   await result('Endmontage','handy',2);
   // Eigene Spielregeln: Weben, Löten, Zuschneiden, Rühren (Bots mit echten Mausklicks)
   await p.evaluate(()=>{Object.assign(S.stock,{baumwolle:9,draht:9,kunststoff:9,stoff:9,milch:9})});
   await begin('weberei');
-  for(let k=0;k<9000;k++){const g=await gi();if(!g||g.ended||g.info.over)break;const i=g.info;const r=i.rows.filter(r=>r.z+.5>i.zc-3.2&&r.z<=i.zc+.2).sort((a,b)=>b.z-a.z)[0];
-    if(r&&r.z>i.zc-1.6){await p.mouse.click(i.lanes[r.gap][0],i.lanes[r.gap][1]);await p.waitForTimeout(60)}await p.waitForTimeout(25)}
+  await auto();
   await result('Weben','stoff',2);
   await begin('platine');
-  for(let k=0;k<9000;k++){const g=await gi();if(!g||g.ended||g.info.over)break;const i=g.info;if(i.state==='input'){const pp=i.pads[i.seq[i.idx]];await p.mouse.click(pp[0],pp[1]);await p.waitForTimeout(150)}await p.waitForTimeout(40)}
+  await auto();
   await result('Löten','platine',2);
   await begin('schneiderei');
-  for(let k=0;k<400;k++){const g=await gi();if(!g||g.ended||g.info.over)break;const r0=g.info.round,path=g.info.fz.map(f=>f[2]);
-    await p.mouse.move(path[0][0],path[0][1]);await p.mouse.down();
-    for(let j=1;j<path.length;j++){await p.mouse.move(path[j][0],path[j][1],{steps:3});await p.waitForTimeout(60)}
-    await p.mouse.move(path[path.length-1][0]+20,path[path.length-1][1]);await p.mouse.up();
-    await p.waitForFunction(r=>{const g=__w3dGame();return g.ended||g.info.over||g.info.round>r},r0,{timeout:20000}).catch(()=>{})}
+  await auto();
   await result('Zuschneiden','kleidung',1);
   await begin('kaeserei');
-  {let a=0,step=.22;for(let k=0;k<20000;k++){const g=await gi();if(!g||g.ended||g.info.done)break;const i=g.info;
-    if(k===0){await p.mouse.move(i.center[0]+90,i.center[1]);await p.mouse.down()}
-    if(i.started){if(i.w<5)step=Math.min(.9,step*1.15);else if(i.w>7)step=Math.max(.05,step*.85)}
-    a+=step;await p.mouse.move(i.center[0]+90*Math.cos(a),i.center[1]+90*Math.sin(a));await p.waitForTimeout(20)}
-    await p.mouse.up()}
+  await auto();
   await result('Rühren','kaese',2);
   // Teig kneten (Bäckerei) und Fangen (Mühle)
   await p.evaluate(()=>{Object.assign(S.stock,{mehl:9,eier:9,weizen:9})});
   await begin('baeckerei');
-  {let dirn=1,lastTt=-9,x=100;await p.mouse.move(100,500);await p.mouse.down();
-    for(let k=0;k<20000;k++){const g=await gi();if(!g||g.ended||g.info.done)break;const i=g.info;
-      if(i.t-lastTt>=.6){dirn*=-1;lastTt=i.t;const x1=dirn>0?290:100;for(let j=1;j<=5;j++)await p.mouse.move(x+(x1-x)*j/5,500);x=x1}
-      await p.waitForTimeout(25)}
-    await p.mouse.up()}
+  await auto();
   await result('Teig kneten','brot',2);
   await begin('muehle');
-  {await p.mouse.move(195,500);await p.mouse.down();for(let k=0;k<20000;k++){const g=await gi();if(!g||g.ended||g.info.over)break;const it=g.info.items.filter(o=>o.k==='good').sort((a,b)=>a.y-b.y)[0];if(it)await p.mouse.move(it.p[0],500);await p.waitForTimeout(25)}await p.mouse.up()}
+  await auto();
   await result('Körner fangen','mehl',2);
+  ok(['baeckerei:knead 1/2','baeckerei:bake 2/2','stahl:bake 1/2','stahl:pour 2/2','platine:assemble 1/2','platine:solder 2/2'].every(x=>seen.includes(x)),'mehrstufige Abläufe: Brot = kneten + backen, Stahl = schmelzen + Abstich, Platine = bestücken + löten ('+seen.length+' Schritte gespielt)');
   // Angeln am Steg in 3D
   await p.evaluate(()=>{S.stock.hering=0;S.stock.lachs=0;S.stock.thunfisch=0});
   for(let att=0;att<3&&!(await p.evaluate(()=>S.stock.hering+S.stock.lachs+S.stock.thunfisch>0));att++){

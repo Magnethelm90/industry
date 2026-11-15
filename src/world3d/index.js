@@ -15,7 +15,7 @@ import {OV} from '../ui.js';
 import {$,fmt,ic} from '../util.js';
 import {dayPhase} from '../world.js';
 import {loadAll} from './models.js';
-import {enhanceAll,grassMat,gravel,skyEnv,std,waterMat} from './real.js';
+import {detailOn,enhanceAll,grassMat,gravel,setDetail,skyEnv,std,waterMat} from './real.js';
 
 const WARES=['erz','kohle','lehm','ziegel','stahl','maschine'];
 // Rotation um Y: lokal (x,z) → Welt
@@ -118,7 +118,7 @@ export async function open3d(){
   const LI={night:.62,dawn:.85,day:1,dusk:.85}[ph],FOG=SK[1];
   const scene=new Scene();scene.background=new Color(FOG);scene.fog=new Fog(FOG,55,170);
   scene.add(skyDome(...SK));
-  scene.add(new HemisphereLight(night?'#8fa3e8':'#ffffff',night?'#34503a':'#8fcf6a',.42*LI+.16));
+  const hemi=new HemisphereLight(night?'#8fa3e8':'#ffffff',night?'#34503a':'#8fcf6a',.42*LI+.16);scene.add(hemi);let qual=2;setDetail(true);
   const SUNC=night?'#aebfff':ph==='day'?'#fff4dc':'#ffc891';
   // Himmel beleuchtet die Szene und spiegelt sich in Metall, Glas und Wasser
   scene.environment=skyEnv(renderer,SK,new Vector3(-20,32,16).normalize(),SUNC,night);scene.environmentIntensity=night?.55:.85;
@@ -328,7 +328,7 @@ export async function open3d(){
   $('w3x').onclick=exit;
   // Die Lieferung (Logistik) fährt in 3D, solange die Welt offen ist
   window.__w3dDrive=(route,load)=>{closeSheet();return drive3d(env,route,load)};
-  window.__w3dState=()=>({x:P.x,z:P.z,sheet:sheetOn,plots:plots.length,truck:T.x,zones:zones.map(z=>({id:z.s.id,x:z.x,z:z.z,hidden:hidden(z.s)})),near:near&&near.s.id,target:target&&target.s.id,alive,calls:renderer.info.render.calls,tri:renderer.info.render.triangles,pr});
+  window.__w3dState=()=>({x:P.x,z:P.z,sheet:sheetOn,plots:plots.length,truck:T.x,zones:zones.map(z=>({id:z.s.id,x:z.x,z:z.z,hidden:hidden(z.s)})),near:near&&near.s.id,target:target&&target.s.id,alive,calls:renderer.info.render.calls,tri:renderer.info.render.triangles,pr,qual});
   window.__w3dTeleport=(x,z)=>{P.x=x;P.z=z};
   hud();refreshLabels();updatePlots();
   // Kollision (Kreis gegen Kreise und Kästen)
@@ -341,11 +341,12 @@ export async function open3d(){
   let last=performance.now(),hudT=0,mapT=0;const SPEED=6.4;
   (function frame(now){
     if(!alive)return;requestAnimationFrame(frame);
-    const dt=Math.min(.05,(now-last)/1000);last=now;tm+=dt;
+    const rdt=Math.min(1,(now-last)/1000),dt=Math.min(.05,rdt);last=now;tm+=dt;
     // Lieferfahrt: eigene Szene statt der Welt
     if(driveObj){driveObj.update(dt);if(driveObj)renderer.render(driveObj.scene,driveObj.cam);return}
     // Anpassung an langsame Geräte: nach 2 s unter 30 Bildern/s Auflösung und Schatten senken
-    fps+=((1/Math.max(dt,.001))-fps)*.05;if(fps<30&&tm>3&&pr>1){if((slow+=dt)>2){pr=1;renderer.setPixelRatio(1);resize();slow=0}}else slow=0;
+    fps+=((1/Math.max(rdt,.001))-fps)*Math.min(1,rdt*3);// Zu langsam? Stufenweise abschalten: erst Auflösung, dann Oberflächenstruktur, zuletzt Spiegelungen
+    if(fps<26&&tm>1&&qual>0){if((slow+=rdt)>2.5){slow=0;if(pr>1){pr=1;renderer.setPixelRatio(1);resize()}else if(detailOn()){setDetail(false);qual=1}else{scene.environment=null;hemi.intensity*=2.1;qual=0}}}else slow=0;
     if(game){
       game.update(dt);
     }
