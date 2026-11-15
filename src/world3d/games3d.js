@@ -1,9 +1,10 @@
 /* 3D-Minispiele: laufen direkt in der Welt an der jeweiligen Station (statt des 2D-Fensters).
    Jedes Spiel bekommt einen Kontext c (Szene, Kamera, Hilfen) und meldet am Ende c.finish(Score 0..1). */
-import {BoxGeometry,Color,CylinderGeometry,Group,IcosahedronGeometry,Mesh,MeshBasicMaterial,MeshStandardMaterial,Plane,PointLight,Raycaster,SphereGeometry,Vector2,Vector3} from 'three';
+import {AdditiveBlending,BoxGeometry,CanvasTexture,Color,CylinderGeometry,Group,IcosahedronGeometry,Mesh,MeshBasicMaterial,MeshStandardMaterial,Plane,PointLight,Raycaster,SphereGeometry,Sprite,SpriteMaterial,TorusGeometry,Vector2,Vector3} from 'three';
 import {SFX,tone,vib} from '../fx.js';
 import {enhance} from './real.js';
 import {G} from '../data.js';
+import {calm} from '../util.js';
 import {S,diff,unl} from '../state.js';
 import {FISH} from '../games/fish.js';
 import {dayPhase,wxIs} from '../world.js';
@@ -12,6 +13,14 @@ import {dayPhase,wxIs} from '../world.js';
 const CNT={mine:q=>Math.round(20*q),pour:q=>Math.max(3,Math.round(6*q)),stack:q=>Math.max(5,Math.round(8*q)),assemble:q=>Math.max(5,Math.round(8*q)),bake:q=>Math.max(6,Math.round(9*q)),
   stir:q=>Math.round(16*q),weave:q=>Math.max(7,Math.round(12*q)),cut:q=>q<1?2:3,solder:q=>q<1?3:4,knead:q=>Math.round(11*q)+(q<1?1:0),catch:q=>Math.round(20*q)};
 const lam=(c,e,ei=1)=>{const m=new MeshStandardMaterial({color:c,emissive:e||'#000000',emissiveIntensity:e?ei:0,roughness:.72,metalness:0});if(!e)enhance(m);return m};
+// Metall (spiegelt den Himmel), Flüssigkeit (glatt; heiß = selbstleuchtend) und Glut
+const metal=(c,r=.38)=>{const m=new MeshStandardMaterial({color:c,roughness:r,metalness:.85});enhance(m);return m};
+const liquid=(c,hot)=>hot?new MeshStandardMaterial({color:'#2a0d00',emissive:c,emissiveIntensity:1.2,roughness:.5}):new MeshStandardMaterial({color:c,roughness:.12,metalness:.05,envMapIntensity:1.3});
+const ember=(c='#ff7a1a',i=2.2)=>new MeshStandardMaterial({color:'#1a0700',emissive:c,emissiveIntensity:i,roughness:.9});
+let softT=null;const soft=()=>{if(softT)return softT;const cv=document.createElement('canvas');cv.width=cv.height=64;const x=cv.getContext('2d'),g=x.createRadialGradient(32,32,1,32,32,31);g.addColorStop(0,'rgba(255,255,255,1)');g.addColorStop(.45,'rgba(255,255,255,.45)');g.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=g;x.fillRect(0,0,64,64);return softT=new CanvasTexture(cv)};
+// Effekt-Arten: [Farbe, Deckkraft, Startgröße, Wachstum/s, Auftrieb, Streuung, Lebensdauer, Schwerkraft, leuchtend]
+const FXK={steam:['#ffffff',.62,.55,1.5,1.5,.35,1.5,0,0],smoke:['#3a3a40',.5,.55,1.7,1.8,.4,1.9,0,0],dust:['#f3e6c8',.55,.4,1.6,.5,1.3,.8,0,0],
+  spark:['#ffd27a',1,.16,-.12,3.4,3.6,.6,11,1],fire:['#ff9a3d',.8,.55,-.7,2.2,.3,.5,0,1],fume:['#dbeafe',.35,.25,.9,1.2,.2,.9,0,0]};
 const mk=(geo,mat,x=0,y=0,z=0)=>{const m=new Mesh(geo,mat);m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;return m};
 const box=(w,h,d,c,x,y,z,e)=>mk(new BoxGeometry(w,h,d),typeof c==='string'?lam(c,e):c,x,y,z);
 const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
@@ -55,9 +64,9 @@ function gMine(c){
       for(const n of nodes){if(n.dead)continue;const [x,y]=c.project(n.m.position),d=Math.hypot(x-e.clientX,y-e.clientY);if(d<bd){bd=d;hit=n}}
       if(!hit){combo=0;return}
       c.swing();const p=hit.m.position.clone();
-      if(hit.kind==='tnt'){pts=Math.max(0,pts-2);combo=0;SFX.crash();vib([60,30,60]);c.shake(.5);c.burst(p,'#fb923c',16,7);c.pop('💥 −2',p,'#ef4444')}
+      if(hit.kind==='tnt'){pts=Math.max(0,pts-2);combo=0;SFX.crash();vib([60,30,60]);c.shake(.5);c.burst(p,'#fb923c',16,7);c.puff(p,'fire',8);c.puff(p,'smoke',6);c.pop('💥 −2',p,'#ef4444')}
       else{const v=hit.kind==='gold'?3:1;combo++;best=Math.max(best,combo);const bonus=combo>=5&&combo%5===0?1:0;pts+=v+bonus;
-        SFX.thud();(hit.kind==='gold'?SFX.perfect:SFX.good)();vib(10);c.shake(hit.kind==='gold'?.22:.1);c.burst(p,hit.kind==='gold'?'#fde047':ore,hit.kind==='gold'?14:8,5.5);
+        SFX.thud();(hit.kind==='gold'?SFX.perfect:SFX.good)();vib(10);c.shake(hit.kind==='gold'?.22:.1);c.burst(p,hit.kind==='gold'?'#fde047':ore,hit.kind==='gold'?14:8,5.5);c.puff(p,'spark',4);c.puff(p,'dust',3);
         c.pop((hit.kind==='gold'?'✨ +3':'+1')+(bonus?' · Serie +1':''),p,hit.kind==='gold'?'#fbbf24':'#fff')}
       remove(hit);c.status(pts+' Punkte'+(combo>=3?' · 🔥 Serie '+combo:''))},
     info:()=>({cands:cands.length,nodes:nodes.filter(n=>!n.dead).map(n=>({k:n.kind,p:c.project(n.m.position)})),pts}),
@@ -66,20 +75,22 @@ function gMine(c){
 
 /* ---------- Abstich (Schmelzofen): Formen fahren unter der Gießpfanne durch. Halten = gießen. Jede Form bis zur Marke füllen, nichts verschütten. */
 function gPour(c){
-  const N=CNT.pour(c.q),Z=8.6,RATE=1.05,LIQ=c.th.liq||'#ff9a3d';
+  const N=CNT.pour(c.q),Z=8.6,RATE=1.05,LIQ=c.th.liq||'#ff9a3d',HOT=!c.th.liq||!!c.th.hot,liqM=()=>liquid(LIQ,HOT);
   c.view(c.L(0,6.2,18),c.L(0,2.3,Z),2.9);
   c.hero.position.copy(c.L(-5.6,0,6.4));c.hero.rotation.y=c.s.ry+.9;
   const g=c.group;
-  g.add(box(14,.3,1.7,'#475569',0,.9,Z));for(const x of [-6,-2,2,6])g.add(box(.3,.9,1.3,'#334155',x,.45,Z));
+  g.add(box(14,.3,1.7,metal('#59636f',.5),0,.9,Z));for(const x of [-6,-2,2,6])g.add(box(.3,.9,1.3,metal('#3a4350',.55),x,.45,Z));
+  for(let i=0;i<15;i++){const r=mk(new CylinderGeometry(.11,.11,1.6,10),metal('#8a94a3',.3),-6.5+i*.93,1.08,Z);r.rotation.x=Math.PI/2;g.add(r)}
   // Gießpfanne an einem Galgen
-  g.add(box(.3,5,.3,'#334155',-1.6,2.5,Z-1.3),box(2,.3,.3,'#334155',-.7,4.9,Z-1.3),box(.12,1,.12,'#1e293b',0,4.3,Z-1.3));
-  const ladle=mk(new CylinderGeometry(.85,.6,1.1,14),lam('#1f2937'),0,3.6,Z);ladle.rotation.x=.25;g.add(ladle);
-  const top=mk(new CylinderGeometry(.74,.74,.06,14),new MeshBasicMaterial({color:LIQ}),0,4.13,Z+.13);top.rotation.x=.25;g.add(top);
-  const stream=mk(new CylinderGeometry(.13,.1,1,8),new MeshBasicMaterial({color:LIQ}),0,2.4,Z+.35);stream.visible=false;stream.castShadow=false;g.add(stream);
+  g.add(box(.3,5,.3,metal('#3a4350',.5),-1.6,2.5,Z-1.3),box(2,.3,.3,metal('#3a4350',.5),-.7,4.9,Z-1.3),box(.12,1,.12,metal('#20262e',.45),0,4.3,Z-1.3));
+  const ladle=mk(new CylinderGeometry(.85,.6,1.1,20),metal(HOT?'#2a2622':'#8d99a8',HOT?.6:.28),0,3.6,Z);ladle.rotation.x=.25;g.add(ladle);
+  const rim=mk(new TorusGeometry(.85,.07,8,24),metal(HOT?'#3a332c':'#aab4c0',.35),0,4.13,Z+.13);rim.rotation.x=Math.PI/2+.25;g.add(rim);
+  const top=mk(new CylinderGeometry(.78,.78,.06,20),liqM(),0,4.13,Z+.13);top.rotation.x=.25;g.add(top);
+  const stream=mk(new CylinderGeometry(.13,.1,1,10),liqM(),0,2.4,Z+.35);stream.visible=false;stream.castShadow=false;g.add(stream);
   const light=new PointLight(LIQ,0,12,1.6);light.position.set(0,2.6,Z+1);g.add(light);
   const moulds=[];
-  for(let i=0;i<N;i++){const m=new Group();m.add(box(1.5,.14,1.2,'#57534e',0,0,0),box(1.5,.8,.12,'#57534e',0,.4,.6),box(1.5,.8,.12,'#57534e',0,.4,-.6),box(.12,.8,1.2,'#57534e',.75,.4,0),box(.12,.8,1.2,'#57534e',-.75,.4,0));
-    const fill=mk(new BoxGeometry(1.36,1,1.06),new MeshBasicMaterial({color:LIQ}),0,.07,0);fill.castShadow=false;fill.scale.y=.001;m.add(fill);
+  for(let i=0;i<N;i++){const m=new Group();const mm=HOT?lam('#4a4541'):metal('#9aa5b1',.42);m.add(box(1.5,.14,1.2,mm,0,0,0),box(1.5,.8,.12,mm,0,.4,.6),box(1.5,.8,.12,mm,0,.4,-.6),box(.12,.8,1.2,mm,.75,.4,0),box(.12,.8,1.2,mm,-.75,.4,0));
+    const fill=mk(new BoxGeometry(1.36,1,1.06),liqM(),0,.07,0);fill.castShadow=false;fill.scale.y=.001;m.add(fill);
     for(const z of [.67,-.67]){const mark=box(1.56,.09,.05,new MeshBasicMaterial({color:'#34d399'}),0,.07+.6,z);mark.castShadow=false;m.add(mark)}
     m.position.set(-4.2-i*3.3,1.12,Z);g.add(m);moulds.push({m,fill,f:0,q:null,over:0})}
   let hold=false,spill=0,spillT=0,done=0,sum=0,ended=false,t=0,spT=0;
@@ -95,10 +106,12 @@ function gPour(c){
           const f=o.f;o.q=o.over?.45:f>=.82?1:f>=.6?.65:f*.7;sum+=o.q;done++;
           const p=world(x,2.4,Z);c.pop(o.over?'Übergelaufen!':o.q>=1?'Perfekt! ✨':o.q>=.65?'Geht so':'Zu wenig',p,o.q>=1?'#34d399':'#fbbf24');(o.q>=1?SFX.perfect:o.q>=.65?SFX.good:SFX.miss)();
           c.status(done<N?'Form '+(done+1)+' von '+N:'Fertig!')}
-        if(o.q!=null&&!c.th.liq)o.fill.material.color.lerp(new Color('#9a5b3a'),dt*.5)}
-      stream.visible=hold;light.intensity=hold?30+Math.sin(t*30)*6:0;
+        // heiße Schmelze kühlt in der Form ab: Glut lässt nach, es dampft noch kurz
+        if(o.q!=null&&HOT){o.fill.material.emissiveIntensity=Math.max(.25,o.fill.material.emissiveIntensity-dt*.7);if(x<5&&Math.random()<dt*2.5)c.puff(world(x+(Math.random()-.5),2.05,Z),'steam')}}
+      stream.visible=hold;light.intensity=HOT?(hold?46+Math.sin(t*30)*9:10+Math.sin(t*7)*2):0;
+      if(HOT&&Math.random()<dt*3)c.puff(world((Math.random()-.5)*.8,4.3,Z+.1),'fume');
       if(hold){
-        if((spT-=dt)<=0){spT=.08;c.burst(world((Math.random()-.5)*.3,under?1.3+under.f*.6:1.15,Z+.35),c.th.liq||'#ffd08a',2,3.2)}
+        if((spT-=dt)<=0){spT=.08;const hp=world((Math.random()-.5)*.3,under?1.3+under.f*.6:1.15,Z+.35);if(HOT)c.puff(hp,'spark',3);else c.burst(hp,LIQ,2,3.2)}
         if(under){under.f+=RATE*dt;if(under.f>1.04){under.f=1.04;if(!under.over){under.over=1;SFX.miss();c.shake(.15)}}
           under.fill.scale.y=Math.max(.001,under.f*.68);under.fill.position.y=.07+under.f*.34;
           const topY=1.12+.07+under.f*.68,h=3.2-topY;stream.scale.y=h;stream.position.y=topY+h/2}
@@ -197,13 +210,17 @@ function gBake(c){
   const g=c.group,ovens=[];
   const raw=new Color(col).lerp(new Color('#ffffff'),.55),good=new Color(col),burnt=new Color('#231710');
   for(let i=0;i<3;i++){const x=(i-1)*2.7,o=new Group();o.position.set(x,0,Z);
-    o.add(box(2.3,2.6,2,'#9a4a32',0,1.3,0),box(2.5,.25,2.2,'#6b7280',0,2.72,0),box(1.6,1.3,.2,'#1c1410',0,1.25,1.0));
-    const glow=box(1.5,.25,.1,new MeshBasicMaterial({color:'#fb923c'}),0,.72,1.08);glow.castShadow=false;o.add(glow);
-    const item=mk(new IcosahedronGeometry(.42,1),new MeshStandardMaterial({roughness:.72,color:raw.clone()}),0,1.2,1.12);item.scale.set(1.35,.75,.8);o.add(item);
+    o.add(box(2.3,2.6,2,'#8f4630',0,1.3,0),box(2.5,.25,2.2,'#6b7280',0,2.72,0),box(1.6,1.3,.2,'#120c09',0,1.25,1.0));
+    // Mauerfugen, Eisenrahmen der Öffnung, Schornstein und Glut
+    for(let r=0;r<5;r++){const f=box(2.32,.04,2.02,'#5d2c1e',0,.45+r*.45,0);f.castShadow=false;o.add(f)}
+    o.add(box(1.8,.12,.26,metal('#2b2f36',.5),0,1.96,1.0),box(.12,1.4,.26,metal('#2b2f36',.5),-.86,1.25,1.0),box(.12,1.4,.26,metal('#2b2f36',.5),.86,1.25,1.0),mk(new CylinderGeometry(.28,.34,1.5,12),metal('#3a3f47',.55),.6,3.55,-.5));
+    const glow=box(1.5,.3,.1,ember('#ff7a1a',2.4),0,.75,1.08);glow.castShadow=false;o.add(glow);
+    const shape=c.th.shape,item=mk(shape==='brick'?new BoxGeometry(.95,.42,.5):shape==='rock'?new IcosahedronGeometry(.46,0):new SphereGeometry(.42,14,10),new MeshStandardMaterial({roughness:shape==='rock'?.9:.72,color:raw.clone(),emissive:'#ff5a0a',emissiveIntensity:0}),0,1.2,1.12);if(!shape)item.scale.set(1.45,.72,.85);o.add(item);
     // Balken über dem Ofen: grüner Bereich = jetzt herausnehmen
     o.add(box(2.1,.3,.12,'#1e293b',0,3.4,.9));const zone=box(2.1*.2,.32,.13,new MeshBasicMaterial({color:'#22c55e'}),-1.05+2.1*(.56+.1),3.4,.92);zone.castShadow=false;o.add(zone);
     const bar=box(.14,.5,.16,new MeshBasicMaterial({color:'#ffffff'}),-1.05,3.4,.96);bar.castShadow=false;o.add(bar);
-    g.add(o);ovens.push({o,item,bar,p:0,sp:.2+Math.random()*.12,wait:i*.9,on:false})}
+    g.add(o);ovens.push({o,item,bar,glow,p:0,sp:.2+Math.random()*.12,wait:i*.9,on:false})}
+  const fire=new PointLight('#ff8a3d',26,13,1.6);fire.position.set(0,1.1,Z+2.2);g.add(fire);let ft=0;const HOTI=!!c.th.hot;
   let taken=0,sum=0,over=false,started=0;
   c.status('0 von '+N);
   const world=(x,y,z)=>g.localToWorld(new Vector3(x,y,z));
@@ -211,19 +228,21 @@ function gBake(c){
     if(taken>=N){over=true;const sc=clamp(sum/N);c.say(Math.round(sc*100)+' % gelungen');setTimeout(()=>c.finish(sc),800)}};
   return {
     update(dt){
-      if(over)return;c.time(1-taken/N);
+      if(over)return;c.time(1-taken/N);ft+=dt;fire.intensity=24+Math.sin(ft*17)*5+Math.sin(ft*31)*3;
       for(const o of ovens){
+        o.glow.material.emissiveIntensity=(o.on?2.6:1.2)+Math.sin(ft*23+o.o.position.x)*.5;
+        if(o.on&&Math.random()<dt*(o.p>.95?7:2.2))c.puff(world(o.o.position.x+.6,4.4,Z-.5),o.p>.95?'smoke':'steam');
         if(!o.on){if(started<N&&(o.wait-=dt)<=0){o.on=true;o.p=0;o.sp=(.2+Math.random()*.13)*(1+taken*.03);o.item.visible=true;started++}else{o.bar.position.x=-1.05;continue}}
         o.p+=o.sp*dt;const p=o.p;
-        o.item.material.color.copy(p<.8?raw.clone().lerp(good,p/.8):good.clone().lerp(burnt,Math.min(1,(p-.8)/.5)));
+        o.item.material.color.copy(p<.8?raw.clone().lerp(good,p/.8):good.clone().lerp(burnt,Math.min(1,(p-.8)/.5)));if(HOTI)o.item.material.emissiveIntensity=Math.min(2.2,p*2.2);
         o.bar.position.x=-1.05+2.1*Math.min(1,p/1.25);
-        if(p>=1.25){SFX.miss();c.burst(world(o.o.position.x,1.6,Z+1.1),'#44403c',8,3);settle(o,0,'Verbrannt!','#ef4444')}}},
+        if(p>=1.25){SFX.miss();c.burst(world(o.o.position.x,1.6,Z+1.1),'#44403c',8,3);c.puff(world(o.o.position.x,1.7,Z+1.1),'smoke',6);settle(o,0,'Verbrannt!','#ef4444')}}},
     down(e){
       if(over)return;let hit=null,bd=95;const w=new Vector3();
       for(const o of ovens){if(!o.on)continue;w.set(o.o.position.x,1.6,Z+1);g.localToWorld(w);const [x,y]=c.project(w),d=Math.hypot(x-e.clientX,(y-e.clientY)*.6);if(d<bd){bd=d;hit=o}}
       if(!hit)return;const p=hit.p;c.swing();
       // grüner Bereich: 0,70–0,95 des Garwegs
-      if(p>=.7&&p<=.95){SFX.perfect();vib(15);c.burst(world(hit.o.position.x,1.6,Z+1.1),col,8,4);settle(hit,1,'Perfekt! ✨','#34d399')}
+      if(p>=.7&&p<=.95){SFX.perfect();vib(15);c.burst(world(hit.o.position.x,1.6,Z+1.1),col,8,4);c.puff(world(hit.o.position.x,1.7,Z+1.2),HOTI?'spark':'steam',HOTI?10:5);settle(hit,1,'Perfekt! ✨','#34d399')}
       else if(p>=.5&&p<.7){SFX.good();settle(hit,.6,'Noch blass','#fbbf24')}
       else if(p>.95&&p<1.12){SFX.good();settle(hit,.5,'Etwas dunkel','#fbbf24')}
       else if(p<.5){SFX.miss();settle(hit,.15,'Roh!','#ef4444')}
@@ -288,9 +307,14 @@ function gStir(c){
   c.view(c.L(0,6.8,Z+9),c.L(0,1.6,Z),3.8);
   c.hero.position.copy(c.L(-4.8,0,Z+1.4));c.hero.rotation.y=c.s.ry+1.1;
   const g=c.group;
-  g.add(box(5.4,.5,5.4,'#3f3f46',0,.25,Z));
-  g.add(mk(new CylinderGeometry(2.3,2,1.7,28),lam('#64748b'),0,1.35,Z));
-  const surf=mk(new CylinderGeometry(2.05,2.05,.1,28),new MeshBasicMaterial({color:liq}),0,2.17,Z);surf.castShadow=false;g.add(surf);
+  g.add(box(5.4,.5,5.4,'#4a4541',0,.25,Z));
+  // Kupferkessel mit Rand und Griffen über einer Feuerstelle
+  const cu=()=>metal(c.th.pot||'#b8693a',.3);
+  g.add(mk(new CylinderGeometry(2.3,2,1.7,36),cu(),0,1.35,Z));const prim=mk(new TorusGeometry(2.3,.11,10,40),cu(),0,2.2,Z);prim.rotation.x=Math.PI/2;g.add(prim);
+  for(const sx of [-1,1]){const h=mk(new TorusGeometry(.42,.07,8,16,Math.PI),metal('#2b2f36',.5),sx*2.4,1.8,Z);h.rotation.z=-sx*Math.PI/2;g.add(h)}
+  const coals=mk(new CylinderGeometry(2.1,2.3,.14,20),ember('#ff6a12',1.6),0,.56,Z);coals.castShadow=false;g.add(coals);
+  const fire=new PointLight('#ff8a3d',22,9,1.6);fire.position.set(0,.9,Z+2.6);g.add(fire);
+  const surf=mk(new CylinderGeometry(2.2,2.2,.1,36),liquid(liq,false),0,2.17,Z);surf.castShadow=false;g.add(surf);
   const swirl=new Group();swirl.position.set(0,2.24,Z);g.add(swirl);
   const light=new Color(liq).lerp(new Color('#ffffff'),.55);
   for(let i=0;i<3;i++){const b=mk(new BoxGeometry(1.7,.04,.22),new MeshBasicMaterial({color:light}),0,0,0);b.rotation.y=i*Math.PI/3;b.castShadow=false;swirl.add(b)}
@@ -308,6 +332,8 @@ function gStir(c){
       if(t0!=null){if(inZ)okT+=dt;else if(w>HI*1.25)okT=Math.max(0,okT-dt*.5);
         c.time(1-(t-t0)/DUR)}
       rot+=w*dt*(Math.sign(rotDir)||1);swirl.rotation.y=-rot;
+      coals.material.emissiveIntensity=1.5+Math.sin(t*19)*.35;fire.intensity=20+Math.sin(t*17)*5;
+      if(Math.random()<dt*(2+Math.min(6,w)))c.puff(world((Math.random()-.5)*2.6,2.5,Z+(Math.random()-.5)*2.6),'steam');
       spoon.position.set(Math.cos(ang)*1.15,2.2+Math.sin(t*14)*.02*Math.min(1,w/4),Z+Math.sin(ang)*1.15);
       const k=c.ui('f3k'),gb=c.ui('f3g');if(k){k.style.left=Math.min(100,w/12*100)+'%';k.style.background=inZ?'#16a34a':w>HI?'#ef4444':'#1d2b4a'}if(gb)gb.style.width=Math.min(1,okT/NEED)*100+'%';
       if(w>HI*1.25&&(msgT-=dt)<=0){msgT=.5;c.burst(world(Math.cos(ang)*1.4,2.4,Math.sin(ang)*1.4+Z-Z+0),liq,3,3)}
@@ -422,7 +448,7 @@ function gSolder(c){
       if(over||state!=='input')return;let hit=null,bd=70;
       for(const p of pads){const [x,y]=c.project(world(p.x,1.5,Z+p.z)),d=Math.hypot(x-e.clientX,y-e.clientY);if(d<bd){bd=d;hit=p}}
       if(!hit)return;c.swing();flash(hit);iron.position.set(hit.x,2.2,Z+hit.z);c.burst(world(hit.x,1.7,Z+hit.z),COL[hit.i],5,3);
-      if(hit.i===seq[idx]){idx++;SFX.good();if(idx>=seq.length){done++;rnd++;SFX.perfect();c.pop('✓ Runde '+done,world(0,2.6,Z),'#34d399');if(rnd>=ROUNDS)return end();state='pause';tm=1;setTimeout(()=>{if(!over)startRound()},900)}else chips()}
+      if(hit.i===seq[idx]){idx++;SFX.good();c.puff(world(hit.x,1.5,Z+hit.z),'spark',6);c.puff(world(hit.x,1.6,Z+hit.z),'fume',2);if(idx>=seq.length){done++;rnd++;SFX.perfect();c.pop('✓ Runde '+done,world(0,2.6,Z),'#34d399');if(rnd>=ROUNDS)return end();state='pause';tm=1;setTimeout(()=>{if(!over)startRound()},900)}else chips()}
       else fail()},
     info:()=>({state,seq,idx,done,strikes,pads:pads.map(p=>c.project(world(p.x,1.5,Z+p.z))),over}),
     dispose(){}
@@ -435,7 +461,7 @@ function gKnead(c){
   c.view(c.L(0,6.4,Z+8.8),c.L(0,1.2,Z),3.9);
   c.hero.position.copy(c.L(-4.4,0,Z+1.6));c.hero.rotation.y=c.s.ry+1.1;
   const g=c.group;
-  g.add(box(7.4,.9,4.6,'#a16207',0,.45,Z));const fl=box(5.2,.03,3.2,'#fff7e6',0,.92,Z);fl.castShadow=false;g.add(fl);
+  g.add(box(7.4,.9,4.6,'#7a4f2a',0,.45,Z));for(let i=0;i<5;i++){const f=box(7.42,.02,.04,'#4a2f18',0,.905,Z-1.9+i*.95);f.castShadow=false;g.add(f)}const fl=box(5.2,.03,3.2,'#fff7e6',0,.92,Z);fl.castShadow=false;g.add(fl);
   const dough=mk(new SphereGeometry(1.35,20,14),new MeshStandardMaterial({roughness:.72,color:raw.clone()}),0,1.7,Z);dough.scale.set(1.15,.7,1);g.add(dough);
   const pin=mk(new CylinderGeometry(.22,.22,3.4,10),lam('#c08a4d'),0,2.6,Z);pin.rotation.z=Math.PI/2;g.add(pin);
   const bars=()=>`<div class="f3"><small>Teig – gleichmäßig im Takt wischen</small><div class="f3p"><i id="f3g"></i></div></div>`;
@@ -444,7 +470,7 @@ function gKnead(c){
   const world=(x,y,z)=>g.localToWorld(new Vector3(x,y,z));
   const stroke=()=>{const dt=lastT?t-lastT:.5;lastT=t;n++;let v=1,txt='Im Takt! 👌';
     if(dt<MINT){v=.5;txt='Zu hastig'}else if(dt>MAXT){v=.6;txt='Zu lahm'}else SFX.good();if(v<1)SFX.tick();
-    sum+=v;vib(10);sq=n%2?1:-.5;beat=1;c.pop(txt,world(0,3.4,Z),v>=1?'#34d399':'#fbbf24');c.burst(world((Math.random()-.5)*2,1.9,Z+1),'#fff8e1',4,3);
+    sum+=v;vib(10);sq=n%2?1:-.5;beat=1;c.pop(txt,world(0,3.4,Z),v>=1?'#34d399':'#fbbf24');c.puff(world((Math.random()-.5)*2.4,1.5,Z+1),'dust',5);
     dough.material.color.copy(raw).lerp(good,Math.min(1,sum/NEED));const gb=c.ui('f3g');if(gb)gb.style.width=Math.min(1,sum/NEED)*100+'%'};
   const end=()=>{if(done)return;done=true;const v=Math.min(1,sum/NEED);c.say(v>=1?'Perfekter Teig! 🥖':Math.round(v*100)+' % geknetet');if(v>=1)SFX.win();setTimeout(()=>c.finish(v),700)};
   return {
@@ -511,17 +537,17 @@ const FN={mine:gMine,pour:gPour,stack:gStack,assemble:gAssemble,bake:gBake,stir:
 const SET={
   erz:['mine','Erzrausch',{w:'Erzadern'}],kohle:['mine','Kohlerausch',{w:'Kohlebrocken'}],lehm:['mine','Lehmgrube',{w:'Lehmklumpen'}],
   sand:['mine','Sandgrube',{w:'Sandnester',ore:'#f6e7a8'}],kupfer:['mine','Kupferrausch',{w:'Kupferadern',ore:'#e8833a'}],
-  stahl:[['bake','Erz schmelzen',{w:'das Erz',item:'#ff8a3d'}],['pour','Abstich',{}]],oel:['pour','Öl abfüllen',{w:'Fässer',liq:'#3f3f46'}],
-  ziegel:[['knead','Lehm kneten',{item:'#c0694a'}],['bake','Ziegel brennen',{w:'der Ziegel',item:'#b4432b'}]],maschine:['assemble','Fließband',{}],
-  glas:[['bake','Sand schmelzen',{w:'der Sand',item:'#fde68a'}],['pour','Glasguss',{liq:'#7dd3fc'}]],kunststoff:[['stir','Kunststoff mischen',{liq:'#a78bfa'}],['pour','In Formen gießen',{liq:'#a78bfa'}]],gehaeuse:['pour','Gehäuseguss',{liq:'#f472b6'}],akku:[['pour','Elektrolyt einfüllen',{w:'Zellen',liq:'#4ade80'}],['solder','Kontakte löten',{}]],
-  draht:['bake','Glühofen',{w:'der Draht',item:'#e8833a'}],
+  stahl:[['bake','Erz schmelzen',{w:'das Erz',item:'#8a4a2e',shape:'rock',hot:1}],['pour','Abstich',{}]],oel:['pour','Öl abfüllen',{w:'Fässer',liq:'#3f3f46'}],
+  ziegel:[['knead','Lehm kneten',{item:'#c0694a'}],['bake','Ziegel brennen',{w:'der Ziegel',item:'#b4432b',shape:'brick'}]],maschine:['assemble','Fließband',{}],
+  glas:[['bake','Sand schmelzen',{w:'der Sand',item:'#e8d9a0',shape:'rock',hot:1}],['pour','Glasguss',{liq:'#ffb347',hot:1}]],kunststoff:[['stir','Kunststoff mischen',{liq:'#a78bfa'}],['pour','In Formen gießen',{liq:'#a78bfa'}]],gehaeuse:['pour','Gehäuseguss',{liq:'#f472b6'}],akku:[['pour','Elektrolyt einfüllen',{w:'Zellen',liq:'#4ade80'}],['solder','Kontakte löten',{}]],
+  draht:['bake','Glühofen',{w:'der Draht',item:'#b86a3a',hot:1}],
   platine:[['assemble','Platine bestücken',{names:['Chip','Widerstand','Sockel','Kondensator']}],['solder','Platine löten',{}]],display:[['assemble','Display-Montage',{names:['Linse','Leiter','Scheibe','Klammer']}],['solder','Anschlüsse löten',{}]],handy:[['assemble','Endmontage',{names:['Kamera','Akku','Display','Schraube']}],['solder','Verlöten',{}]],
   muehle:['catch','Körner auffangen',{w:'Weizenkörner',item:'#e9c46a'}],baeckerei:[['knead','Teig kneten',{item:'#e8c07a'}],['bake','Brot backen',{w:'das Brot',item:'#c98a3e'}]],kaeserei:[['stir','Käsekessel rühren',{liq:'#fde68a'}],['pour','In Formen füllen',{w:'Käseformen',liq:'#fde68a'}]],
   chipsfabrik:[['catch','Kartoffeln fangen',{w:'Kartoffeln',item:'#d6a35c'}],['bake','Chips backen',{w:'die Chips',item:'#f2c14e'}]],raeucherei:['bake','Räucherofen',{w:'der Lachs',item:'#f08a6b'}],
   kelterei:[['catch','Trauben lesen',{w:'Trauben',item:'#7c3aed'}],['pour','Wein abfüllen',{w:'Fässer',liq:'#7f1d4f'}]],brauerei:[['stir','Maische rühren',{liq:'#f59e0b'}],['pour','Bier abfüllen',{w:'Fässer',liq:'#f59e0b'}]],
   weberei:['weave','Weben',{}],schneiderei:['cut','Zuschnitt',{}],
   brennerei:[['stir','Maische rühren',{liq:'#d9f99d'}],['pour','Abfüllen',{w:'Flaschen',liq:'#d9f99d'}]],faelscher:[['assemble','Uhrwerk zusammensetzen',{names:['Zahnrad','Feder','Zifferblatt','Schraube']}],['solder','Uhrwerk löten',{}]],kopierer:['stack','Rohlinge stapeln',{cols:['#94a3b8','#cbd5e1']}],
-  r_kamin:['stack','Kamin mauern',{cols:['#8b4a2b','#a5543a']}],r_dampfmaschine:['assemble','Dampfmaschine bauen',{names:['Schwungrad','Kolben','Kessel','Ventil']}],r_glasfaser:['pour','Glasfaser ziehen',{liq:'#67e8f9'}],
+  r_kamin:['stack','Kamin mauern',{cols:['#8b4a2b','#a5543a']}],r_dampfmaschine:['assemble','Dampfmaschine bauen',{names:['Schwungrad','Kolben','Kessel','Ventil']}],r_glasfaser:['pour','Glasfaser ziehen',{liq:'#ffc266',hot:1}],
   r_solar:['stack','Module stapeln',{cols:['#1d4ed8','#3b82f6']}],r_ebike:['assemble','E-Bike bauen',{names:['Rad','Rahmen','Akku','Schraube']}],r_smartwatch:['assemble','Uhr bauen',{names:['Krone','Band','Display','Schraube']}],
   r_drohne:['assemble','Drohne bauen',{names:['Rotor','Arm','Platine','Schraube']}],r_roboter:['assemble','Roboter bauen',{names:['Gelenk','Arm','Platte','Schraube']}]
 };
@@ -539,6 +565,8 @@ export function play3d(env,s,st,custom){return new Promise(res=>{
   // Splitter: fester Vorrat an kleinen Brocken mit Schwerkraft
   const cg=new IcosahedronGeometry(.13,0),chunks=Array.from({length:44},()=>{const m=new Mesh(cg,new MeshStandardMaterial({roughness:.72,color:'#fff'}));m.visible=false;world.add(m);return {m,v:new Vector3(),l:0}});
   let ci=0,ended=false;
+  // Dampf, Rauch, Staub, Funken: fester Vorrat weicher Sprites
+  const parts=Array.from({length:calm()?16:56},()=>{const sp=new Sprite(new SpriteMaterial({map:soft(),transparent:true,depthWrite:false,opacity:0}));sp.visible=false;world.add(sp);return {sp,v:new Vector3(),l:0,L:1,k:null}});let pi=0;
   const ui=document.createElement('div');ui.className='w3g';
   ui.innerHTML=`<div class="w3gp"><button class="x" id="w3gx">✕</button><b id="w3gt">${hd(0)}${outN}</b><div class="w3gs" id="w3gs"></div><div class="timer"><i id="w3gm" style="width:100%"></i></div></div>
     <div class="w3gate" id="w3gg"><div class="gt">${hd(0)}</div><div class="gh">${steps[0].h}</div><button class="btn a big" id="w3go">▶ Los!</button><button class="btn sm ghost" id="w3gb">Zurück</button></div>`;
@@ -552,6 +580,10 @@ export function play3d(env,s,st,custom){return new Promise(res=>{
     pop:(txt,v,col='#fff')=>{const [x,y]=c.project(v),e=document.createElement('div');e.className='w3pop';e.textContent=txt;e.style.cssText=`left:${x}px;top:${y}px;color:${col}`;root.appendChild(e);setTimeout(()=>e.remove(),850)},
     burst:(p,col,n=8,sp=5)=>{for(let i=0;i<n;i++){const k=chunks[ci++%chunks.length];k.m.material.color.set(col);k.m.position.copy(p);k.m.visible=true;k.l=.9+Math.random()*.4;
       k.v.set((Math.random()-.5)*sp,Math.random()*sp*.9+1.5,(Math.random()-.2)*sp)}},
+    // n Teilchen der Art kind an der Weltposition p ausstoßen
+    puff:(p,kind='steam',n=1)=>{const K=FXK[kind];if(calm())n=Math.min(n,1);for(let i=0;i<n;i++){const q=parts[pi++%parts.length],m=q.sp.material;q.k=K;q.L=q.l=K[6]*(.75+Math.random()*.5);
+      m.color.set(K[0]);m.blending=K[8]?AdditiveBlending:1;m.needsUpdate=true;q.sp.position.copy(p);q.sp.scale.setScalar(K[2]*(.8+Math.random()*.4));q.sp.visible=true;
+      q.v.set((Math.random()-.5)*K[5],K[4]*(.7+Math.random()*.6),(Math.random()-.5)*K[5])}},
     shake:a=>{G3.shake=Math.max(G3.shake,a)},swing:()=>env.swing(),
     status:(t,html)=>{const e=$('w3gs');if(html)e.innerHTML=t;else e.textContent=t},
     say:t=>{const e=$('w3gs');e.textContent=t;e.classList.remove('pop');void e.offsetWidth;e.classList.add('pop')},
@@ -560,12 +592,14 @@ export function play3d(env,s,st,custom){return new Promise(res=>{
   const G3={camPos:new Vector3(),camLook:new Vector3(),shake:0,running:false,
     update(dt){
       for(const k of chunks){if(!k.m.visible)continue;k.l-=dt;k.v.y-=16*dt;k.m.position.addScaledVector(k.v,dt);k.m.rotation.x+=dt*8;if(k.m.position.y<.1){k.m.position.y=.1;k.v.multiplyScalar(.4);k.v.y=Math.abs(k.v.y)*.5}if(k.l<=0)k.m.visible=false}
+      for(const q of parts){if(!q.sp.visible)continue;q.l-=dt;if(q.l<=0){q.sp.visible=false;continue}const K=q.k,f=q.l/q.L;q.v.y-=K[7]*dt;q.sp.position.addScaledVector(q.v,dt);
+        q.sp.scale.setScalar(Math.max(.03,q.sp.scale.x+K[3]*dt));q.sp.material.opacity=K[1]*Math.min(1,f*2.2)*Math.min(1,(1-f)*8+.25)}
       if(this.running)game.update(dt)},
     down(e){if(this.running&&game.down)game.down(e)},move(e){if(this.running&&game.move)game.move(e)},up(e){if(this.running&&game.up)game.up(e)}};
   let game=steps[0].f(c);
   env.setGame(G3);
   const wipe=keep=>[group,world].forEach((gr,i)=>[...gr.children].forEach(o=>{if(keep[i].has(o))return;o.traverse(x=>{if(x.geometry)x.geometry.dispose();if(x.material)(Array.isArray(x.material)?x.material:[x.material]).forEach(m=>m.dispose())});gr.remove(o)}));
-  const keep0=[new Set(),new Set(chunks.map(k=>k.m))];
+  const keep0=[new Set(),new Set([...chunks.map(k=>k.m),...parts.map(q=>q.sp)])];
   function next(sc){
     if(ended)return;if(steps.length===1)return close(sc); // ein Schritt: Ergebnis unverändert (Angeln liefert eine Fangliste)
     scores.push(sc);
