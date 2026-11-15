@@ -8,6 +8,8 @@ let fail=0;const ok=(c,m)=>{console.log((c?'  ok  ':'  FEHLER ')+m);if(!c)fail++
   const b=await chromium.launch({args:['--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist']});
   const p=await b.newPage({viewport:{width:390,height:844}});const errs=[];p.on('pageerror',e=>errs.push(e.message));p.on('console',m=>{if(m.type()==='error')errs.push(m.text())});
   await p.goto(URL);await p.evaluate(()=>localStorage.clear());await p.reload();
+  // Razzia und Bandenforderung würden zufällig über die Welt platzen und Klicks abfangen – im Test aussetzen
+  await p.evaluate(()=>setInterval(()=>{if(window.S&&S.ug){S.ug.nextRaid=Date.now()+1e9;S.ug.nextGang=Date.now()+1e9}},300));
   await p.evaluate(()=>{S.xp=xpFor(2);S.goal=GOALS.length;S.stock.erz=9;S.stock.kohle=4;render()});
   await p.evaluate(()=>document.querySelector('.lvlup')?.remove());
   ok(await p.evaluate(()=>!!document.getElementById('d3')),'3D-Knopf in der Kopfzeile');
