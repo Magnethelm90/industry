@@ -102,19 +102,43 @@ GRASS = '#5fa84a'
 # ---------------------------------------------------------------- Figur: Teile mit Drehpunkt am Gelenk
 @model
 def worker():
-    skin = mat('#f2c9a0', .7); vest = mat('#f97316', .65); vest2 = mat('#fde047', .5, emit='#fde047', strength=.4); pants = mat('#3a6fe0', .8)
-    helm = mat('#facc15', .4); boot = mat('#8a4f27', .9); belt = mat('#5b3a1f', .8); dk = mat('#222222', .5)
-    body = [box((.62, .36, .72), (0, 0, 1.18), vest, bevel=.12), box((.64, .38, .1), (0, 0, 1.0), vest2), box((.64, .38, .1), (0, 0, 1.3), vest2), box((.66, .4, .12), (0, 0, .86), belt),
-            ball(.27, (0, 0, 1.84), skin, scale=(1, .95, 1.05)), ball(.31, (0, 0, 1.93), helm, scale=(1.05, 1.1, .8)), box((.7, .34, .06), (0, -.2, 1.9), helm, bevel=.03),
-            box((.08, .5, .08), (0, 0, 2.18), helm, bevel=.02), ball(.045, (-.1, -.25, 1.82), dk, sub=1), ball(.045, (.1, -.25, 1.82), dk, sub=1), ball(.07, (0, -.27, 1.78), skin, sub=1),
-            box((.42, .22, .5), (0, .27, 1.2), mat('#6b4423', .9), bevel=.05)]
+    skin = mat('#eab68a', .62); vest = mat('#f97316', .6); refl = mat('#f5f5dc', .35, .1, emit='#fde68a', strength=.5); pants = mat('#2f5fc4', .75)
+    shirt = mat('#475569', .8); helm = mat('#facc15', .35, .05); boot = mat('#5b3a1f', .75); sole = mat('#1c1917', .9); belt = mat('#3b2814', .7)
+    dk = mat('#1b1b1f', .5); white = mat('#f8fafc', .3); glove = mat('#d6c7a1', .85); hair = mat('#4a2f1b', .85); lamp = mat('#fff7cc', .3, emit='#fde68a', strength=3.)
+    steel = mat('#9aa3b2', .35, .85); pack = mat('#6b4423', .85)
+    body = [
+        box((.66, .4, .62), (0, 0, 1.24), shirt, bevel=.16),                       # Torso (Hemd)
+        box((.7, .44, .5), (0, 0, 1.3), vest, bevel=.14),                           # Warnweste
+        box((.72, .46, .07), (0, 0, 1.12), refl, bevel=.02), box((.72, .46, .07), (0, 0, 1.36), refl, bevel=.02),
+        box((.09, .46, .52), (-.2, 0, 1.3), refl, bevel=.02), box((.09, .46, .52), (.2, 0, 1.3), refl, bevel=.02),
+        box((.62, .38, .3), (0, 0, .92), pants, bevel=.12),                         # Hüfte
+        box((.66, .42, .1), (0, 0, .98), belt, bevel=.03), box((.12, .05, .09), (0, -.22, .98), steel, bevel=.01),
+        box((.14, .06, .2), (.26, -.2, .86), belt, bevel=.02),                      # Werkzeugtasche
+        cyl(.1, .16, (0, 0, 1.64), skin, seg=10, smooth=True),                      # Hals
+        ball(.28, (0, 0, 1.9), skin, scale=(1, .95, 1.08), sub=3),                  # Kopf
+        ball(.06, (-.28, 0, 1.88), skin, sub=1), ball(.06, (.28, 0, 1.88), skin, sub=1),   # Ohren
+        ball(.07, (0, -.27, 1.84), skin, scale=(1, 1, .9), sub=2),                  # Nase
+        ball(.058, (-.1, -.25, 1.93), white, scale=(1, .5, 1.15), sub=2), ball(.058, (.1, -.25, 1.93), white, scale=(1, .5, 1.15), sub=2),
+        ball(.03, (-.1, -.285, 1.93), dk, sub=1), ball(.03, (.1, -.285, 1.93), dk, sub=1),
+        box((.14, .03, .035), (-.1, -.26, 2.02), hair, rot=(0, 0, .12), bevel=.01), box((.14, .03, .035), (.1, -.26, 2.02), hair, rot=(0, 0, -.12), bevel=.01),
+        box((.14, .03, .035), (0, -.26, 1.72), mat('#a8584a', .6), bevel=.01),      # Mund
+        ball(.285, (0, .06, 1.9), hair, scale=(1, .9, .7), sub=2),                  # Haare im Nacken
+        ball(.34, (0, 0, 2.02), helm, scale=(1.05, 1.08, .78), sub=3),              # Helm
+        box((.74, .38, .07), (0, -.28, 1.98), helm, bevel=.03),                     # Krempe vorn
+        ball(.07, (0, -.33, 2.13), lamp, sub=2), box((.16, .05, .09), (0, -.3, 2.13), dk, bevel=.01),   # Stirnlampe
+        box((.46, .26, .56), (0, .3, 1.24), pack, bevel=.07), box((.5, .28, .12), (0, .3, 1.48), mat('#4a2f1b', .8), bevel=.04),   # Rucksack
+    ]
     join(body, '!body')
     for s, nm in ((-1, 'L'), (1, 'R')):
-        leg = [box((.24, .26, .6), (s * .17, 0, .4), pants, bevel=.05), box((.27, .34, .2), (s * .17, -.04, .1), boot, bevel=.05)]
+        leg = [box((.27, .3, .62), (s * .17, 0, .45), pants, bevel=.08), box((.29, .32, .1), (s * .17, 0, .26), mat('#244a9c', .8), bevel=.02),
+               box((.3, .42, .2), (s * .17, -.05, .12), boot, bevel=.07), box((.31, .44, .05), (s * .17, -.05, .03), sole, bevel=.015),
+               ball(.16, (s * .17, -.18, .15), boot, scale=(.85, .8, .6), sub=2)]
         join(leg, '!leg' + nm); bpy.context.scene.cursor.location = (s * .17, 0, .78); bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
-        arm = [box((.18, .2, .52), (s * .44, 0, 1.28), vest, bevel=.05), ball(.1, (s * .44, 0, .98), skin, sub=1)]
-        if s == 1: arm += [cyl(.025, .9, (.44, -.3, .95), mat(WOOD, .8), rot=(math.radians(90), 0, 0), seg=6), box((.5, .06, .08), (.44, -.76, .95), mat('#9aa3b2', .4, .8), bevel=.015)]
-        join(arm, '!arm' + nm); bpy.context.scene.cursor.location = (s * .44, 0, 1.52); bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
+        arm = [cyl(.105, .5, (s * .45, 0, 1.3), shirt, seg=10, smooth=True), ball(.115, (s * .45, 0, 1.55), vest, scale=(1, 1, .9), sub=2),
+               cyl(.11, .08, (s * .45, 0, 1.08), shirt, seg=10, smooth=True), ball(.115, (s * .45, 0, .98), glove, sub=2)]
+        if s == 1: arm += [cyl(.028, .95, (.45, -.32, .98), mat(WOOD, .8), rot=(math.radians(90), 0, 0), seg=8), box((.56, .07, .09), (.45, -.8, .98), steel, bevel=.02),
+                           box((.09, .09, .09), (.45, -.8, .98), dk, bevel=.01)]
+        join(arm, '!arm' + nm); bpy.context.scene.cursor.location = (s * .45, 0, 1.55); bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
 
 # ---------------------------------------------------------------- Minen
 def mine_build(rock_col, ore_col, ore_emit=None):
